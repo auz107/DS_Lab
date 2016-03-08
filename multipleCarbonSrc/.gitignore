@@ -5,8 +5,9 @@ jobs
 *.pdf
 *.log
 *test*.*
-t.py
+[a-z].py
 plot*.m
+core.*
 1
 2
 3

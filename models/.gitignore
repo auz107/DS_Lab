@@ -1,0 +1,15 @@
+archive
+results
+jobs
+alizom_code
+iAF1260_old
+*.pyc
+*.pdf
+*.log
+*test*.*
+[a-z].py
+core.*
+1
+2
+3
+4

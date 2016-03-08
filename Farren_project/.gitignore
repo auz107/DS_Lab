@@ -7,3 +7,9 @@ alizom_code
 *.pdf
 *.log
 *test*.*
+[a-z].py
+core.*
+1
+2
+3
+4

@@ -8,7 +8,8 @@ links
 *.pdf
 *.log
 *test*.*
-t.py
+[a-z].py
+core.*
 *.m
 *.sh
 1

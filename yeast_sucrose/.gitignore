@@ -6,8 +6,9 @@ jobs
 *.pdf
 *.log
 *test*.*
-t.py
+[a-z].py
 .nfs*
+core.*
 1
 2
 3

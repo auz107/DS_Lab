@@ -1,0 +1,16 @@
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=24:00:00
+
+PUTDIR=/usr2/postdoc/alizom/work/models/model_seed_database
+cd $PUTDIR
+
+#source activate /projectnb/bioinfor/SEGRE/alizom
+
+#$  -V
+#
+python -c "import time;print '\n**Job started at ',time.strftime('%c'),'\n'" > job_read_tsv_files.out 2>&1
+
+python  read_tsv_files.py >> job_read_tsv_files.out 2>&1
+
+python -c "import time;print '\n**Job ended at ',time.strftime('%c'),'\n'" >> job_read_tsv_files.out 2>&1
+

@@ -1,0 +1,1597 @@
+13BGH:   1.0 13BDglcn_c + 1.0 h2o_c --> 1.0 glc_D_c
+13BGHe:   1.0 h2o_e + 1.0 13BDglcn_e --> 1.0 glc_D_e
+13GS:   1.0 udpg_c --> 1.0 13BDglcn_c + 1.0 udp_c + 1.0 h_c
+16GS:   1.0 udpg_c --> 1.0 16BDglcn_c + 1.0 udp_c + 1.0 h_c
+23CAPPD:   1.0 23camp_c + 1.0 h2o_c + 1.0 h_c --> 1.0 amp2p_c
+2DDA7Ptm:   1.0 2dda7p_c <==> 1.0 2dda7p_m
+2DHPtm:   1.0 2dhp_c <==> 1.0 2dhp_m
+2DOXG6PP:   1.0 h2o_c + 1.0 2doxg6p_c --> 1.0 pi_c + 1.0 2dglc_c
+2HBO:   1.0 nad_c + 1.0 2hb_c <==> 1.0 h_c + 1.0 2obut_c + 1.0 nadh_c
+2HBt2:   1.0 2hb_e + 1.0 h_e <==> 1.0 2hb_c + 1.0 h_c
+2HMHMBQMTm:   1.0 amet_m + 1.0 2hpmhmbq_m --> 1.0 q6_m + 1.0 h_m + 1.0 ahcys_m
+2HP6MPMOm:   1.0 2hp6mp_m + 1.0 o2_m --> 1.0 h2o_m + 1.0 2hp6mbq_m
+2HPMBQMTm:   1.0 amet_m + 1.0 2hp6mbq_m --> 1.0 h_m + 1.0 ahcys_m + 1.0 2hpmmbq_m
+2HPMMBQMOm:   1.0 2hpmmbq_m + 0.5 o2_m --> 1.0 2hpmhmbq_m
+2MBACt:   1.0 2mbac_c --> 1.0 2mbac_e
+2MBALDt:   1.0 2mbald_c <==> 1.0 2mbald_e
+2MBALDtm:   1.0 2mbald_c <==> 1.0 2mbald_m
+2MBTOHt:   1.0 2mbtoh_c <==> 1.0 2mbtoh_e
+2MBTOHtm:   1.0 2mbtoh_c <==> 1.0 2mbtoh_m
+2MPPALt:   1.0 2mppal_c <==> 1.0 2mppal_e
+2MPPALtm:   1.0 2mppal_c <==> 1.0 2mppal_m
+2OBUTtm:   1.0 2obut_c <==> 1.0 2obut_m
+2OXOADPtim:   1.0 2oxoadp_m --> 1.0 2oxoadp_c
+2PHETOHt:   1.0 2phetoh_e <==> 1.0 2phetoh_c
+2PHETOHtm:   1.0 2phetoh_m <==> 1.0 2phetoh_c
+34HPLFM:   1.0 nadh_m + 1.0 34hpp_m + 1.0 h_m --> 1.0 nad_m + 1.0 34hpl_m
+34HPPOR:   1.0 34hpp_c + 1.0 o2_c --> 1.0 hgentis_c + 1.0 co2_c
+34HPPt2m:   1.0 34hpp_c + 1.0 h_c <==> 1.0 34hpp_m + 1.0 h_m
+34HPPt2p:   1.0 34hpp_c + 1.0 h_c <==> 1.0 34hpp_x + 1.0 h_x
+3C3HMPt:   1.0 3c3hmp_c <==> 1.0 3c3hmp_e
+3C3HMPtm:   1.0 3c3hmp_c <==> 1.0 3c3hmp_m
+3C4MOPtm:   1.0 3c4mop_c <==> 1.0 3c4mop_m
+3DH5HPBMTm:   1.0 amet_m + 1.0 3dh5hpb_m --> 1.0 ahcys_m + 1.0 h_m + 1.0 3hph5mb_m
+3DH5HPBtm:   1.0 3dh5hpb_c <==> 1.0 3dh5hpb_m
+3DSPHR:   1.0 3dsphgn_c + 1.0 nadph_c + 1.0 h_c --> 1.0 sphgn_c + 1.0 nadp_c
+3HAO:   1.0 o2_c + 1.0 3hanthrn_c --> 1.0 cmusa_c + 1.0 h_c
+3HPH5MBDCm:   1.0 3hph5mb_m --> 1.0 2hp6mp_m + 1.0 co2_m
+3IPM3MT:   1.0 amet_c + 1.0 3c2hmp_c --> 1.0 3ipmmest_c + 1.0 ahcys_c
+3MBALDt:   1.0 3mbald_c <==> 1.0 3mbald_e
+3MBALDtm:   1.0 3mbald_c <==> 1.0 3mbald_m
+3MOBDC:   1.0 3mob_c + 1.0 h_c --> 1.0 co2_c + 1.0 2mppal_c
+3MOBtm:   1.0 3mob_c <==> 1.0 3mob_m
+3MOPDC:   1.0 3mop_c + 1.0 h_c --> 1.0 co2_c + 1.0 2mbald_c
+3MOPt:   1.0 3mop_e <==> 1.0 3mop_c
+3MOPtm:   1.0 3mop_c <==> 1.0 3mop_m
+3OPHB5Hm:   1.0 3ophb_5_c + 0.5 o2_c --> 1.0 3dh5hpb_c
+3OPHB_5tm:   1.0 3ophb_5_c <==> 1.0 3ophb_5_m
+4ABUTNtm:   1.0 4abutn_c <==> 1.0 4abutn_m
+4ABUTtm:   1.0 4abut_c <==> 1.0 4abut_m
+4ABZt:   1.0 4abz_c <==> 1.0 4abz_e
+4ABZtm:   1.0 4abz_c <==> 1.0 4abz_m
+4H2OGLTtm:   1.0 4h2oglt_c <==> 1.0 4h2oglt_m
+4H2OGLTtp:   1.0 4h2oglt_c <==> 1.0 4h2oglt_x
+4HBZCOAFm:   1.0 nad_m + 1.0 coa_m + 1.0 h2o_m + 1.0 coucoa_m --> 1.0 accoa_m + 1.0 4hbzcoa_m + 1.0 nadh_m + 1.0 h_m
+4HBZFm:   1.0 4hbzcoa_m + 1.0 h2o_m --> 1.0 coa_m + 1.0 4hbz_m + 1.0 h_m
+4HBZtm:   1.0 4hbz_c <==> 1.0 4hbz_m
+4HGLSDm:   1.0 h2o_m + 1.0 4hglusa_m + 1.0 nad_m <==> 2.0 h_m + 1.0 e4hglu_m + 1.0 nadh_m
+4HPRO_LTtm:   1.0 4hpro_LT_c <==> 1.0 4hpro_LT_m
+4HTHRS:   1.0 phthr_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 4hthr_c
+4MOPDC:   1.0 4mop_c + 1.0 h_c --> 1.0 3mbald_c + 1.0 co2_c
+5AOPt2:   1.0 h_e + 1.0 5aop_e --> 1.0 h_c + 1.0 5aop_c
+5AOPtm:   1.0 5aop_c <==> 1.0 5aop_m
+5FTHFt:   1.0 5fthf_e <==> 1.0 5fthf_c
+6PGLter:   1.0 6pgl_c <==> 1.0 6pgl_r
+8AONNt2:   1.0 8aonn_e + 1.0 h_e <==> 1.0 h_c + 1.0 8aonn_c
+AABTN:   1.0 4aabutn_c + 1.0 h2o_c --> 1.0 4abut_c + 1.0 ac_c
+AACTOOR:   1.0 aact_c + 1.0 h2o_c + 1.0 o2_c --> 1.0 nh4_c + 1.0 h2o2_c + 1.0 mthgxl_c
+AASAD1:   1.0 atp_c + 1.0 h_c + 1.0 nadph_c + 1.0 L2aadp_c --> 1.0 L2aadp6sa_c + 1.0 nadp_c + 1.0 amp_c + 1.0 ppi_c
+AASAD2:   1.0 h_c + 1.0 atp_c + 1.0 L2aadp_c + 1.0 nadh_c --> 1.0 L2aadp6sa_c + 1.0 nad_c + 1.0 amp_c + 1.0 ppi_c
+AATA:   1.0 glu_L_c + 1.0 2oxoadp_c <==> 1.0 akg_c + 1.0 L2aadp_c
+ABTA:   1.0 4abut_c + 1.0 akg_c --> 1.0 sucsal_c + 1.0 glu_L_c
+ABTt:   1.0 abt_e <==> 1.0 abt_c
+ABUTDm:   1.0 h2o_m + 1.0 4abutn_m + 1.0 nad_m --> 2.0 h_m + 1.0 4abut_m + 1.0 nadh_m
+ABUTt2r:   1.0 h_e + 1.0 4abut_e <==> 1.0 4abut_c + 1.0 h_c
+ACACT1:   2.0 accoa_c --> 1.0 coa_c + 1.0 aacoa_c
+ACACT1m:   2.0 accoa_m --> 1.0 aacoa_m + 1.0 coa_m
+ACACT4p:   1.0 coa_x + 1.0 3odcoa_x --> 1.0 accoa_x + 1.0 occoa_x
+ACACT5p:   1.0 3oddcoa_x + 1.0 coa_x --> 1.0 dcacoa_x + 1.0 accoa_x
+ACACT6p:   1.0 3otdcoa_x + 1.0 coa_x --> 1.0 ddcacoa_x + 1.0 accoa_x
+ACACT7p:   1.0 coa_x + 1.0 3ohdcoa_x --> 1.0 accoa_x + 1.0 tdcoa_x
+ACACT8p:   1.0 3ohodcoa_x + 1.0 coa_x --> 1.0 pmtcoa_x + 1.0 accoa_x
+ACACT9p:   1.0 coa_x + 1.0 3ohxccoa_x --> 1.0 accoa_x + 1.0 ttccoa_x
+ACALDCD:   2.0 acald_c --> 1.0 actn_R_c
+ACALDt:   1.0 acald_e <==> 1.0 acald_c
+ACALDtm:   1.0 acald_m <==> 1.0 acald_c
+ACCOACr:   1.0 hco3_c + 1.0 accoa_c + 1.0 atp_c <==> 1.0 pi_c + 1.0 adp_c + 1.0 h_c + 1.0 malcoa_c
+ACCOACrm:   1.0 accoa_m + 1.0 atp_m + 1.0 hco3_m <==> 1.0 h_m + 1.0 malcoa_m + 1.0 pi_m + 1.0 adp_m
+ACCOAtn:   1.0 accoa_c <==> 1.0 accoa_n
+ACESt:   1.0 aces_c --> 1.0 aces_e
+ACGAM6PS:   1.0 accoa_c + 1.0 gam6p_c <==> 1.0 coa_c + 1.0 h_c + 1.0 acgam6p_c
+ACGAMPM:   1.0 acgam6p_c <==> 1.0 acgam1p_c
+ACGKm:   1.0 acglu_m + 1.0 atp_m --> 1.0 acg5p_m + 1.0 adp_m
+ACGSm:   1.0 accoa_m + 1.0 glu_L_m --> 1.0 h_m + 1.0 acglu_m + 1.0 coa_m
+ACHBSm:   1.0 2obut_m + 1.0 pyr_m + 1.0 h_m --> 1.0 co2_m + 1.0 2ahbut_m
+ACHLE1:   1.0 iamac_c + 1.0 h2o_c --> 1.0 iamoh_c + 1.0 h_c + 1.0 ac_c
+ACHLE2:   1.0 ibutac_c + 1.0 h2o_c --> 1.0 ibutoh_c + 1.0 h_c + 1.0 ac_c
+ACHLE3:   1.0 aces_c + 1.0 h2o_c --> 1.0 etoh_c + 1.0 ac_c + 1.0 h_c
+ACLSm:   2.0 pyr_m + 1.0 h_m --> 1.0 alac_S_m + 1.0 co2_m
+ACOAHim:   1.0 accoa_m + 1.0 h2o_m --> 1.0 h_m + 1.0 ac_m + 1.0 coa_m
+ACOAO4p:   1.0 dcacoa_x + 1.0 o2_x --> 1.0 h2o2_x + 1.0 dc2coa_x
+ACOAO5p:   1.0 ddcacoa_x + 1.0 o2_x --> 1.0 dd2coa_x + 1.0 h2o2_x
+ACOAO6p:   1.0 o2_x + 1.0 tdcoa_x --> 1.0 h2o2_x + 1.0 td2coa_x
+ACOAO7p:   1.0 o2_x + 1.0 pmtcoa_x --> 1.0 h2o2_x + 1.0 hdd2coa_x
+ACOAO8p:   1.0 o2_x + 1.0 stcoa_x --> 1.0 h2o2_x + 1.0 od2coa_x
+ACOAO9p:   1.0 hexccoa_x + 1.0 o2_x --> 1.0 h2o2_x + 1.0 hxc2coa_x
+ACOATA:   1.0 accoa_c + 1.0 ACP_c <==> 1.0 acACP_c + 1.0 coa_c
+ACOATAm:   1.0 accoa_m + 1.0 ACP_m <==> 1.0 acACP_m + 1.0 coa_m
+ACON3MT:   1.0 acon_T_c + 1.0 amet_c --> 1.0 acon5m_c + 1.0 ahcys_c
+ACONT:   1.0 cit_c <==> 1.0 icit_c
+ACONT3m:   1.0 2mcit_m <==> 1.0 micit_m
+ACONTm:   1.0 cit_m <==> 1.0 icit_m
+ACOTAim:   1.0 glu_L_m + 1.0 acg5sa_m --> 1.0 akg_m + 1.0 acorn_m
+ACP1e:   1.0 h2o_e + 1.0 fmn_e --> 1.0 ribflv_e + 1.0 pi_e
+ACPSm:   1.0 coa_m + 1.0 h2o_m --> 1.0 pan4p_m + 2.0 h_m + 1.0 pap_m
+ACRNtm:   1.0 acrn_c --> 1.0 acrn_m
+ACRNtp:   1.0 acrn_x --> 1.0 acrn_c
+ACS:   1.0 ac_c + 1.0 coa_c + 1.0 atp_c --> 1.0 accoa_c + 1.0 amp_c + 1.0 ppi_c
+ACSm:   1.0 atp_m + 1.0 ac_m + 1.0 coa_m --> 1.0 accoa_m + 1.0 ppi_m + 1.0 amp_m
+ACSp:   1.0 ac_x + 1.0 coa_x + 1.0 atp_x --> 1.0 ppi_x + 1.0 accoa_x + 1.0 amp_x
+ACt2r:   1.0 ac_e + 1.0 h_e <==> 1.0 h_c + 1.0 ac_c
+ACtm:   1.0 ac_c <==> 1.0 ac_m
+ACtp:   1.0 ac_c <==> 1.0 ac_x
+ACtr:   1.0 ac_e <==> 1.0 ac_c
+ADA:   1.0 adn_c + 1.0 h_c + 1.0 h2o_c --> 1.0 nh4_c + 1.0 ins_c
+ADCL:   1.0 4adcho_c --> 1.0 4abz_c + 1.0 pyr_c + 1.0 h_c
+ADCS:   1.0 chor_c + 1.0 gln_L_c --> 1.0 4adcho_c + 1.0 glu_L_c
+ADD:   1.0 ade_c + 1.0 h2o_c + 1.0 h_c --> 1.0 nh4_c + 1.0 hxan_c
+ADEt2:   1.0 h_e + 1.0 ade_e --> 1.0 ade_c + 1.0 h_c
+ADEtm:   1.0 ade_c <==> 1.0 ade_m
+ADHAPR_SC:   1.0 nadph_c + 1.0 h_c + 0.01 1agly3p_SC_c --> 0.01 1ag3p_SC_c + 1.0 nadp_c
+ADK1:   1.0 amp_c + 1.0 atp_c <==> 2.0 adp_c
+ADK1m:   1.0 amp_m + 1.0 atp_m <==> 2.0 adp_m
+ADK3:   1.0 amp_c + 1.0 gtp_c --> 1.0 gdp_c + 1.0 adp_c
+ADK3m:   1.0 amp_m + 1.0 gtp_m <==> 1.0 adp_m + 1.0 gdp_m
+ADK4:   1.0 amp_c + 1.0 itp_c --> 1.0 adp_c + 1.0 idp_c
+ADK4m:   1.0 amp_m + 1.0 itp_m <==> 1.0 adp_m + 1.0 idp_m
+ADMDC:   1.0 amet_c + 1.0 h_c --> 1.0 ametam_c + 1.0 co2_c
+ADNCYC:   1.0 atp_c --> 1.0 ppi_c + 1.0 camp_c
+ADNK1:   1.0 adn_c + 1.0 atp_c --> 1.0 amp_c + 1.0 h_c + 1.0 adp_c
+ADNUC:   1.0 adn_c + 1.0 h2o_c --> 1.0 ade_c + 1.0 rib_D_c
+ADNt2:   1.0 adn_e + 1.0 h_e --> 1.0 h_c + 1.0 adn_c
+ADPT:   1.0 ade_c + 1.0 prpp_c <==> 1.0 amp_c + 1.0 ppi_c
+ADSK:   1.0 atp_c + 1.0 aps_c --> 1.0 adp_c + 1.0 paps_c + 1.0 h_c
+ADSL1r:   1.0 dcamp_c <==> 1.0 amp_c + 1.0 fum_c
+ADSL2r:   1.0 25aics_c <==> 1.0 aicar_c + 1.0 fum_c
+ADSS:   1.0 imp_c + 1.0 asp_L_c + 1.0 gtp_c --> 1.0 pi_c + 2.0 h_c + 1.0 dcamp_c + 1.0 gdp_c
+AGAT_SC:   0.02 dcacoa_c + 0.27 pmtcoa_c + 0.01 1ag3p_SC_c + 0.09 ocdycacoa_c + 0.06 ddcacoa_c + 0.17 hdcoa_c + 0.1 tdcoa_c + 0.24 odecoa_c + 0.05 stcoa_c --> 1.0 coa_c + 0.01 pa_SC_c
+AGPRim:   1.0 h_m + 1.0 nadph_m + 1.0 acg5p_m --> 1.0 acg5sa_m + 1.0 nadp_m + 1.0 pi_m
+AGTi:   1.0 glx_c + 1.0 ala_L_c --> 1.0 gly_c + 1.0 pyr_c
+AHCYStm:   1.0 ahcys_c <==> 1.0 ahcys_m
+AHCi:   1.0 ahcys_c + 1.0 h2o_c --> 1.0 hcys_L_c + 1.0 adn_c
+AHMMPS:   1.0 air_c + 2.0 h_c --> 1.0 pi_c + 1.0 4ahmmp_c + 1.0 gcald_c
+AHSERL:   1.0 achms_c + 1.0 ch4s_c --> 1.0 ac_c + 1.0 h_c + 1.0 met_L_c
+AHSERL2:   1.0 achms_c + 1.0 h2s_c --> 1.0 hcys_L_c + 1.0 ac_c + 1.0 h_c
+AICART:   1.0 aicar_c + 1.0 10fthf_c <==> 1.0 fprica_c + 1.0 thf_c
+AIRCr:   1.0 air_c + 1.0 co2_c <==> 1.0 h_c + 1.0 5aizc_c
+AKGDam:   1.0 lpam_m + 1.0 h_m + 1.0 akg_m <==> 1.0 co2_m + 1.0 sdhlam_m
+AKGDbm:   1.0 sdhlam_m + 1.0 coa_m --> 1.0 succoa_m + 1.0 dhlam_m
+AKGMAL:   1.0 akg_c + 1.0 mal_L_e --> 1.0 mal_L_c + 1.0 akg_e
+AKGt2n:   1.0 h_c + 1.0 akg_c <==> 1.0 akg_n + 1.0 h_n
+AKGt2r:   1.0 akg_e + 1.0 h_e <==> 1.0 akg_c + 1.0 h_c
+AKGtm:   1.0 cit_m + 1.0 akg_c --> 1.0 akg_m + 1.0 cit_c
+AKGtp:   1.0 akg_c <==> 1.0 akg_x
+AKP1:   1.0 ahdt_c + 3.0 h2o_c --> 3.0 pi_c + 1.0 dhnpt_c + 2.0 h_c
+ALASm:   1.0 h_m + 1.0 gly_m + 1.0 succoa_m --> 1.0 coa_m + 1.0 5aop_m + 1.0 co2_m
+ALATA_L:   1.0 akg_c + 1.0 ala_L_c <==> 1.0 glu_L_c + 1.0 pyr_c
+ALATA_Lm:   1.0 ala_L_m + 1.0 akg_m <==> 1.0 glu_L_m + 1.0 pyr_m
+ALATRS:   1.0 atp_c + 1.0 trnaala_c + 1.0 ala_L_c --> 1.0 amp_c + 1.0 alatrna_c + 1.0 ppi_c
+ALAt2r:   1.0 ala_L_e + 1.0 h_e <==> 1.0 h_c + 1.0 ala_L_c
+ALAtmi:   1.0 ala_L_m --> 1.0 ala_L_c
+ALCD19y:   1.0 glyald_c + 1.0 h_c + 1.0 nadph_c --> 1.0 nadp_c + 1.0 glyc_c
+ALCD22xi:   1.0 h_c + 1.0 nadh_c + 1.0 2mbald_c --> 1.0 nad_c + 1.0 2mbtoh_c
+ALCD22xim:   1.0 h_m + 1.0 nadh_m + 1.0 2mbald_m --> 1.0 2mbtoh_m + 1.0 nad_m
+ALCD22yi:   1.0 2mbald_c + 1.0 nadph_c + 1.0 h_c --> 1.0 nadp_c + 1.0 2mbtoh_c
+ALCD23xi:   1.0 2mppal_c + 1.0 h_c + 1.0 nadh_c --> 1.0 ibutoh_c + 1.0 nad_c
+ALCD23xim:   1.0 nadh_m + 1.0 2mppal_m + 1.0 h_m --> 1.0 ibutoh_m + 1.0 nad_m
+ALCD23yi:   1.0 2mppal_c + 1.0 nadph_c + 1.0 h_c --> 1.0 ibutoh_c + 1.0 nadp_c
+ALCD24xi:   1.0 h_c + 1.0 3mbald_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 iamoh_c
+ALCD24xim:   1.0 nadh_m + 1.0 3mbald_m + 1.0 h_m --> 1.0 iamoh_m + 1.0 nad_m
+ALCD24yi:   1.0 h_c + 1.0 nadph_c + 1.0 3mbald_c --> 1.0 iamoh_c + 1.0 nadp_c
+ALCD25xi:   1.0 h_c + 1.0 pacald_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 2phetoh_c
+ALCD25xim:   1.0 nadh_m + 1.0 pacald_m + 1.0 h_m --> 1.0 2phetoh_m + 1.0 nad_m
+ALCD25yi:   1.0 nadph_c + 1.0 pacald_c + 1.0 h_c --> 1.0 nadp_c + 1.0 2phetoh_c
+ALCD26xi:   1.0 id3acald_c + 1.0 nadh_c + 1.0 h_c --> 1.0 nad_c + 1.0 ind3eth_c
+ALCD26xim:   1.0 nadh_m + 1.0 h_m + 1.0 id3acald_m --> 1.0 ind3eth_m + 1.0 nad_m
+ALCD2if:   1.0 nad_c + 1.0 etoh_c --> 1.0 acald_c + 1.0 nadh_c + 1.0 h_c
+ALCD2ir:   1.0 h_c + 1.0 acald_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 etoh_c
+ALCD2irm:   1.0 acald_m + 1.0 nadh_m + 1.0 h_m --> 1.0 nad_m + 1.0 etoh_m
+ALCD2x:   1.0 nad_c + 1.0 etoh_c <==> 1.0 acald_c + 1.0 nadh_c + 1.0 h_c
+ALDD19x:   1.0 nad_c + 1.0 h2o_c + 1.0 pacald_c --> 1.0 pac_c + 2.0 h_c + 1.0 nadh_c
+ALDD20xm:   1.0 nad_m + 1.0 h2o_m + 1.0 id3acald_m --> 1.0 ind3ac_m + 1.0 nadh_m + 2.0 h_m
+ALDD20y:   1.0 nadp_c + 1.0 h2o_c + 1.0 id3acald_c --> 1.0 ind3ac_c + 1.0 nadph_c + 2.0 h_c
+ALDD20ym:   1.0 nadp_m + 1.0 h2o_m + 1.0 id3acald_m --> 2.0 h_m + 1.0 nadph_m + 1.0 ind3ac_m
+ALDD22x:   1.0 nad_c + 1.0 aproa_c + 1.0 h2o_c --> 2.0 h_c + 1.0 ala_B_c + 1.0 nadh_c
+ALDD2xm:   1.0 acald_m + 1.0 nad_m + 1.0 h2o_m --> 1.0 ac_m + 1.0 nadh_m + 2.0 h_m
+ALDD2y:   1.0 h2o_c + 1.0 acald_c + 1.0 nadp_c --> 1.0 ac_c + 2.0 h_c + 1.0 nadph_c
+ALDD2ym:   1.0 acald_m + 1.0 nadp_m + 1.0 h2o_m --> 2.0 h_m + 1.0 ac_m + 1.0 nadph_m
+ALLTAHr:   1.0 h2o_c + 1.0 alltt_c <==> 1.0 urdglyc_c + 1.0 urea_c
+ALLTNr:   1.0 h2o_c + 1.0 alltn_c <==> 1.0 h_c + 1.0 alltt_c
+ALLTNti:   1.0 alltn_e --> 1.0 alltn_c
+ALLTTti:   1.0 alltt_e --> 1.0 alltt_c
+ALPHNH:   3.0 h_c + 1.0 h2o_c + 1.0 allphn_c --> 2.0 nh4_c + 2.0 co2_c
+AMAOTr:   1.0 amet_c + 1.0 8aonn_c <==> 1.0 amob_c + 1.0 dann_c
+AMETt2:   1.0 h_e + 1.0 amet_e --> 1.0 amet_c + 1.0 h_c
+AMETtm:   1.0 amet_c <==> 1.0 amet_m
+AMID:   1.0 h2o_c + 1.0 4gudbd_c --> 1.0 nh4_c + 1.0 4gudbutn_c
+AMID2:   1.0 pad_c + 1.0 h2o_c --> 1.0 pac_c + 1.0 nh4_c
+AMID3:   1.0 iad_c + 1.0 h2o_c --> 1.0 ind3ac_c + 1.0 nh4_c
+AMPDA:   1.0 h_c + 1.0 h2o_c + 1.0 amp_c --> 1.0 nh4_c + 1.0 imp_c
+AMPN:   1.0 h2o_c + 1.0 amp_c --> 1.0 ade_c + 1.0 r5p_c
+AMPtn:   1.0 amp_n <==> 1.0 amp_c
+ANPRT:   1.0 anth_c + 1.0 prpp_c --> 1.0 ppi_c + 1.0 pran_c
+ANS:   1.0 chor_c + 1.0 gln_L_c --> 1.0 pyr_c + 1.0 glu_L_c + 1.0 h_c + 1.0 anth_c
+AOBUTDs:   1.0 h_c + 1.0 2aobut_c --> 1.0 aact_c + 1.0 co2_c
+AP4AHr:   1.0 h2o_c + 1.0 ap4a_c <==> 2.0 adp_c + 2.0 h_c
+APRTO2:   1.0 aprut_c + 1.0 h2o_c + 1.0 o2_c --> 1.0 n4abutn_c + 1.0 h2o2_c + 1.0 nh4_c
+ARAB14LO:   1.0 Dara14lac_c + 1.0 o2_c <==> 1.0 h2o2_c + 1.0 ertascb_D_c
+ARAB1D2:   1.0 arab_D_c + 1.0 nadp_c --> 1.0 Dara14lac_c + 1.0 h_c + 1.0 nadph_c
+ARABR:   1.0 arab_L_c + 1.0 nadph_c + 1.0 h_c --> 1.0 abt_c + 1.0 nadp_c
+ARAB_Dt:   1.0 arab_D_e <==> 1.0 arab_D_c
+ARAB_Lt:   1.0 arab_L_e <==> 1.0 arab_L_c
+ARGN:   1.0 arg_L_c + 1.0 h2o_c --> 1.0 urea_c + 1.0 orn_c
+ARGSL:   1.0 argsuc_c <==> 1.0 fum_c + 1.0 arg_L_c
+ARGSSr:   1.0 atp_c + 1.0 citr_L_c + 1.0 asp_L_c <==> 1.0 amp_c + 1.0 h_c + 1.0 argsuc_c + 1.0 ppi_c
+ARGTRS:   1.0 atp_c + 1.0 arg_L_c + 1.0 trnaarg_c --> 1.0 amp_c + 1.0 argtrna_c + 1.0 ppi_c
+ARGTRSm:   1.0 trnaarg_m + 1.0 atp_m + 1.0 arg_L_m --> 1.0 argtrna_m + 1.0 ppi_m + 1.0 amp_m
+ARGt2m:   1.0 h_c + 1.0 arg_L_c <==> 1.0 arg_L_m + 1.0 h_m
+ARGt2r:   1.0 arg_L_e + 1.0 h_e <==> 1.0 arg_L_c + 1.0 h_c
+ARGt6:   1.0 h_v + 1.0 arg_L_c --> 1.0 arg_L_v + 1.0 h_c
+ARMT:   1.0 his_L_c + 1.0 amet_c --> 1.0 ahcys_c + 1.0 h_c + 1.0 NPmehis_c
+ASADi:   1.0 4pasp_c + 1.0 h_c + 1.0 nadph_c --> 1.0 nadp_c + 1.0 pi_c + 1.0 aspsa_c
+ASNN:   1.0 asn_L_c + 1.0 h2o_c --> 1.0 nh4_c + 1.0 asp_L_c
+ASNNe:   1.0 asn_L_e + 1.0 h2o_e --> 1.0 asp_L_e + 1.0 nh4_e
+ASNS1:   1.0 atp_c + 1.0 h2o_c + 1.0 gln_L_c + 1.0 asp_L_c --> 1.0 amp_c + 1.0 ppi_c + 1.0 glu_L_c + 1.0 h_c + 1.0 asn_L_c
+ASNTRS:   1.0 trnaasn_c + 1.0 atp_c + 1.0 asn_L_c --> 1.0 amp_c + 1.0 asntrna_c + 1.0 ppi_c
+ASNTRSm:   1.0 asn_L_m + 1.0 atp_m + 1.0 trnaasn_m --> 1.0 ppi_m + 1.0 amp_m + 1.0 asntrna_m
+ASNt2m:   1.0 asn_L_c + 1.0 h_c <==> 1.0 h_m + 1.0 asn_L_m
+ASNt2r:   1.0 asn_L_e + 1.0 h_e <==> 1.0 h_c + 1.0 asn_L_c
+ASNt6:   1.0 h_v + 1.0 asn_L_c --> 1.0 asn_L_v + 1.0 h_c
+ASNt7:   1.0 h_v + 1.0 asn_L_v --> 1.0 asn_L_c + 1.0 h_c
+ASPCT:   1.0 asp_L_c + 1.0 cbp_c --> 1.0 pi_c + 1.0 cbasp_c + 1.0 h_c
+ASPGLU2m:   1.0 glu_L_c + 1.0 asp_L_m --> 1.0 glu_L_m + 1.0 asp_L_c
+ASPGLUtp:   1.0 asp_L_c + 1.0 glu_L_x <==> 1.0 glu_L_c + 1.0 asp_L_x
+ASPKi:   1.0 atp_c + 1.0 asp_L_c --> 1.0 4pasp_c + 1.0 adp_c
+ASPOcm:   1.0 asp_L_c + 1.0 fad_m --> 1.0 iasp_c + 1.0 fadh2_m + 1.0 h_c
+ASPTA:   1.0 akg_c + 1.0 asp_L_c <==> 1.0 glu_L_c + 1.0 oaa_c
+ASPTAm:   1.0 akg_m + 1.0 asp_L_m --> 1.0 glu_L_m + 1.0 oaa_m
+ASPTAp:   1.0 asp_L_x + 1.0 akg_x <==> 1.0 glu_L_x + 1.0 oaa_x
+ASPTRS:   1.0 atp_c + 1.0 asp_L_c + 1.0 trnaasp_c --> 1.0 amp_c + 1.0 asptrna_c + 1.0 ppi_c
+ASPTRSm:   1.0 asp_L_m + 1.0 atp_m + 1.0 trnaasp_m --> 1.0 ppi_m + 1.0 amp_m + 1.0 asptrna_m
+ASPt2m:   1.0 h_c + 1.0 asp_L_c <==> 1.0 h_m + 1.0 asp_L_m
+ASPt2n:   1.0 h_c + 1.0 asp_L_c <==> 1.0 asp_L_n + 1.0 h_n
+ASPt2r:   1.0 asp_L_e + 1.0 h_e <==> 1.0 asp_L_c + 1.0 h_c
+ASPt5n:   1.0 asp_L_n --> 1.0 asp_L_c
+ASPt7:   1.0 h_v + 1.0 asp_L_v --> 1.0 h_c + 1.0 asp_L_c
+ATHRDHr:   1.0 nadp_c + 1.0 athr_L_c <==> 1.0 nadph_c + 1.0 2aobut_c + 1.0 h_c
+ATP2tp_H:   1.0 atp_c + 1.0 amp_x + 1.0 h_x --> 1.0 amp_c + 1.0 h_c + 1.0 atp_x
+ATPATF1:   1.0 adp_c + 1.0 h_c + 1.0 atp_c --> 1.0 pi_c + 1.0 ap4a_c
+ATPATF2:   1.0 adp_c + 1.0 gtp_c + 1.0 h_c --> 1.0 ap4g_c + 1.0 pi_c
+ATPATF3:   1.0 h_c + 1.0 gtp_c + 1.0 gdp_c --> 1.0 gp4g_c + 1.0 pi_c
+ATPH1:   2.0 h2o_c + 1.0 atp_c --> 2.0 pi_c + 2.0 h_c + 1.0 amp_c
+ATPM:   1.0 atp_c + 1.0 h2o_c --> 1.0 adp_c + 1.0 pi_c + 1.0 h_c
+ATPPRT:   1.0 prpp_c + 1.0 atp_c --> 1.0 ppi_c + 1.0 prbatp_c
+ATPS:   1.0 atp_c + 1.0 h2o_c --> 1.0 adp_c + 1.0 pi_c + 1.0 h_e
+ATPS3g:   1.0 adp_g + 1.0 pi_g + 3.0 h_c --> 1.0 atp_g + 1.0 h2o_g + 2.0 h_g
+ATPS3m:   3.0 h_c + 1.0 adp_m + 1.0 pi_m --> 2.0 h_m + 1.0 atp_m + 1.0 h2o_m
+ATPS3v:   1.0 adp_v + 1.0 pi_v + 3.0 h_c --> 1.0 h2o_v + 2.0 h_v + 1.0 atp_v
+ATPtm_H:   1.0 atp_m + 1.0 adp_c + 1.0 h_c --> 1.0 atp_c + 1.0 adp_m + 1.0 h_m
+ATPtp_H:   1.0 atp_c + 1.0 adp_x + 1.0 h_x --> 1.0 adp_c + 1.0 h_c + 1.0 atp_x
+BACCL:   1.0 atp_c + 1.0 btn_c + 1.0 h_c --> 1.0 btamp_c + 1.0 ppi_c
+BPNT:   1.0 h2o_c + 1.0 pap_c --> 1.0 pi_c + 1.0 amp_c
+BTDD_RR:   1.0 nad_c + 1.0 btd_RR_c <==> 1.0 h_c + 1.0 nadh_c + 1.0 actn_R_c
+BTDt_RR:   1.0 btd_RR_c <==> 1.0 btd_RR_e
+BTNt2i:   1.0 btn_e + 1.0 h_e --> 1.0 h_c + 1.0 btn_c
+BTSr:   1.0 s_c + 1.0 dtbt_c <==> 1.0 btn_c + 2.0 h_c
+C14STR:   1.0 44mctr_c + 1.0 h_c + 1.0 nadph_c --> 1.0 nadp_c + 1.0 44mzym_c
+C22STDS:   1.0 ergtrol_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 1.0 ergtetrol_c + 2.0 h2o_c
+C22STDSx:   1.0 ergtrol_c + 1.0 h_c + 1.0 o2_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 ergtetrol_c + 2.0 h2o_c
+C24STRer:   1.0 ergtetrol_r + 1.0 h_r + 1.0 nadph_r --> 1.0 ergst_r + 1.0 nadp_r
+C3STDH1:   1.0 nad_c + 1.0 4mzym_int1_c --> 1.0 co2_c + 1.0 4mzym_int2_c + 1.0 h_c + 1.0 nadh_c
+C3STDH2:   1.0 nad_c + 1.0 zym_int1_c --> 1.0 zym_int2_c + 1.0 co2_c + 1.0 nadh_c + 1.0 h_c
+C3STKR1:   1.0 4mzym_int2_c + 1.0 nadph_c + 1.0 h_c --> 1.0 4mzym_c + 1.0 nadp_c
+C3STKR2:   1.0 nadph_c + 1.0 h_c + 1.0 zym_int2_c --> 1.0 nadp_c + 1.0 zymst_c
+C4STMO1:   1.0 44mzym_c + 3.0 h_c + 3.0 nadph_c + 3.0 o2_c --> 1.0 4mzym_int1_c + 4.0 h2o_c + 3.0 nadp_c
+C4STMO2:   1.0 4mzym_c + 3.0 o2_c + 3.0 h_c + 3.0 nadph_c --> 4.0 h2o_c + 1.0 zym_int1_c + 3.0 nadp_c
+C5STDS:   1.0 o2_c + 1.0 h_c + 1.0 nadph_c + 1.0 epist_c --> 1.0 nadp_c + 2.0 h2o_c + 1.0 ergtrol_c
+C8STI:   1.0 fecost_c --> 1.0 epist_c
+CAT:   2.0 h2o2_c --> 1.0 o2_c + 2.0 h2o_c
+CATp:   2.0 h2o2_x --> 2.0 h2o_x + 1.0 o2_x
+CBASPtn:   1.0 cbasp_n <==> 1.0 cbasp_c
+CBPS:   1.0 hco3_c + 2.0 atp_c + 1.0 h2o_c + 1.0 gln_L_c --> 2.0 adp_c + 1.0 pi_c + 1.0 cbp_c + 1.0 glu_L_c + 2.0 h_c
+CBPtn:   1.0 cbp_c <==> 1.0 cbp_n
+CCP2m:   2.0 focytc_m + 1.0 h2o2_m --> 2.0 h2o_m + 2.0 ficytc_m
+CDPDGPm_SC:   1.0 glyc3p_m + 0.01 cdpdag_SC_m <==> 0.01 pgp_SC_m + 1.0 cmp_m + 1.0 h_m
+CDPtn:   1.0 cdp_c <==> 1.0 cdp_n
+CER1_24ter:   1.0 cer1_24_c <==> 1.0 cer1_24_r
+CER1_26ter:   1.0 cer1_26_c <==> 1.0 cer1_26_r
+CER2_24ter:   1.0 cer2_24_c <==> 1.0 cer2_24_r
+CER2_26ter:   1.0 cer2_26_c <==> 1.0 cer2_26_r
+CERASE124er:   1.0 coa_r + 1.0 h_r + 1.0 cer1_24_r <==> 1.0 sphgn_r + 1.0 ttccoa_r
+CERASE126er:   1.0 coa_r + 1.0 h_r + 1.0 cer1_26_r <==> 1.0 hexccoa_r + 1.0 sphgn_r
+CERASE224er:   1.0 coa_r + 1.0 h_r + 1.0 cer2_24_r <==> 1.0 ttccoa_r + 1.0 psphings_r
+CERASE226er:   1.0 coa_r + 1.0 h_r + 1.0 cer2_26_r <==> 1.0 hexccoa_r + 1.0 psphings_r
+CERH124:   1.0 cer1_24_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 cer2_24_c
+CERH126:   1.0 cer1_26_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 cer2_26_c + 1.0 nadp_c + 1.0 h2o_c
+CERS124:   1.0 ttccoa_c + 1.0 sphgn_c --> 1.0 coa_c + 1.0 h_c + 1.0 cer1_24_c
+CERS124er:   1.0 sphgn_r + 1.0 ttccoa_r --> 1.0 coa_r + 1.0 h_r + 1.0 cer1_24_r
+CERS126:   1.0 sphgn_c + 1.0 hexccoa_c --> 1.0 coa_c + 1.0 h_c + 1.0 cer1_26_c
+CERS126er:   1.0 sphgn_r + 1.0 hexccoa_r --> 1.0 coa_r + 1.0 h_r + 1.0 cer1_26_r
+CERS224:   1.0 psphings_c + 1.0 ttccoa_c --> 1.0 coa_c + 1.0 h_c + 1.0 cer2_24_c
+CERS224er:   1.0 ttccoa_r + 1.0 psphings_r --> 1.0 coa_r + 1.0 cer2_24_r + 1.0 h_r
+CERS226:   1.0 psphings_c + 1.0 hexccoa_c --> 1.0 cer2_26_c + 1.0 h_c + 1.0 coa_c
+CERS226er:   1.0 hexccoa_r + 1.0 psphings_r --> 1.0 coa_r + 1.0 cer2_26_r + 1.0 h_r
+CERS2_24:   1.0 cer1_24_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 cer2__24_c
+CERS2_26:   1.0 cer1_26_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 cer2__26_c
+CERS324:   1.0 h_c + 1.0 cer2_24_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 cer3_24_c
+CERS326:   1.0 cer2_26_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 cer3_26_c
+CHLPCTD:   1.0 h_c + 1.0 cholp_c + 1.0 ctp_c --> 1.0 cdpchol_c + 1.0 ppi_c
+CHLSTI:   1.0 zymst_c + 1.0 amet_c + 1.0 o2_c --> 1.0 ergtetrol_c + 2.0 h2o_c + 1.0 ahcys_c + 1.0 h_c
+CHLt2:   1.0 chol_e + 1.0 h_e --> 1.0 chol_c + 1.0 h_c
+CHOLK:   1.0 chol_c + 1.0 atp_c --> 1.0 adp_c + 1.0 cholp_c + 1.0 h_c
+CHORM:   1.0 chor_c --> 1.0 pphn_c
+CHORS:   1.0 3psme_c --> 1.0 chor_c + 1.0 pi_c
+CHRPL:   1.0 chor_c --> 1.0 pyr_c + 1.0 4hbz_c
+CHTNDA:   1.0 chitin_c + 1.0 h2o_c --> 1.0 chitos_c + 1.0 ac_c + 1.0 h_c
+CHTNS:   1.0 chitin_ring_c + 1.0 chitin_septum_c --> 1.0 chitin_c
+CHTNSbs:   1.0 udpacgal_c --> 1.0 chitin_birthScar_c + 1.0 h_c + 1.0 udp_c
+CHTNSrg:   1.0 udpacgal_c --> 1.0 chitin_ring_c + 1.0 h_c + 1.0 udp_c
+CHTNSsp:   1.0 udpacgal_c --> 1.0 chitin_septum_c + 1.0 h_c + 1.0 udp_c
+CITt2r:   1.0 cit_e + 1.0 h_e <==> 1.0 h_c + 1.0 cit_c
+CITtam:   1.0 cit_c + 1.0 mal_L_m <==> 1.0 cit_m + 1.0 mal_L_c
+CITtap:   1.0 cit_x + 1.0 mal_L_c <==> 1.0 cit_c + 1.0 mal_L_x
+CITtbm:   1.0 pep_m + 1.0 cit_c <==> 1.0 cit_m + 1.0 pep_c
+CITtcm:   1.0 cit_c + 1.0 icit_m <==> 1.0 icit_c + 1.0 cit_m
+CITtcp:   1.0 cit_c + 1.0 icit_x <==> 1.0 cit_x + 1.0 icit_c
+CLPNSm_SC:   0.01 cdpdag_SC_m + 0.01 pg_SC_m --> 1.0 h_m + 1.0 cmp_m + 0.01 clpn_SC_m
+CMPN:   1.0 cmp_c + 1.0 h2o_c --> 1.0 r5p_c + 1.0 csn_c
+CO2t:   1.0 co2_e <==> 1.0 co2_c
+CO2tg:   1.0 co2_c <==> 1.0 co2_g
+CO2tm:   1.0 co2_c <==> 1.0 co2_m
+CO2tn:   1.0 co2_n <==> 1.0 co2_c
+CO2tp:   1.0 co2_c <==> 1.0 co2_x
+CO2tv:   1.0 co2_c <==> 1.0 co2_v
+COAHLp:   1.0 h2o_x + 1.0 coa_x --> 1.0 pan4p_x + 1.0 pap_x + 2.0 h_x
+COAtim:   1.0 coa_c --> 1.0 coa_m
+COAtn:   1.0 coa_c <==> 1.0 coa_n
+COUCOAFm:   1.0 atp_m + 1.0 coa_m + 1.0 T4hcinnm_m --> 1.0 ppi_m + 1.0 amp_m + 1.0 coucoa_m
+CPPPGO:   1.0 cpppg3_c + 2.0 h_c + 1.0 o2_c --> 1.0 pppg9_c + 2.0 h2o_c + 2.0 co2_c
+CRNCARtm:   1.0 acrn_c + 1.0 crn_m --> 1.0 acrn_m + 1.0 crn_c
+CRNCARtp:   1.0 acrn_x + 1.0 crn_c --> 1.0 acrn_c + 1.0 crn_x
+CRNt:   1.0 crn_e <==> 1.0 crn_c
+CRNtim:   1.0 crn_m --> 1.0 crn_c
+CRNtp:   1.0 crn_c --> 1.0 crn_x
+CSNATm:   1.0 coa_m + 1.0 acrn_m <==> 1.0 accoa_m + 1.0 crn_m
+CSNATp:   1.0 accoa_x + 1.0 crn_x <==> 1.0 coa_x + 1.0 acrn_x
+CSNATr:   1.0 accoa_c + 1.0 crn_c <==> 1.0 acrn_c + 1.0 coa_c
+CSND:   1.0 csn_c + 1.0 h2o_c + 1.0 h_c --> 1.0 nh4_c + 1.0 ura_c
+CSNt2:   1.0 h_e + 1.0 csn_e --> 1.0 h_c + 1.0 csn_c
+CSm:   1.0 accoa_m + 1.0 h2o_m + 1.0 oaa_m --> 1.0 h_m + 1.0 cit_m + 1.0 coa_m
+CSp:   1.0 h2o_x + 1.0 accoa_x + 1.0 oaa_x --> 1.0 cit_x + 1.0 h_x + 1.0 coa_x
+CTPS1:   1.0 atp_c + 1.0 nh4_c + 1.0 utp_c --> 1.0 adp_c + 1.0 pi_c + 2.0 h_c + 1.0 ctp_c
+CTPS2:   1.0 atp_c + 1.0 h2o_c + 1.0 utp_c + 1.0 gln_L_c --> 1.0 glu_L_c + 1.0 pi_c + 1.0 adp_c + 1.0 ctp_c + 2.0 h_c
+CTPtm:   2.0 h_c + 1.0 ctp_c + 1.0 cmp_m --> 1.0 cmp_c + 2.0 h_m + 1.0 ctp_m
+CYOOm:   6.0 h_m + 1.0 o2_m + 4.0 focytc_m --> 6.0 h_c + 2.0 h2o_m + 4.0 ficytc_m
+CYOR_u6m:   1.0 q6h2_m + 1.5 h_m + 2.0 ficytc_m --> 2.0 focytc_m + 1.5 h_c + 1.0 q6_m
+CYSTGL:   1.0 cyst_L_c + 1.0 h2o_c --> 1.0 nh4_c + 1.0 cys_L_c + 1.0 2obut_c
+CYSTL:   1.0 cyst_L_c + 1.0 h2o_c --> 1.0 nh4_c + 1.0 pyr_c + 1.0 hcys_L_c
+CYSTLp:   1.0 h2o_x + 1.0 cyst_L_x --> 1.0 pyr_x + 1.0 nh4_x + 1.0 hcys_L_x
+CYSTRS:   1.0 atp_c + 1.0 cys_L_c + 1.0 trnacys_c --> 1.0 amp_c + 1.0 cystrna_c + 1.0 ppi_c
+CYSTS:   1.0 ser_L_c + 1.0 hcys_L_c --> 1.0 cyst_L_c + 1.0 h2o_c
+CYSTtp:   1.0 cyst_L_c <==> 1.0 cyst_L_x
+CYSt2r:   1.0 h_e + 1.0 cys_L_e <==> 1.0 cys_L_c + 1.0 h_c
+CYTD:   1.0 h_c + 1.0 h2o_c + 1.0 cytd_c --> 1.0 nh4_c + 1.0 uri_c
+CYTDK2:   1.0 gtp_c + 1.0 cytd_c --> 1.0 cmp_c + 1.0 h_c + 1.0 gdp_c
+CYTDt2:   1.0 cytd_e + 1.0 h_e --> 1.0 h_c + 1.0 cytd_c
+CYTK1:   1.0 cmp_c + 1.0 atp_c <==> 1.0 cdp_c + 1.0 adp_c
+CYTK2:   1.0 atp_c + 1.0 dcmp_c --> 1.0 adp_c + 1.0 dcdp_c
+DADA:   1.0 h_c + 1.0 h2o_c + 1.0 dad_2_c --> 1.0 nh4_c + 1.0 din_c
+DADK:   1.0 damp_c + 1.0 atp_c <==> 1.0 dadp_c + 1.0 adp_c
+DADNt2:   1.0 dad_2_e + 1.0 h_e --> 1.0 h_c + 1.0 dad_2_c
+DADPtn:   1.0 dadp_c <==> 1.0 dadp_n
+DAGCPT_SC:   1.0 cdpchol_c + 0.01 12dgr_SC_c --> 1.0 h_c + 0.01 pc_SC_c + 1.0 cmp_c
+DAGPYP_SC:   0.01 pa_SC_c + 1.0 h2o_c --> 1.0 pi_c + 0.01 12dgr_SC_c
+DANNt2:   1.0 dann_e + 1.0 h_e <==> 1.0 dann_c + 1.0 h_c
+DASYN_SC:   0.01 pa_SC_c + 1.0 ctp_c + 1.0 h_c <==> 0.01 cdpdag_SC_c + 1.0 ppi_c
+DASYNm_SC:   0.01 pa_SC_m + 1.0 ctp_m + 1.0 h_m <==> 0.01 cdpdag_SC_m + 1.0 ppi_m
+DB4PS:   1.0 ru5p_D_c --> 1.0 db4p_c + 1.0 h_c + 1.0 for_c
+DBTSr:   1.0 atp_c + 1.0 co2_c + 1.0 dann_c <==> 1.0 pi_c + 1.0 adp_c + 1.0 dtbt_c + 3.0 h_c
+DCDPtn:   1.0 dcdp_c <==> 1.0 dcdp_n
+DCMPDA:   1.0 dcmp_c + 1.0 h2o_c + 1.0 h_c <==> 1.0 nh4_c + 1.0 dump_c
+DCTPD:   1.0 dctp_c + 1.0 h2o_c + 1.0 h_c --> 1.0 nh4_c + 1.0 dutp_c
+DCYTD:   1.0 dcyt_c + 1.0 h2o_c + 1.0 h_c --> 1.0 nh4_c + 1.0 duri_c
+DCYTt2:   1.0 dcyt_e + 1.0 h_e --> 1.0 h_c + 1.0 dcyt_c
+DDPA:   1.0 e4p_c + 1.0 h2o_c + 1.0 pep_c --> 1.0 pi_c + 1.0 2dda7p_c
+DDPAm:   1.0 h2o_m + 1.0 e4p_m + 1.0 pep_m --> 1.0 2dda7p_m + 1.0 pi_m
+DESAT14:   1.0 tdcoa_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 2.0 h2o_c + 1.0 tdecoa_c
+DESAT16:   1.0 pmtcoa_c + 1.0 h_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 2.0 h2o_c + 1.0 hdcoa_c
+DESAT18:   1.0 o2_c + 1.0 h_c + 1.0 nadph_c + 1.0 stcoa_c --> 1.0 nadp_c + 2.0 h2o_c + 1.0 odecoa_c
+DESAT18_2:   1.0 h_c + 1.0 odecoa_c + 1.0 nadph_c + 1.0 o2_c --> 1.0 nadp_c + 2.0 h2o_c + 1.0 ocdycacoa_c
+DGDPtn:   1.0 dgdp_c <==> 1.0 dgdp_n
+DGGH:   1.0 6dg_c + 1.0 h2o_c --> 1.0 gal_c + 1.0 glc_D_c
+DGK1:   1.0 dgmp_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 dgdp_c
+DGSNt2:   1.0 h_e + 1.0 dgsn_e --> 1.0 dgsn_c + 1.0 h_c
+DHAD1m:   1.0 23dhmb_m --> 1.0 h2o_m + 1.0 3mob_m
+DHAD2m:   1.0 23dhmp_m --> 1.0 3mop_m + 1.0 h2o_m
+DHAK:   1.0 atp_c + 1.0 dha_c --> 1.0 adp_c + 1.0 dhap_c + 1.0 h_c
+DHAPtm:   1.0 dhap_m --> 1.0 dhap_c
+DHFRi:   1.0 dhf_c + 1.0 h_c + 1.0 nadph_c --> 1.0 thf_c + 1.0 nadp_c
+DHFRim:   1.0 nadph_m + 1.0 h_m + 1.0 dhf_m --> 1.0 thf_m + 1.0 nadp_m
+DHFS:   1.0 atp_c + 1.0 glu_L_c + 1.0 dhpt_c --> 1.0 dhf_c + 1.0 adp_c + 1.0 h_c + 1.0 pi_c
+DHFtm:   1.0 dhf_c <==> 1.0 dhf_m
+DHNPAm:   1.0 dhnpt_m --> 1.0 gcald_m + 1.0 h_m + 1.0 2ahhmp_m
+DHNPTtm:   1.0 dhnpt_c <==> 1.0 dhnpt_m
+DHORD4i:   1.0 dhor_S_c + 1.0 q6_m --> 1.0 q6h2_m + 1.0 orot_c
+DHORDfum:   1.0 fum_c + 1.0 dhor_S_c --> 1.0 succ_c + 1.0 orot_c
+DHORDi:   1.0 dhor_S_c + 1.0 o2_c --> 1.0 orot_c + 1.0 h2o2_c
+DHORTS:   1.0 dhor_S_c + 1.0 h2o_c <==> 1.0 h_c + 1.0 cbasp_c
+DHPSm:   1.0 4abz_m + 1.0 2ahhmp_m --> 1.0 h2o_m + 1.0 dhpt_m
+DHPTtm:   1.0 dhpt_c <==> 1.0 dhpt_m
+DHQS:   1.0 2dda7p_c --> 1.0 3dhq_c + 1.0 pi_c
+DHQTi:   1.0 3dhq_c --> 1.0 3dhsk_c + 1.0 h2o_c
+DIAT:   1.0 sprm_c + 1.0 accoa_c --> 1.0 coa_c + 1.0 N1sprm_c + 1.0 h_c
+DINSt2:   1.0 din_e + 1.0 h_e --> 1.0 din_c + 1.0 h_c
+DIPS:   1.0 amet_c + 1.0 caphis_c --> 1.0 h_c + 1.0 ahcys_c + 1.0 cmaphis_c
+DKMPPD2:   3.0 h2o_c + 1.0 dkmpp_c --> 1.0 2kmb_c + 1.0 pi_c + 6.0 h_c + 1.0 for_c
+DMATT:   1.0 ipdp_c + 1.0 dmpp_c --> 1.0 ppi_c + 1.0 grdp_c
+DNMPPA:   1.0 h2o_c + 1.0 dhpmp_c --> 1.0 pi_c + 1.0 dhnpt_c
+DNTPPA:   1.0 ahdt_c + 1.0 h2o_c --> 1.0 h_c + 1.0 ppi_c + 1.0 dhpmp_c
+DOLK:   1.0 dolichol_c + 1.0 ctp_c --> 1.0 cdp_c + 1.0 h_c + 1.0 dolp_c
+DOLPMMer:   1.0 dolmanp_r --> 1.0 dolp_r + 1.0 h_r + 1.0 mannan_r
+DOLPMTcer:   1.0 dolp_c + 1.0 gdpmann_c --> 1.0 dolmanp_r + 1.0 gdp_c
+DOLPt2er:   1.0 dolp_c + 1.0 h_c <==> 1.0 dolp_r + 1.0 h_r
+DPCOAK:   1.0 atp_c + 1.0 dpcoa_c --> 1.0 adp_c + 1.0 coa_c + 1.0 h_c
+DPCOAKm:   1.0 dpcoa_m + 1.0 atp_m --> 1.0 adp_m + 1.0 coa_m + 1.0 h_m
+DPGM:   1.0 13dpg_c <==> 1.0 h_c + 1.0 23dpg_c
+DPMVD:   1.0 atp_c + 1.0 5dpmev_c --> 1.0 pi_c + 1.0 co2_c + 1.0 ipdp_c + 1.0 adp_c
+DPR:   1.0 h_c + 1.0 2dhp_c + 1.0 nadph_c --> 1.0 pant_R_c + 1.0 nadp_c
+DPRm:   1.0 h_m + 1.0 nadph_m + 1.0 2dhp_m --> 1.0 pant_R_m + 1.0 nadp_m
+DRBK:   1.0 drib_c + 1.0 atp_c --> 1.0 adp_c + 1.0 2dr5p_c + 1.0 h_c
+DROPPRy:   1.0 h_c + 1.0 nadph_c + 1.0 25dhpp_c --> 1.0 25dthpp_c + 1.0 nadp_c
+DRTPPD:   1.0 25dthpp_c + 1.0 h2o_c + 1.0 h_c --> 1.0 nh4_c + 1.0 5aprbu_c
+DTMPK:   1.0 atp_c + 1.0 dtmp_c <==> 1.0 adp_c + 1.0 dtdp_c
+DTTPt:   1.0 dttp_e <==> 1.0 dttp_c
+DUMPtn:   1.0 dump_c <==> 1.0 dump_n
+DURIK1:   1.0 duri_c + 1.0 atp_c --> 1.0 adp_c + 1.0 h_c + 1.0 dump_c
+DURIPP:   1.0 duri_c + 1.0 pi_c <==> 1.0 2dr1p_c + 1.0 ura_c
+DURIt2:   1.0 h_e + 1.0 duri_e --> 1.0 duri_c + 1.0 h_c
+DUTPDP:   1.0 dutp_c + 1.0 h2o_c --> 1.0 ppi_c + 1.0 dump_c + 1.0 h_c
+DXHPScm:   1.0 h2o_c + 1.0 spmd_c + 1.0 q6_m --> 1.0 q6h2_m + 1.0 4abutn_c + 1.0 13dampp_c
+D_LACDcm:   1.0 lac_D_c + 2.0 ficytc_m --> 1.0 pyr_c + 2.0 focytc_m
+D_LACDm:   1.0 lac_D_m + 2.0 ficytc_m --> 1.0 pyr_m + 2.0 focytc_m
+D_LACt2:   1.0 h_e + 1.0 lac_D_e <==> 1.0 h_c + 1.0 lac_D_c
+D_LACt2m:   1.0 lac_D_c + 1.0 pyr_m --> 1.0 pyr_c + 1.0 lac_D_m
+D_LACtm:   1.0 lac_D_c + 1.0 h_c <==> 1.0 h_m + 1.0 lac_D_m
+E4HGLUtm:   1.0 e4hglu_c <==> 1.0 e4hglu_m
+E4HGLUtp:   1.0 e4hglu_c <==> 1.0 e4hglu_x
+E4Ptm:   1.0 e4p_c <==> 1.0 e4p_m
+ECOAH11p:   1.0 h2o_x + 1.0 hxc2coa_x <==> 1.0 3hxccoa_x
+ECOAH4p:   1.0 3hdcoa_x <==> 1.0 dc2coa_x + 1.0 h2o_x
+ECOAH5p:   1.0 3hddcoa_x <==> 1.0 h2o_x + 1.0 dd2coa_x
+ECOAH6p:   1.0 3htdcoa_x <==> 1.0 h2o_x + 1.0 td2coa_x
+ECOAH7p:   1.0 3hhdcoa_x <==> 1.0 hdd2coa_x + 1.0 h2o_x
+ECOAH8p:   1.0 3hodcoa_x <==> 1.0 h2o_x + 1.0 od2coa_x
+EHGLAT:   1.0 akg_c + 1.0 e4hglu_c --> 1.0 glu_L_c + 1.0 4h2oglt_c
+EHGLATm:   1.0 e4hglu_m + 1.0 akg_m --> 1.0 4h2oglt_m + 1.0 glu_L_m
+EHGLATp:   1.0 akg_x + 1.0 e4hglu_x --> 1.0 glu_L_x + 1.0 4h2oglt_x
+ENO:   1.0 2pg_c <==> 1.0 pep_c + 1.0 h2o_c
+EPGALURSe:   1.0 h2o_e + 1.0 pectin_e --> 1.0 galur_e
+EPISTAT_SC:   0.02 pmtcoa_c + 0.655 hdcoa_c + 0.01 epist_c + 0.01 hexccoa_c + 0.015 tdcoa_c + 0.27 odecoa_c + 0.03 stcoa_c --> 0.01 epistest_SC_c + 1.0 coa_c
+EPISTESTH_SC:   0.01 epistest_SC_c + 1.0 h2o_c --> 0.655 hdcea_c + 0.03 ocdca_c + 0.27 ocdcea_c + 0.01 hexc_c + 0.01 epist_c + 0.02 hdca_c + 0.015 ttdca_c + 1.0 h_c
+EPISTESTH_SCe:   0.01 epistest_SC_e + 1.0 h2o_e --> 0.015 ttdca_e + 0.655 hdcea_e + 0.01 epist_e + 0.01 hexc_e + 0.27 ocdcea_e + 0.02 hdca_e + 0.03 ocdca_e + 1.0 h_e
+EPISTt:   1.0 epist_e <==> 1.0 epist_c
+EPMGH:   1.0 epm_c + 1.0 h2o_c <==> 1.0 gal_c + 1.0 man_c
+ERGSTAT_SC:   0.02 pmtcoa_c + 0.655 hdcoa_c + 0.01 hexccoa_c + 0.015 tdcoa_c + 0.27 odecoa_c + 0.03 stcoa_c + 0.01 ergst_c --> 0.01 ergstest_SC_c + 1.0 coa_c
+ERGSTESTH_SC:   0.01 ergstest_SC_c + 1.0 h2o_c --> 0.655 hdcea_c + 1.0 h_c + 0.27 ocdcea_c + 0.01 hexc_c + 0.02 hdca_c + 0.01 ergst_c + 0.015 ttdca_c + 0.03 ocdca_c
+ERGSTESTH_SCe:   1.0 h2o_e + 0.01 ergstest_SC_e --> 0.015 ttdca_e + 0.655 hdcea_e + 0.27 ocdcea_e + 0.01 hexc_e + 0.02 hdca_e + 0.01 ergst_e + 0.03 ocdca_e + 1.0 h_e
+ERGSTGLCT:   1.0 udpg_c + 1.0 ergst_c --> 1.0 ergst3glc_c + 1.0 h_c + 1.0 udp_c
+ERGSTt:   1.0 ergst_e <==> 1.0 ergst_c
+ERGSTter:   1.0 ergst_r <==> 1.0 ergst_c
+ERGTETROLter:   1.0 ergtetrol_c <==> 1.0 ergtetrol_r
+ETHAK:   1.0 atp_c + 1.0 etha_c --> 1.0 ethamp_c + 1.0 h_c + 1.0 adp_c
+ETHAPT_SC:   0.01 12dgr_SC_c + 1.0 cdpea_c <==> 0.01 pe_SC_c + 1.0 cmp_c + 1.0 h_c
+ETHAt:   1.0 etha_e <==> 1.0 etha_c
+ETOHt:   1.0 etoh_e <==> 1.0 etoh_c
+ETOHtm:   1.0 etoh_c <==> 1.0 etoh_m
+EX_13BDglcn_e_:   1.0 13BDglcn_e <==> 
+EX_2hb_e_:   1.0 2hb_e <==> 
+EX_2mbac_e_:   1.0 2mbac_e <==> 
+EX_2mbald_e_:   1.0 2mbald_e <==> 
+EX_2mbtoh_e_:   1.0 2mbtoh_e <==> 
+EX_2mppal_e_:   1.0 2mppal_e <==> 
+EX_2phetoh_e_:   1.0 2phetoh_e <==> 
+EX_3c3hmp_e_:   1.0 3c3hmp_e <==> 
+EX_3mbald_e_:   1.0 3mbald_e <==> 
+EX_3mop_e_:   1.0 3mop_e <==> 
+EX_4abut_e_:   1.0 4abut_e <==> 
+EX_4abz_e_:   1.0 4abz_e <==> 
+EX_5aop_e_:   1.0 5aop_e <==> 
+EX_5fthf_e_:   1.0 5fthf_e <==> 1.0 5fthf_b
+EX_8aonn_e_:   1.0 8aonn_e <==> 
+EX_Nbfortyr_e_:   1.0 Nbfortyr_e <==> 
+EX_abt_e_:   1.0 abt_e <==> 
+EX_ac_e_:   1.0 ac_e <==> 
+EX_acald_e_:   1.0 acald_e <==> 
+EX_aces_e_:   1.0 aces_e <==> 
+EX_ade_e_:   1.0 ade_e <==> 
+EX_adn_e_:   1.0 adn_e <==> 
+EX_akg_e_:   1.0 akg_e <==> 
+EX_ala_L_e_:   1.0 ala_L_e <==> 
+EX_alltn_e_:   1.0 alltn_e <==> 
+EX_alltt_e_:   1.0 alltt_e <==> 
+EX_amet_e_:   1.0 amet_e <==> 
+EX_arab_D_e_:   1.0 arab_D_e <==> 
+EX_arab_L_e_:   1.0 arab_L_e <==> 
+EX_arg_L_e_:   1.0 arg_L_e <==> 
+EX_asn_L_e_:   1.0 asn_L_e <==> 
+EX_asp_L_e_:   1.0 asp_L_e <==> 
+EX_btd_RR_e_:   1.0 btd_RR_e <==> 
+EX_btn_e_:   1.0 btn_e <==> 
+EX_chol_e_:   1.0 chol_e <==> 
+EX_cit_e_:   1.0 cit_e <==> 
+EX_co2_e_:   1.0 co2_e <==> 
+EX_crn_e_:   1.0 crn_e <==> 
+EX_csn_e_:   1.0 csn_e <==> 
+EX_cys_L_e_:   1.0 cys_L_e <==> 
+EX_cytd_e_:   1.0 cytd_e <==> 
+EX_dad_2_e_:   1.0 dad_2_e <==> 
+EX_dann_e_:   1.0 dann_e <==> 
+EX_dca_e_:   1.0 dca_e <==> 
+EX_dcyt_e_:   1.0 dcyt_e <==> 
+EX_ddca_e_:   1.0 ddca_e <==> 
+EX_dgsn_e_:   1.0 dgsn_e <==> 
+EX_din_e_:   1.0 din_e <==> 
+EX_dttp_e_:   1.0 dttp_e <==> 
+EX_duri_e_:   1.0 duri_e <==> 
+EX_epist_e_:   1.0 epist_e <==> 
+EX_epistest_SC_e_:   1.0 epistest_SC_e <==> 
+EX_ergst_e_:   1.0 ergst_e <==> 
+EX_ergstest_SC_e_:   1.0 ergstest_SC_e <==> 
+EX_etha_e_:   1.0 etha_e <==> 
+EX_etoh_e_:   1.0 etoh_e <==> 
+EX_fe2_e_:   1.0 fe2_e <==> 
+EX_fecost_e_:   1.0 fecost_e <==> 
+EX_fecostest_SC_e_:   1.0 fecostest_SC_e <==> 
+EX_fmn_e_:   1.0 fmn_e <==> 
+EX_fola_e_:   1.0 fola_e <==> 1.0 fola_b
+EX_for_e_:   1.0 for_e <==> 
+EX_fru_e_:   1.0 fru_e <==> 
+EX_fum_e_:   1.0 fum_e <==> 
+EX_g3pc_e_:   1.0 g3pc_e <==> 
+EX_g3pi_e_:   1.0 g3pi_e <==> 
+EX_gal_e_:   1.0 gal_e <==> 
+EX_galur_e_:   1.0 galur_e <==> 
+EX_gam6p_e_:   1.0 gam6p_e <==> 
+EX_gcald_e_:   1.0 gcald_e <==> 
+EX_glc_e_:   1.0 glc_D_e <==> 
+EX_gln_L_e_:   1.0 gln_L_e <==> 
+EX_glu_L_e_:   1.0 glu_L_e <==> 
+EX_glx_e_:   1.0 glx_e <==> 
+EX_gly_e_:   1.0 gly_e <==> 
+EX_glyc_e_:   1.0 glyc_e <==> 
+EX_gsn_e_:   1.0 gsn_e <==> 
+EX_gthox_e_:   1.0 gthox_e <==> 
+EX_gthrd_e_:   1.0 gthrd_e <==> 
+EX_gua_e_:   1.0 gua_e <==> 
+EX_h2o_e_:   1.0 h2o_e <==> 
+EX_h_e_:   1.0 h_e <==> 
+EX_hdca_e_:   1.0 hdca_e <==> 
+EX_hdcea_e_:   1.0 hdcea_e <==> 
+EX_hexc_e_:   1.0 hexc_e <==> 
+EX_his_L_e_:   1.0 his_L_e <==> 
+EX_hxan_e_:   1.0 hxan_e <==> 
+EX_iamac_e_:   1.0 iamac_e <==> 
+EX_iamoh_e_:   1.0 iamoh_e <==> 
+EX_ibutac_e_:   1.0 ibutac_e <==> 
+EX_ibutoh_e_:   1.0 ibutoh_e <==> 
+EX_id3acald_e_:   1.0 id3acald_e <==> 
+EX_ile_L_e_:   1.0 ile_L_e <==> 
+EX_ind3eth_e_:   1.0 ind3eth_e <==> 
+EX_inost_e_:   1.0 inost_e <==> 
+EX_ins_e_:   1.0 ins_e <==> 
+EX_k_e_:   1.0 k_e <==> 
+EX_lac_D_e_:   1.0 lac_D_e <==> 
+EX_lac_L_e_:   1.0 lac_L_e <==> 
+EX_lanost_e_:   1.0 lanost_e <==> 
+EX_lanostest_SC_e_:   1.0 lanostest_SC_e <==> 
+EX_leu_L_e_:   1.0 leu_L_e <==> 
+EX_lys_L_e_:   1.0 lys_L_e <==> 
+EX_mal_L_e_:   1.0 mal_L_e <==> 
+EX_malt_e_:   1.0 malt_e <==> 
+EX_man_e_:   1.0 man_e <==> 
+EX_melib_e_:   1.0 melib_e <==> 
+EX_met_L_e_:   1.0 met_L_e <==> 
+EX_mev_R_e_:   1.0 mev_R_e <==> 1.0 mev_R_b
+EX_mmet_e_:   1.0 mmet_e <==> 
+EX_na1_e_:   1.0 na1_e <==> 
+EX_nac_e_:   1.0 nac_e <==> 
+EX_nadp_e_:   1.0 nadp_e <==> 
+EX_nh4_e_:   1.0 nh4_e <==> 
+EX_nmn_e_:   1.0 nmn_e <==> 
+EX_o2_e_:   1.0 o2_e <==> 
+EX_oaa_e_:   1.0 oaa_e <==> 
+EX_ocdca_e_:   1.0 ocdca_e <==> 
+EX_ocdcea_e_:   1.0 ocdcea_e <==> 
+EX_ocdcya_e_:   1.0 ocdcya_e <==> 
+EX_orn_e_:   1.0 orn_e <==> 
+EX_pacald_e_:   1.0 pacald_e <==> 
+EX_pap_e_:   1.0 pap_e <==> 
+EX_pc_SC_e_:   1.0 pc_SC_e <==> 
+EX_pectin_e_:   1.0 pectin_e <==> 
+EX_pepd_e_:   1.0 pepd_e <==> 
+EX_phe_L_e_:   1.0 phe_L_e <==> 
+EX_pheac_e_:   1.0 pheac_e <==> 
+EX_pi_e_:   1.0 pi_e <==> 
+EX_pnto_R_e_:   1.0 pnto_R_e <==> 
+EX_pro_L_e_:   1.0 pro_L_e <==> 
+EX_ptd1ino_SC_e_:   1.0 ptd1ino_SC_e <==> 
+EX_ptrc_e_:   1.0 ptrc_e <==> 
+EX_pyr_e_:   1.0 pyr_e <==> 
+EX_rib_D_e_:   1.0 rib_D_e <==> 
+EX_ribflv_e_:   1.0 ribflv_e <==> 
+EX_sbt_D_e_:   1.0 sbt_D_e <==> 
+EX_sbt_L_e_:   1.0 sbt_L_e <==> 
+EX_ser_L_e_:   1.0 ser_L_e <==> 
+EX_so3_e_:   1.0 so3_e <==> 
+EX_so4_e_:   1.0 so4_e <==> 
+EX_spmd_e_:   1.0 spmd_e <==> 
+EX_sprm_e_:   1.0 sprm_e <==> 
+EX_srb_L_e_:   1.0 srb_L_e <==> 
+EX_succ_e_:   1.0 succ_e <==> 
+EX_sucr_e_:   1.0 sucr_e <==> 
+EX_taur_e_:   1.0 taur_e <==> 
+EX_thm_e_:   1.0 thm_e <==> 
+EX_thmmp_e_:   1.0 thmmp_e <==> 
+EX_thmpp_e_:   1.0 thmpp_e <==> 
+EX_thr_L_e_:   1.0 thr_L_e <==> 
+EX_thym_e_:   1.0 thym_e <==> 
+EX_thymd_e_:   1.0 thymd_e <==> 
+EX_tre_e_:   1.0 tre_e <==> 
+EX_trp_L_e_:   1.0 trp_L_e <==> 
+EX_ttdca_e_:   1.0 ttdca_e <==> 
+EX_tyr_L_e_:   1.0 tyr_L_e <==> 
+EX_ura_e_:   1.0 ura_e <==> 
+EX_urea_e_:   1.0 urea_e <==> 
+EX_uri_e_:   1.0 uri_e <==> 
+EX_val_L_e_:   1.0 val_L_e <==> 
+EX_xan_e_:   1.0 xan_e <==> 
+EX_xtsn_e_:   1.0 xtsn_e <==> 
+EX_xyl_D_e_:   1.0 xyl_D_e <==> 
+EX_xylt_e_:   1.0 xylt_e <==> 
+EX_zymst_e_:   1.0 zymst_e <==> 
+EX_zymstest_SC_e_:   1.0 zymstest_SC_e <==> 
+FA100tp:   1.0 dca_c --> 1.0 dca_x
+FA120ACPH:   1.0 ddcaACP_c + 1.0 h2o_c <==> 1.0 ACP_c + 1.0 ddca_c + 1.0 h_c
+FA120ACPtm:   1.0 ddcaACP_m --> 1.0 ddcaACP_c
+FA120tp:   1.0 ddca_c --> 1.0 ddca_x
+FA140ACPH:   1.0 myrsACP_c + 1.0 h2o_c <==> 1.0 ACP_c + 1.0 h_c + 1.0 ttdca_c
+FA140ACPtm:   1.0 myrsACP_m --> 1.0 myrsACP_c
+FA140COAabcp:   1.0 h2o_x + 1.0 tdcoa_c + 1.0 atp_x --> 1.0 adp_x + 1.0 tdcoa_x + 1.0 h_x + 1.0 pi_x
+FA140tp:   1.0 ttdca_c --> 1.0 ttdca_x
+FA141ACPH:   1.0 h2o_c + 1.0 tdeACP_c <==> 1.0 ACP_c + 1.0 ttdcea_c + 1.0 h_c
+FA141ACPtm:   1.0 tdeACP_m --> 1.0 tdeACP_c
+FA141COAabcp:   1.0 h2o_x + 1.0 tdecoa_c + 1.0 atp_x --> 1.0 adp_x + 1.0 h_x + 1.0 tdecoa_x + 1.0 pi_x
+FA141tp:   1.0 ttdcea_c --> 1.0 ttdcea_x
+FA160ACPH:   1.0 palmACP_c + 1.0 h2o_c <==> 1.0 ACP_c + 1.0 hdca_c + 1.0 h_c
+FA160ACPtm:   1.0 palmACP_m --> 1.0 palmACP_c
+FA160COAabcp:   1.0 pmtcoa_c + 1.0 h2o_x + 1.0 atp_x --> 1.0 pi_x + 1.0 pmtcoa_x + 1.0 h_x + 1.0 adp_x
+FA160tp:   1.0 hdca_c --> 1.0 hdca_x
+FA161ACPH:   1.0 h2o_c + 1.0 hdeACP_c <==> 1.0 ACP_c + 1.0 hdcea_c + 1.0 h_c
+FA161ACPtm:   1.0 hdeACP_m --> 1.0 hdeACP_c
+FA161COAabcp:   1.0 h2o_x + 1.0 hdcoa_c + 1.0 atp_x --> 1.0 pi_x + 1.0 hdcoa_x + 1.0 h_x + 1.0 adp_x
+FA161tp:   1.0 hdcea_c --> 1.0 hdcea_x
+FA180ACPH:   1.0 ocdcaACP_c + 1.0 h2o_c <==> 1.0 ACP_c + 1.0 ocdca_c + 1.0 h_c
+FA180ACPtm:   1.0 ocdcaACP_m --> 1.0 ocdcaACP_c
+FA180COAabcp:   1.0 h2o_x + 1.0 atp_x + 1.0 stcoa_c --> 1.0 adp_x + 1.0 pi_x + 1.0 h_x + 1.0 stcoa_x
+FA181ACPH:   1.0 octeACP_c + 1.0 h2o_c <==> 1.0 ACP_c + 1.0 ocdcea_c + 1.0 h_c
+FA181ACPtm:   1.0 octeACP_m --> 1.0 octeACP_c
+FA181COAabcp:   1.0 h2o_x + 1.0 atp_x + 1.0 odecoa_c --> 1.0 adp_x + 1.0 h_x + 1.0 odecoa_x + 1.0 pi_x
+FA182ACPH:   1.0 h2o_c + 1.0 ocdcyaACP_c <==> 1.0 ACP_c + 1.0 h_c + 1.0 ocdcya_c
+FA182ACPtm:   1.0 ocdcyaACP_m --> 1.0 ocdcyaACP_c
+FA182COAabcp:   1.0 h2o_x + 1.0 atp_x + 1.0 ocdycacoa_c --> 1.0 ocdycacoa_x + 1.0 adp_x + 1.0 h_x + 1.0 pi_x
+FA240tp:   1.0 ttc_c --> 1.0 ttc_x
+FA260tp:   1.0 hexc_c --> 1.0 hexc_x
+FA80tp:   1.0 octa_c --> 1.0 octa_x
+FACOAL100p:   1.0 atp_x + 1.0 coa_x + 1.0 dca_x <==> 1.0 dcacoa_x + 1.0 ppi_x + 1.0 amp_x
+FACOAL120p:   1.0 atp_x + 1.0 ddca_x + 1.0 coa_x <==> 1.0 ddcacoa_x + 1.0 ppi_x + 1.0 amp_x
+FACOAL140:   1.0 atp_c + 1.0 coa_c + 1.0 ttdca_c <==> 1.0 amp_c + 1.0 tdcoa_c + 1.0 ppi_c
+FACOAL140p:   1.0 ttdca_x + 1.0 atp_x + 1.0 coa_x <==> 1.0 tdcoa_x + 1.0 ppi_x + 1.0 amp_x
+FACOAL141:   1.0 atp_c + 1.0 ttdcea_c + 1.0 coa_c <==> 1.0 tdecoa_c + 1.0 amp_c + 1.0 ppi_c
+FACOAL141p:   1.0 ttdcea_x + 1.0 atp_x + 1.0 coa_x <==> 1.0 ppi_x + 1.0 amp_x + 1.0 tdecoa_x
+FACOAL160:   1.0 atp_c + 1.0 hdca_c + 1.0 coa_c <==> 1.0 pmtcoa_c + 1.0 amp_c + 1.0 ppi_c
+FACOAL160p:   1.0 atp_x + 1.0 coa_x + 1.0 hdca_x <==> 1.0 pmtcoa_x + 1.0 ppi_x + 1.0 amp_x
+FACOAL161:   1.0 hdcea_c + 1.0 atp_c + 1.0 coa_c <==> 1.0 amp_c + 1.0 hdcoa_c + 1.0 ppi_c
+FACOAL161p:   1.0 hdcea_x + 1.0 coa_x + 1.0 atp_x <==> 1.0 ppi_x + 1.0 hdcoa_x + 1.0 amp_x
+FACOAL180:   1.0 atp_c + 1.0 ocdca_c + 1.0 coa_c <==> 1.0 amp_c + 1.0 stcoa_c + 1.0 ppi_c
+FACOAL181:   1.0 atp_c + 1.0 coa_c + 1.0 ocdcea_c <==> 1.0 ppi_c + 1.0 amp_c + 1.0 odecoa_c
+FACOAL182:   1.0 atp_c + 1.0 ocdcya_c + 1.0 coa_c <==> 1.0 amp_c + 1.0 ocdycacoa_c + 1.0 ppi_c
+FACOAL240p:   1.0 atp_x + 1.0 ttc_x + 1.0 coa_x <==> 1.0 ppi_x + 1.0 amp_x + 1.0 ttccoa_x
+FACOAL260p:   1.0 hexc_x + 1.0 coa_x + 1.0 atp_x <==> 1.0 ppi_x + 1.0 amp_x + 1.0 hexccoa_x
+FACOAL80p:   1.0 octa_x + 1.0 coa_x + 1.0 atp_x <==> 1.0 ppi_x + 1.0 amp_x + 1.0 occoa_x
+FADFMNtm:   1.0 fmn_m + 1.0 fad_c --> 1.0 fad_m + 1.0 fmn_c
+FALDH:   1.0 nad_c + 1.0 fald_c + 1.0 gthrd_c <==> 1.0 Sfglutth_c + 1.0 h_c + 1.0 nadh_c
+FAO141p_even:   1.0 nadph_x + 6.0 h2o_x + 6.0 o2_x + 6.0 nad_x + 6.0 coa_x + 1.0 tdecoa_x --> 6.0 nadh_x + 7.0 accoa_x + 5.0 h_x + 6.0 h2o2_x + 1.0 nadp_x
+FAO141p_odd:   6.0 nad_x + 6.0 h2o_x + 5.0 o2_x + 6.0 coa_x + 1.0 tdecoa_x --> 6.0 nadh_x + 7.0 accoa_x + 6.0 h_x + 5.0 h2o2_x
+FAO161p_even:   1.0 nadph_x + 7.0 nad_x + 7.0 h2o_x + 7.0 o2_x + 1.0 hdcoa_x + 7.0 coa_x --> 7.0 nadh_x + 8.0 accoa_x + 6.0 h_x + 7.0 h2o2_x + 1.0 nadp_x
+FAO161p_odd:   7.0 nad_x + 1.0 hdcoa_x + 7.0 h2o_x + 6.0 o2_x + 7.0 coa_x --> 7.0 nadh_x + 8.0 accoa_x + 7.0 h_x + 6.0 h2o2_x
+FAO181p_even:   1.0 nadph_x + 8.0 nad_x + 8.0 h2o_x + 8.0 o2_x + 8.0 coa_x + 1.0 odecoa_x --> 8.0 nadh_x + 9.0 accoa_x + 7.0 h_x + 8.0 h2o2_x + 1.0 nadp_x
+FAO181p_odd:   8.0 nad_x + 8.0 h2o_x + 7.0 o2_x + 8.0 coa_x + 1.0 odecoa_x --> 8.0 nadh_x + 9.0 accoa_x + 8.0 h_x + 7.0 h2o2_x
+FAO182p_eveneven:   2.0 nadph_x + 8.0 nad_x + 8.0 h2o_x + 1.0 ocdycacoa_x + 8.0 o2_x + 8.0 coa_x --> 8.0 nadh_x + 9.0 accoa_x + 6.0 h_x + 8.0 h2o2_x + 2.0 nadp_x
+FAO182p_evenodd:   1.0 nadph_x + 8.0 nad_x + 8.0 h2o_x + 1.0 ocdycacoa_x + 7.0 o2_x + 8.0 coa_x --> 8.0 nadh_x + 9.0 accoa_x + 7.0 h_x + 7.0 h2o2_x + 1.0 nadp_x
+FAO182p_oddodd:   1.0 ocdycacoa_x + 8.0 nad_x + 8.0 h2o_x + 6.0 o2_x + 8.0 coa_x --> 8.0 nadh_x + 9.0 accoa_x + 8.0 h_x + 6.0 h2o2_x
+FAO240p:   3.0 nad_x + 3.0 h2o_x + 3.0 o2_x + 3.0 coa_x + 1.0 ttccoa_x --> 3.0 nadh_x + 1.0 stcoa_x + 3.0 accoa_x + 3.0 h_x + 3.0 h2o2_x
+FAO80p:   3.0 nad_x + 3.0 h2o_x + 3.0 o2_x + 1.0 occoa_x + 3.0 coa_x --> 3.0 nadh_x + 4.0 accoa_x + 3.0 h_x + 3.0 h2o2_x
+FAS100:   3.0 h_c + 1.0 octa_c + 1.0 malcoa_c + 2.0 nadph_c --> 1.0 coa_c + 1.0 co2_c + 1.0 h2o_c + 1.0 dca_c + 2.0 nadp_c
+FAS100ACPm:   1.0 ocACP_m + 3.0 h_m + 1.0 malACP_m + 2.0 nadph_m --> 2.0 nadp_m + 1.0 dcaACP_m + 1.0 co2_m + 1.0 ACP_m + 1.0 h2o_m
+FAS100COA:   1.0 occoa_c + 3.0 h_c + 1.0 malcoa_c + 2.0 nadph_c --> 1.0 dcacoa_c + 1.0 coa_c + 1.0 h2o_c + 1.0 co2_c + 2.0 nadp_c
+FAS120:   3.0 h_c + 1.0 malcoa_c + 2.0 nadph_c + 1.0 dca_c --> 2.0 nadp_c + 1.0 coa_c + 1.0 co2_c + 1.0 h2o_c + 1.0 ddca_c
+FAS120ACPm:   3.0 h_m + 1.0 dcaACP_m + 1.0 malACP_m + 2.0 nadph_m --> 2.0 nadp_m + 1.0 ddcaACP_m + 1.0 co2_m + 1.0 ACP_m + 1.0 h2o_m
+FAS120COA:   1.0 dcacoa_c + 1.0 malcoa_c + 3.0 h_c + 2.0 nadph_c --> 2.0 nadp_c + 1.0 h2o_c + 1.0 co2_c + 1.0 coa_c + 1.0 ddcacoa_c
+FAS140:   1.0 ddca_c + 3.0 h_c + 1.0 malcoa_c + 2.0 nadph_c --> 2.0 nadp_c + 1.0 coa_c + 1.0 co2_c + 1.0 h2o_c + 1.0 ttdca_c
+FAS140ACPm:   1.0 ddcaACP_m + 1.0 malACP_m + 2.0 nadph_m + 3.0 h_m --> 1.0 myrsACP_m + 2.0 nadp_m + 1.0 co2_m + 1.0 ACP_m + 1.0 h2o_m
+FAS140COA:   1.0 malcoa_c + 3.0 h_c + 2.0 nadph_c + 1.0 ddcacoa_c --> 2.0 nadp_c + 1.0 h2o_c + 1.0 co2_c + 1.0 tdcoa_c + 1.0 coa_c
+FAS141:   1.0 malcoa_c + 1.0 ddca_c + 4.0 h_c + 3.0 nadph_c + 1.0 o2_c --> 3.0 nadp_c + 1.0 ttdcea_c + 1.0 co2_c + 3.0 h2o_c + 1.0 coa_c
+FAS141ACPm:   4.0 h_m + 1.0 ddcaACP_m + 1.0 malACP_m + 3.0 nadph_m + 1.0 o2_m --> 3.0 nadp_m + 1.0 tdeACP_m + 1.0 co2_m + 1.0 ACP_m + 3.0 h2o_m
+FAS160:   1.0 malcoa_c + 2.0 nadph_c + 1.0 ttdca_c + 3.0 h_c --> 2.0 nadp_c + 1.0 coa_c + 1.0 co2_c + 1.0 h2o_c + 1.0 hdca_c
+FAS160ACPm:   3.0 h_m + 1.0 malACP_m + 2.0 nadph_m + 1.0 myrsACP_m --> 1.0 ACP_m + 1.0 palmACP_m + 2.0 nadp_m + 1.0 h2o_m + 1.0 co2_m
+FAS160COA:   1.0 malcoa_c + 3.0 h_c + 1.0 tdcoa_c + 2.0 nadph_c --> 2.0 nadp_c + 1.0 pmtcoa_c + 1.0 co2_c + 1.0 h2o_c + 1.0 coa_c
+FAS161:   1.0 o2_c + 4.0 h_c + 1.0 malcoa_c + 3.0 nadph_c + 1.0 ttdca_c --> 1.0 hdcea_c + 3.0 nadp_c + 1.0 coa_c + 1.0 co2_c + 3.0 h2o_c
+FAS161ACPm:   1.0 o2_m + 1.0 malACP_m + 1.0 myrsACP_m + 3.0 nadph_m + 4.0 h_m --> 1.0 ACP_m + 3.0 nadp_m + 1.0 hdeACP_m + 3.0 h2o_m + 1.0 co2_m
+FAS180:   3.0 h_c + 1.0 hdca_c + 1.0 malcoa_c + 2.0 nadph_c --> 2.0 nadp_c + 1.0 coa_c + 1.0 h2o_c + 1.0 co2_c + 1.0 ocdca_c
+FAS180ACPm:   3.0 h_m + 1.0 palmACP_m + 1.0 malACP_m + 2.0 nadph_m --> 2.0 nadp_m + 1.0 ocdcaACP_m + 1.0 ACP_m + 1.0 co2_m + 1.0 h2o_m
+FAS180COA:   1.0 pmtcoa_c + 1.0 malcoa_c + 3.0 h_c + 2.0 nadph_c --> 2.0 nadp_c + 1.0 h2o_c + 1.0 co2_c + 1.0 coa_c + 1.0 stcoa_c
+FAS181:   4.0 h_c + 1.0 hdca_c + 1.0 malcoa_c + 3.0 nadph_c + 1.0 o2_c --> 1.0 ocdcea_c + 1.0 coa_c + 1.0 co2_c + 3.0 h2o_c + 3.0 nadp_c
+FAS181ACPm:   1.0 o2_m + 1.0 palmACP_m + 1.0 malACP_m + 3.0 nadph_m + 4.0 h_m --> 1.0 ACP_m + 3.0 nadp_m + 1.0 octeACP_m + 3.0 h2o_m + 1.0 co2_m
+FAS182ACPm:   2.0 o2_m + 1.0 palmACP_m + 1.0 malACP_m + 4.0 nadph_m + 5.0 h_m --> 1.0 ACP_m + 4.0 nadp_m + 1.0 ocdcyaACP_m + 5.0 h2o_m + 1.0 co2_m
+FAS240_L:   3.0 malcoa_c + 9.0 h_c + 6.0 nadph_c + 1.0 ocdca_c --> 1.0 ttc_c + 6.0 nadp_c + 3.0 h2o_c + 3.0 co2_c + 3.0 coa_c
+FAS260:   1.0 ttc_c + 1.0 malcoa_c + 3.0 h_c + 2.0 nadph_c --> 2.0 nadp_c + 1.0 h2o_c + 1.0 co2_c + 1.0 coa_c + 1.0 hexc_c
+FAS80ACPm_L:   9.0 h_m + 1.0 acACP_m + 3.0 malACP_m + 6.0 nadph_m --> 1.0 ocACP_m + 3.0 ACP_m + 6.0 nadp_m + 3.0 h2o_m + 3.0 co2_m
+FAS80COA_L:   1.0 accoa_c + 9.0 h_c + 3.0 malcoa_c + 6.0 nadph_c --> 6.0 nadp_c + 3.0 coa_c + 3.0 co2_c + 3.0 h2o_c + 1.0 occoa_c
+FAS80_L:   1.0 accoa_c + 3.0 malcoa_c + 8.0 h_c + 6.0 nadph_c --> 1.0 octa_c + 3.0 co2_c + 2.0 h2o_c + 4.0 coa_c + 6.0 nadp_c
+FBA:   1.0 fdp_c <==> 1.0 dhap_c + 1.0 g3p_c
+FBA2:   1.0 f1p_c <==> 1.0 glyald_c + 1.0 dhap_c
+FBA3:   1.0 s17bp_c <==> 1.0 e4p_c + 1.0 dhap_c
+FBP:   1.0 fdp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 f6p_c
+FBP26:   1.0 f26bp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 f6p_c
+FCLTm:   1.0 fe2_m + 1.0 ppp9_m --> 1.0 pheme_m + 2.0 h_m
+FDH:   1.0 nad_c + 1.0 for_c --> 1.0 co2_c + 1.0 nadh_c
+FDNG:   1.0 for_c + 1.0 h_c + 1.0 q6_m --> 1.0 q6h2_m + 1.0 co2_c
+FE2t:   1.0 fe2_e --> 1.0 fe2_c
+FE2utm:   1.0 fe2_c --> 1.0 fe2_m
+FECOSTAT_SC:   0.02 pmtcoa_c + 0.655 hdcoa_c + 0.01 fecost_c + 0.01 hexccoa_c + 0.015 tdcoa_c + 0.27 odecoa_c + 0.03 stcoa_c --> 1.0 coa_c + 0.01 fecostest_SC_c
+FECOSTESTH_SC:   0.01 fecostest_SC_c + 1.0 h2o_c --> 0.655 hdcea_c + 0.03 ocdca_c + 0.27 ocdcea_c + 0.01 fecost_c + 0.02 hdca_c + 0.01 hexc_c + 0.015 ttdca_c + 1.0 h_c
+FECOSTESTH_SCe:   0.01 fecostest_SC_e + 1.0 h2o_e --> 0.015 ttdca_e + 0.01 fecost_e + 0.27 ocdcea_e + 0.01 hexc_e + 0.03 ocdca_e + 0.02 hdca_e + 1.0 h_e + 0.655 hdcea_e
+FECOSTt:   1.0 fecost_e <==> 1.0 fecost_c
+FEtm:   1.0 fe2_m <==> 1.0 fe2_c
+FKYNH:   1.0 Lfmkynr_c + 1.0 h2o_c --> 1.0 for_c + 1.0 Lkynr_c + 1.0 h_c
+FMETTRSm:   1.0 mettrna_m + 1.0 10fthf_m --> 1.0 fmettrna_m + 1.0 h_m + 1.0 thf_m
+FMNAT:   1.0 atp_c + 1.0 h_c + 1.0 fmn_c --> 1.0 ppi_c + 1.0 fad_c
+FMNATm:   1.0 atp_m + 1.0 fmn_m + 1.0 h_m --> 1.0 fad_m + 1.0 ppi_m
+FMNRx:   1.0 h_c + 1.0 fmn_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 fmnh2_c
+FMNRx2:   1.0 h_c + 1.0 fmn_c + 1.0 nadph_c --> 1.0 fmnh2_c + 1.0 nadp_c
+FOLAt:   1.0 fola_e <==> 1.0 fola_c
+FOLD3m:   1.0 2ahhmd_m + 1.0 4abz_m --> 1.0 dhpt_m + 1.0 ppi_m
+FORt:   1.0 for_e <==> 1.0 for_c
+FORtm:   1.0 for_m --> 1.0 for_c
+FRDPtm:   1.0 frdp_c <==> 1.0 frdp_m
+FRDcm:   1.0 fum_c + 1.0 fadh2_m --> 1.0 succ_c + 1.0 fad_m
+FRDm:   1.0 fum_m + 1.0 fadh2_m --> 1.0 fad_m + 1.0 succ_m
+FRTT:   1.0 frdp_c + 1.0 ipdp_c --> 1.0 ggdp_c + 1.0 ppi_c
+FRUK:   1.0 f1p_c + 1.0 atp_c --> 1.0 adp_c + 1.0 fdp_c + 1.0 h_c
+FRUt2:   1.0 h_e + 1.0 fru_e --> 1.0 fru_c + 1.0 h_c
+FTHFCL:   1.0 5fthf_c + 1.0 atp_c --> 1.0 adp_c + 1.0 pi_c + 1.0 methf_c
+FTHFCLm:   1.0 atp_m + 1.0 5fthf_m --> 1.0 methf_m + 1.0 adp_m + 1.0 pi_m
+FTHFI:   1.0 atp_c + 1.0 h2o_c + 1.0 5fthf_c --> 1.0 pi_c + 1.0 adp_c + 1.0 h_c + 1.0 10fthf_c
+FTHFLi:   1.0 atp_c + 1.0 thf_c + 1.0 for_c --> 1.0 pi_c + 1.0 adp_c + 1.0 10fthf_c
+FTHFLmi:   1.0 for_m + 1.0 atp_m + 1.0 thf_m --> 1.0 10fthf_m + 1.0 pi_m + 1.0 adp_m
+FUM:   1.0 fum_c + 1.0 h2o_c <==> 1.0 mal_L_c
+FUMAC:   1.0 4fumacac_c + 1.0 h2o_c --> 1.0 fum_c + 1.0 acac_c + 1.0 h_c
+FUMm:   1.0 h2o_m + 1.0 fum_m <==> 1.0 mal_L_m
+FUMt2r:   1.0 fum_e + 1.0 h_e <==> 1.0 fum_c + 1.0 h_c
+G12MT1g:   1.0 gdpmann_g + 1.0 m2macchitppdol_g --> 1.0 gdp_g + 1.0 m3macchitppdol_g + 1.0 h_g
+G12MT2g:   1.0 gdpmann_g + 1.0 m3macchitppdol_g --> 1.0 m4macchitppdol_g + 1.0 h_g + 1.0 gdp_g
+G13MTg:   1.0 gdpmann_g + 1.0 macchitppdol_g --> 1.0 gdp_g + 1.0 m1macchitppdol_g + 1.0 h_g
+G16MTg:   1.0 gdpmann_g + 1.0 m1macchitppdol_g --> 1.0 m2macchitppdol_g + 1.0 h_g + 1.0 gdp_g
+G3PCt:   1.0 g3pc_e <==> 1.0 g3pc_c
+G3PD1ir:   1.0 dhap_c + 1.0 h_c + 1.0 nadh_c --> 1.0 glyc3p_c + 1.0 nad_c
+G3PD1irm:   1.0 nadh_m + 1.0 h_m + 1.0 dhap_m --> 1.0 glyc3p_m + 1.0 nad_m
+G3PDm:   1.0 glyc3p_m + 1.0 fad_m --> 1.0 dhap_m + 1.0 fadh2_m
+G3PIt:   1.0 g3pi_e <==> 1.0 g3pi_c
+G3PT:   1.0 h2o_c + 1.0 glyc3p_c --> 1.0 pi_c + 1.0 glyc_c
+G5SADr:   1.0 glu5sa_c <==> 1.0 1pyr5c_c + 1.0 h2o_c + 1.0 h_c
+G5SADrm:   1.0 glu5sa_m <==> 1.0 h2o_m + 1.0 h_m + 1.0 1pyr5c_m
+G5SD:   1.0 glu5p_c + 1.0 h_c + 1.0 nadph_c --> 1.0 glu5sa_c + 1.0 pi_c + 1.0 nadp_c
+G5SD2:   1.0 glu5p_c + 1.0 h_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 glu5sa_c + 1.0 pi_c
+G6PDA:   1.0 h2o_c + 1.0 gam6p_c --> 1.0 nh4_c + 1.0 f6p_c
+G6PDH2:   1.0 g6p_c + 1.0 nadp_c --> 1.0 nadph_c + 1.0 6pgl_c + 1.0 h_c
+G6PDH2er:   1.0 g6p_r + 1.0 nadp_r --> 1.0 6pgl_r + 1.0 h_r + 1.0 nadph_r
+G6PI:   1.0 g6p_c <==> 1.0 g6p_B_c
+G6PI3:   1.0 g6p_B_c --> 1.0 f6p_c
+G6Pter:   1.0 g6p_c <==> 1.0 g6p_r
+GALIGH:   1.0 1Dgali_c + 1.0 h2o_c <==> 1.0 gal_c + 1.0 inost_c
+GALK:   1.0 atp_c + 1.0 gal_c --> 1.0 adp_c + 1.0 gal1p_c + 1.0 h_c
+GALS3:   1.0 melib_c + 1.0 h2o_c --> 1.0 gal_c + 1.0 glc_D_c
+GALT:   1.0 gal1p_c + 1.0 utp_c + 1.0 h_c <==> 1.0 ppi_c + 1.0 udpgal_c
+GALU:   1.0 g1p_c + 1.0 utp_c + 1.0 h_c <==> 1.0 udpg_c + 1.0 ppi_c
+GALt2:   1.0 gal_e + 1.0 h_e --> 1.0 gal_c + 1.0 h_c
+GAM6Pt:   1.0 gam6p_e <==> 1.0 gam6p_c
+GAPD:   1.0 nad_c + 1.0 pi_c + 1.0 g3p_c <==> 1.0 h_c + 1.0 13dpg_c + 1.0 nadh_c
+GARFTi:   1.0 10fthf_c + 1.0 gar_c --> 1.0 fgam_c + 1.0 h_c + 1.0 thf_c
+GAT1_SC:   0.02 dcacoa_c + 0.27 pmtcoa_c + 0.09 ocdycacoa_c + 0.06 ddcacoa_c + 1.0 glyc3p_c + 0.17 hdcoa_c + 0.1 tdcoa_c + 0.24 odecoa_c + 0.05 stcoa_c --> 0.01 1ag3p_SC_c + 1.0 coa_c
+GAT2_SC:   1.0 dhap_c + 0.02 dcacoa_c + 0.17 hdcoa_c + 0.09 ocdycacoa_c + 0.06 ddcacoa_c + 0.1 tdcoa_c + 0.27 pmtcoa_c + 0.24 odecoa_c + 0.05 stcoa_c --> 1.0 coa_c + 0.01 1agly3p_SC_c
+GBEZ:   1.0 14glun_c --> 1.0 glycogen_c + 1.0 h2o_c
+GCALDt:   1.0 gcald_e <==> 1.0 gcald_c
+GCALDtm:   1.0 gcald_c <==> 1.0 gcald_m
+GCC2am:   1.0 lpam_m + 1.0 h_m + 1.0 gly_m <==> 1.0 alpam_m + 1.0 co2_m
+GCC2bim:   1.0 alpam_m + 1.0 thf_m --> 1.0 nh4_m + 1.0 dhlam_m + 1.0 mlthf_m
+GCC2cm:   1.0 dhlam_m + 1.0 nad_m <==> 1.0 lpam_m + 1.0 h_m + 1.0 nadh_m
+GCCam:   1.0 lpro_m + 1.0 gly_m + 1.0 h_m <==> 1.0 co2_m + 1.0 alpro_m
+GCCbim:   1.0 alpro_m + 1.0 thf_m --> 1.0 nh4_m + 1.0 mlthf_m + 1.0 dhlpro_m
+GCCcm:   1.0 dhlpro_m + 1.0 nad_m <==> 1.0 nadh_m + 1.0 h_m + 1.0 lpro_m
+GDPMANNtg:   1.0 gdpmann_c + 1.0 gmp_g --> 1.0 gmp_c + 1.0 gdpmann_g
+GDPt3g:   1.0 gdp_g + 1.0 h_c <==> 1.0 h_g + 1.0 gdp_c
+GDPtn:   1.0 gdp_c <==> 1.0 gdp_n
+GF6PTA:   1.0 f6p_c + 1.0 gln_L_c --> 1.0 gam6p_c + 1.0 glu_L_c
+GGLGH:   1.0 ggl_c + 1.0 h2o_c <==> 1.0 gal_c + 1.0 glyc_c
+GGTT:   1.0 ggdp_c + 1.0 ipdp_c --> 1.0 pendp_c + 1.0 ppi_c
+GHMT2r:   1.0 ser_L_c + 1.0 thf_c <==> 1.0 mlthf_c + 1.0 h2o_c + 1.0 gly_c
+GHMT2rm:   1.0 ser_L_m + 1.0 thf_m <==> 1.0 h2o_m + 1.0 gly_m + 1.0 mlthf_m
+GK1:   1.0 gmp_c + 1.0 atp_c <==> 1.0 gdp_c + 1.0 adp_c
+GK2:   1.0 gmp_c + 1.0 datp_c --> 1.0 dadp_c + 1.0 gdp_c
+GLCGSD:   1.0 h2o_c + 1.0 glycogen_c --> 1.0 glc_D_c
+GLCGSDv:   1.0 glycogen_v + 1.0 h2o_v --> 1.0 glc_D_v
+GLCNtv:   1.0 glycogen_c --> 1.0 glycogen_v
+GLCP:   1.0 pi_c + 1.0 glycogen_c --> 1.0 g1p_c
+GLCS2:   1.0 udpg_c --> 1.0 h_c + 1.0 glycogen_c + 1.0 udp_c
+GLCt1:   1.0 glc_D_e --> 1.0 glc_D_c
+GLCtv:   1.0 glc_D_c <==> 1.0 glc_D_v
+GLNS:   1.0 atp_c + 1.0 glu_L_c + 1.0 nh4_c --> 1.0 pi_c + 1.0 adp_c + 1.0 h_c + 1.0 gln_L_c
+GLNTRS:   1.0 atp_c + 1.0 trnagln_c + 1.0 gln_L_c --> 1.0 amp_c + 1.0 glntrna_c + 1.0 ppi_c
+GLNt2n:   1.0 h_c + 1.0 gln_L_c <==> 1.0 gln_L_n + 1.0 h_n
+GLNt2r:   1.0 gln_L_e + 1.0 h_e <==> 1.0 gln_L_c + 1.0 h_c
+GLNt6:   1.0 h_v + 1.0 gln_L_c --> 1.0 gln_L_v + 1.0 h_c
+GLNt7:   1.0 h_v + 1.0 gln_L_v --> 1.0 h_c + 1.0 gln_L_c
+GLPT:   1.0 glp_c + 1.0 tdcoa_c --> 1.0 coa_c + 1.0 tglp_c
+GLU5K:   1.0 glu_L_c + 1.0 atp_c --> 1.0 glu5p_c + 1.0 adp_c
+GLUCYS:   1.0 atp_c + 1.0 glu_L_c + 1.0 cys_L_c --> 1.0 glucys_c + 1.0 adp_c + 1.0 h_c + 1.0 pi_c
+GLUDC:   1.0 glu_L_c + 1.0 h_c --> 1.0 4abut_c + 1.0 co2_c
+GLUDxi:   1.0 nad_c + 1.0 h2o_c + 1.0 glu_L_c --> 1.0 akg_c + 1.0 nh4_c + 1.0 h_c + 1.0 nadh_c
+GLUDyi:   1.0 akg_c + 1.0 nh4_c + 1.0 h_c + 1.0 nadph_c --> 1.0 glu_L_c + 1.0 h2o_c + 1.0 nadp_c
+GLUK:   1.0 glc_D_c + 1.0 atp_c --> 1.0 adp_c + 1.0 g6p_B_c + 1.0 h_c
+GLUN:   1.0 gln_L_c + 1.0 h2o_c --> 1.0 glu_L_c + 1.0 nh4_c
+GLUPRT:   1.0 prpp_c + 1.0 h2o_c + 1.0 gln_L_c --> 1.0 ppi_c + 1.0 pram_c + 1.0 glu_L_c
+GLUSx:   1.0 akg_c + 1.0 gln_L_c + 1.0 h_c + 1.0 nadh_c --> 1.0 nad_c + 2.0 glu_L_c
+GLUTRS:   1.0 atp_c + 1.0 glu_L_c + 1.0 trnaglu_c --> 1.0 amp_c + 1.0 glutrna_c + 1.0 ppi_c
+GLUTRSm:   1.0 atp_m + 1.0 glu_L_m + 1.0 trnaglu_m --> 1.0 ppi_m + 1.0 amp_m + 1.0 glutrna_m
+GLUt2n:   1.0 glu_L_c + 1.0 h_c <==> 1.0 glu_L_n + 1.0 h_n
+GLUt2r:   1.0 h_e + 1.0 glu_L_e <==> 1.0 glu_L_c + 1.0 h_c
+GLUt5m:   1.0 glu_L_c + 1.0 oh1_m --> 1.0 oh1_c + 1.0 glu_L_m
+GLUt7:   1.0 h_v + 1.0 glu_L_v --> 1.0 glu_L_c + 1.0 h_c
+GLUt7m:   1.0 glu_L_c --> 1.0 glu_L_m
+GLXt:   1.0 glx_c <==> 1.0 glx_e
+GLXtp:   1.0 glx_c <==> 1.0 glx_x
+GLYATi:   1.0 coa_c + 1.0 2aobut_c --> 1.0 accoa_c + 1.0 gly_c
+GLYC3Ptm:   1.0 glyc3p_c --> 1.0 glyc3p_m
+GLYCDy:   1.0 nadp_c + 1.0 glyc_c --> 1.0 nadph_c + 1.0 dha_c + 1.0 h_c
+GLYCLm:   1.0 nad_m + 1.0 thf_m + 1.0 gly_m --> 1.0 mlthf_m + 1.0 nadh_m + 1.0 co2_m + 1.0 nh4_m
+GLYCRT:   1.0 atp_c + 1.0 gar_c + 1.0 for_c --> 1.0 fgam_c + 1.0 pi_c + 1.0 adp_c
+GLYCt:   1.0 glyc_c <==> 1.0 glyc_e
+GLYCt2:   1.0 h_e + 1.0 glyc_e --> 1.0 glyc_c + 1.0 h_c
+GLYGS:   1.0 udpg_c + 1.0 h2o_c --> 1.0 14glun_c + 1.0 udp_c + 1.0 h_c
+GLYK:   1.0 atp_c + 1.0 glyc_c --> 1.0 adp_c + 1.0 h_c + 1.0 glyc3p_c
+GLYOX:   1.0 lgt_S_c + 1.0 h2o_c --> 1.0 gthrd_c + 1.0 lac_D_c + 1.0 h_c
+GLYOXm:   1.0 h2o_m + 1.0 lgt_S_m --> 1.0 gthrd_m + 1.0 lac_D_m + 1.0 h_m
+GLYTRS:   1.0 atp_c + 1.0 trnagly_c + 1.0 gly_c --> 1.0 amp_c + 1.0 glytrna_c + 1.0 ppi_c
+GLYt2m:   1.0 gly_c + 1.0 h_c <==> 1.0 h_m + 1.0 gly_m
+GLYt2r:   1.0 gly_e + 1.0 h_e <==> 1.0 h_c + 1.0 gly_c
+GMPS2:   1.0 atp_c + 1.0 h2o_c + 1.0 gln_L_c + 1.0 xmp_c --> 1.0 gmp_c + 1.0 amp_c + 1.0 glu_L_c + 2.0 h_c + 1.0 ppi_c
+GND:   1.0 6pgc_c + 1.0 nadp_c --> 1.0 nadph_c + 1.0 ru5p_D_c + 1.0 co2_c
+GNNUC:   1.0 gsn_c + 1.0 h2o_c --> 1.0 gua_c + 1.0 rib_D_c
+GPDDA1:   1.0 g3pc_c + 1.0 h2o_c --> 1.0 chol_c + 1.0 h_c + 1.0 glyc3p_c
+GRTT:   1.0 ipdp_c + 1.0 grdp_c --> 1.0 frdp_c + 1.0 ppi_c
+GSNK:   1.0 gsn_c + 1.0 atp_c --> 1.0 gmp_c + 1.0 h_c + 1.0 adp_c
+GSNt2:   1.0 h_e + 1.0 gsn_e --> 1.0 gsn_c + 1.0 h_c
+GSNt2m:   1.0 h_c + 1.0 gsn_c <==> 1.0 gsn_m + 1.0 h_m
+GTHO:   1.0 gthox_c + 1.0 nadph_c + 1.0 h_c --> 1.0 nadp_c + 2.0 gthrd_c
+GTHOXti:   1.0 gthox_e --> 1.0 gthox_c
+GTHOm:   1.0 gthox_m + 1.0 h_m + 1.0 nadph_m --> 2.0 gthrd_m + 1.0 nadp_m
+GTHP:   2.0 gthrd_c + 1.0 h2o2_c <==> 2.0 h2o_c + 1.0 gthox_c
+GTHPm:   2.0 gthrd_m + 1.0 h2o2_m <==> 2.0 h2o_m + 1.0 gthox_m
+GTHRDabcv:   1.0 atp_v + 1.0 gthrd_c + 1.0 h2o_v --> 1.0 pi_v + 1.0 gthrd_v + 1.0 adp_v + 1.0 h_v
+GTHRDt2:   1.0 gthrd_e --> 1.0 gthrd_c
+GTHS:   1.0 atp_c + 1.0 glucys_c + 1.0 gly_c --> 1.0 pi_c + 1.0 adp_c + 1.0 h_c + 1.0 gthrd_c
+GTMLT:   1.0 gthrd_c + 1.0 ala_L_c --> 1.0 gluala_c + 1.0 cgly_c
+GTPCI:   1.0 gtp_c + 1.0 h2o_c --> 1.0 h_c + 1.0 ahdt_c + 1.0 for_c
+GTPCII:   1.0 gtp_c + 3.0 h2o_c --> 1.0 25dhpp_c + 2.0 h_c + 1.0 for_c + 1.0 ppi_c
+GTPH1:   1.0 gtp_c + 2.0 h2o_c --> 2.0 pi_c + 1.0 gmp_c + 2.0 h_c
+GTPt2m:   1.0 gtp_c + 1.0 h_c + 1.0 gdp_m --> 1.0 h_m + 1.0 gtp_m + 1.0 gdp_c
+GUAD:   1.0 gua_c + 1.0 h2o_c + 1.0 h_c --> 1.0 nh4_c + 1.0 xan_c
+GUAPRT:   1.0 gua_c + 1.0 prpp_c --> 1.0 gmp_c + 1.0 ppi_c
+GUAt2r:   1.0 gua_e + 1.0 h_e <==> 1.0 gua_c + 1.0 h_c
+GUAtm:   1.0 gua_c <==> 1.0 gua_m
+H2O2tn:   1.0 h2o2_c <==> 1.0 h2o2_n
+H2Ot:   1.0 h2o_e <==> 1.0 h2o_c
+H2Oter:   1.0 h2o_c <==> 1.0 h2o_r
+H2Otm:   1.0 h2o_c <==> 1.0 h2o_m
+H2Otn:   1.0 h2o_n <==> 1.0 h2o_c
+H2Otp:   1.0 h2o_c <==> 1.0 h2o_x
+H2Otv:   1.0 h2o_c <==> 1.0 h2o_v
+HACD10p:   1.0 3hxccoa_x + 1.0 nad_x <==> 1.0 3ohxccoa_x + 1.0 h_x + 1.0 nadh_x
+HACD4p:   1.0 3odcoa_x + 1.0 h_x + 1.0 nadh_x <==> 1.0 3hdcoa_x + 1.0 nad_x
+HACD5p:   1.0 nadh_x + 1.0 3oddcoa_x + 1.0 h_x <==> 1.0 3hddcoa_x + 1.0 nad_x
+HACD6p:   1.0 3otdcoa_x + 1.0 nadh_x + 1.0 h_x <==> 1.0 3htdcoa_x + 1.0 nad_x
+HACD7p:   1.0 nadh_x + 1.0 3ohdcoa_x + 1.0 h_x <==> 1.0 3hhdcoa_x + 1.0 nad_x
+HACD8p:   1.0 3ohodcoa_x + 1.0 nadh_x + 1.0 h_x <==> 1.0 3hodcoa_x + 1.0 nad_x
+HACNHm:   1.0 h2o_m + 1.0 b124tc_m <==> 1.0 hicit_m
+HBZOPT6m:   1.0 4hbz_m + 1.0 hexdp_m --> 1.0 ppi_m + 1.0 3ophb_5_m
+HCITSm:   1.0 accoa_m + 1.0 akg_m + 1.0 h2o_m --> 1.0 h_m + 1.0 coa_m + 1.0 hcit_m
+HCITSn:   1.0 akg_n + 1.0 accoa_n + 1.0 h2o_n --> 1.0 h_n + 1.0 coa_n + 1.0 hcit_n
+HCO3E:   1.0 co2_c + 1.0 h2o_c <==> 1.0 hco3_c + 1.0 h_c
+HCO3Em:   1.0 h2o_m + 1.0 co2_m <==> 1.0 hco3_m + 1.0 h_m
+HCO3En:   1.0 co2_n + 1.0 h2o_n --> 1.0 hco3_n + 1.0 h_n
+HCO3tn:   1.0 hco3_c <==> 1.0 hco3_n
+HCYSMT:   1.0 amet_c + 1.0 hcys_L_c --> 1.0 ahcys_c + 1.0 met_L_c + 1.0 h_c
+HCYSt2p:   1.0 h_c + 1.0 hcys_L_c <==> 1.0 hcys_L_x + 1.0 h_x
+HDCAt:   1.0 hdca_e --> 1.0 hdca_c
+HDCEAt:   1.0 hdcea_e --> 1.0 hdcea_c
+HEMEOMOm:   1.0 o2_m + 1.0 nadh_m + 1.0 hemeO_m --> 1.0 hemeA_m + 1.0 h2o_m + 1.0 nad_m
+HEMEOSm:   1.0 h2o_m + 1.0 pheme_m + 1.0 frdp_m --> 1.0 hemeO_m + 1.0 ppi_m
+HETZK:   1.0 4mhetz_c + 1.0 atp_c --> 1.0 adp_c + 1.0 4mpetz_c + 1.0 h_c
+HEX1:   1.0 glc_D_c + 1.0 atp_c --> 1.0 adp_c + 1.0 g6p_c + 1.0 h_c
+HEX4:   1.0 man_c + 1.0 atp_c --> 1.0 adp_c + 1.0 man6p_c + 1.0 h_c
+HEX7:   1.0 atp_c + 1.0 fru_c --> 1.0 f6p_c + 1.0 h_c + 1.0 adp_c
+HEXCCOAtx:   1.0 hexccoa_c <==> 1.0 hexccoa_x
+HEXDPtm:   1.0 hexdp_c <==> 1.0 hexdp_m
+HGNTOR:   1.0 hgentis_c + 1.0 o2_c --> 1.0 4mlacac_c + 1.0 h_c
+HICITDm:   1.0 hicit_m + 1.0 nad_m <==> 1.0 nadh_m + 1.0 h_m + 1.0 oxag_m
+HISTD:   2.0 nad_c + 1.0 histd_c + 1.0 h2o_c --> 1.0 his_L_c + 2.0 nadh_c + 3.0 h_c
+HISTP:   1.0 h2o_c + 1.0 hisp_c --> 1.0 pi_c + 1.0 histd_c
+HISTRS:   1.0 atp_c + 1.0 his_L_c + 1.0 trnahis_c --> 1.0 histrna_c + 1.0 amp_c + 1.0 ppi_c
+HISTRSm:   1.0 trnahis_m + 1.0 atp_m + 1.0 his_L_m --> 1.0 ppi_m + 1.0 histrna_m + 1.0 amp_m
+HISt2m:   1.0 h_m + 1.0 his_L_m <==> 1.0 his_L_c + 1.0 h_c
+HISt2r:   1.0 his_L_e + 1.0 h_e <==> 1.0 his_L_c + 1.0 h_c
+HISt6:   1.0 his_L_c + 1.0 h_v --> 1.0 h_c + 1.0 his_L_v
+HKYNH:   1.0 hLkynr_c + 1.0 h2o_c --> 1.0 ala_L_c + 1.0 3hanthrn_c
+HMBS:   1.0 h2o_c + 4.0 ppbng_c --> 4.0 nh4_c + 1.0 hmbil_c
+HMGCOAR:   2.0 nadp_c + 1.0 mev_R_c + 1.0 coa_c <==> 2.0 h_c + 2.0 nadph_c + 1.0 hmgcoa_c
+HMGCOAS:   1.0 hmgcoa_c + 1.0 coa_c + 1.0 h_c <==> 1.0 accoa_c + 1.0 h2o_c + 1.0 aacoa_c
+HMGCOASm:   1.0 hmgcoa_m + 1.0 h_m + 1.0 coa_m <==> 1.0 accoa_m + 1.0 aacoa_m + 1.0 h2o_m
+HMGCOAtm:   1.0 hmgcoa_c <==> 1.0 hmgcoa_m
+HMPK1:   1.0 atp_c + 1.0 4ahmmp_c --> 1.0 adp_c + 1.0 h_c + 1.0 4ampm_c
+HPPKm:   1.0 2ahhmp_m + 1.0 atp_m --> 1.0 2ahhmd_m + 1.0 h_m + 1.0 amp_m
+HPROa:   2.0 h_c + 1.0 1p3h5c_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 4hpro_LT_c
+HPROb:   1.0 nadph_c + 2.0 h_c + 1.0 1p3h5c_c --> 1.0 4hpro_LT_c + 1.0 nadp_c
+HPROxm:   1.0 4hpro_LT_m + 1.0 nad_m --> 1.0 nadh_m + 1.0 1p3h5c_m + 2.0 h_m
+HPROym:   1.0 4hpro_LT_m + 1.0 nadp_m --> 1.0 1p3h5c_m + 1.0 nadph_m + 2.0 h_m
+HSDxi:   1.0 h_c + 1.0 aspsa_c + 1.0 nadh_c --> 1.0 nad_c + 1.0 hom_L_c
+HSDyi:   1.0 h_c + 1.0 nadph_c + 1.0 aspsa_c --> 1.0 hom_L_c + 1.0 nadp_c
+HSERTA:   1.0 accoa_c + 1.0 hom_L_c <==> 1.0 coa_c + 1.0 achms_c
+HSK:   1.0 atp_c + 1.0 hom_L_c --> 1.0 adp_c + 1.0 phom_c + 1.0 h_c
+HSTPT:   1.0 glu_L_c + 1.0 imacp_c --> 1.0 akg_c + 1.0 hisp_c
+HXANt2r:   1.0 hxan_e + 1.0 h_e <==> 1.0 hxan_c + 1.0 h_c
+HXPRT:   1.0 prpp_c + 1.0 hxan_c --> 1.0 imp_c + 1.0 ppi_c
+HYPOE:   1.0 pyam5p_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 pydam_c
+IAMACt:   1.0 iamac_c --> 1.0 iamac_e
+IAMOHt:   1.0 iamoh_c <==> 1.0 iamoh_e
+IAMOHtm:   1.0 iamoh_c <==> 1.0 iamoh_m
+IBUTACt:   1.0 ibutac_c --> 1.0 ibutac_e
+IBUTOHt:   1.0 ibutoh_c <==> 1.0 ibutoh_e
+IBUTOHtm:   1.0 ibutoh_c <==> 1.0 ibutoh_m
+ICDHxm:   1.0 icit_m + 1.0 nad_m --> 1.0 nadh_m + 1.0 co2_m + 1.0 akg_m
+ICDHy:   1.0 icit_c + 1.0 nadp_c --> 1.0 akg_c + 1.0 nadph_c + 1.0 co2_c
+ICDHym:   1.0 nadp_m + 1.0 icit_m --> 1.0 co2_m + 1.0 nadph_m + 1.0 akg_m
+ICDHyp:   1.0 icit_x + 1.0 nadp_x --> 1.0 co2_x + 1.0 akg_x + 1.0 nadph_x
+ICL:   1.0 icit_c --> 1.0 succ_c + 1.0 glx_c
+ID3ACALDt:   1.0 id3acald_c <==> 1.0 id3acald_e
+ID3ACALDtm:   1.0 id3acald_c <==> 1.0 id3acald_m
+IG3PS:   1.0 gln_L_c + 1.0 prlp_c --> 1.0 glu_L_c + 1.0 h_c + 1.0 eig3p_c + 1.0 aicar_c
+IGPDH:   1.0 eig3p_c --> 1.0 h2o_c + 1.0 imacp_c
+IGPS:   1.0 2cpr5p_c + 1.0 h_c --> 1.0 h2o_c + 1.0 3ig3p_c + 1.0 co2_c
+ILETA:   1.0 ile_L_c + 1.0 akg_c <==> 1.0 3mop_c + 1.0 glu_L_c
+ILETAm:   1.0 ile_L_m + 1.0 akg_m <==> 1.0 3mop_m + 1.0 glu_L_m
+ILETRS:   1.0 trnaile_c + 1.0 atp_c + 1.0 ile_L_c --> 1.0 amp_c + 1.0 iletrna_c + 1.0 ppi_c
+ILETRSm:   1.0 trnaile_m + 1.0 atp_m + 1.0 ile_L_m --> 1.0 amp_m + 1.0 ppi_m + 1.0 iletrna_m
+ILEt2r:   1.0 h_e + 1.0 ile_L_e <==> 1.0 ile_L_c + 1.0 h_c
+ILEt6:   1.0 ile_L_c + 1.0 h_v --> 1.0 ile_L_v + 1.0 h_c
+ILEt7:   1.0 h_v + 1.0 ile_L_v --> 1.0 h_c + 1.0 ile_L_c
+ILEtmi:   1.0 ile_L_m --> 1.0 ile_L_c
+IMPC:   1.0 h2o_c + 1.0 imp_c <==> 1.0 fprica_c
+IMPD:   1.0 nad_c + 1.0 imp_c + 1.0 h2o_c --> 1.0 nadh_c + 1.0 xmp_c + 1.0 h_c
+IND3ACtm:   1.0 ind3ac_c <==> 1.0 ind3ac_m
+IND3ETHt:   1.0 ind3eth_c <==> 1.0 ind3eth_e
+IND3ETHtm:   1.0 ind3eth_c <==> 1.0 ind3eth_m
+INDPYRD:   1.0 indpyr_c + 1.0 h_c <==> 1.0 id3acald_c + 1.0 co2_c
+INSK:   1.0 atp_c + 1.0 ins_c --> 1.0 adp_c + 1.0 imp_c + 1.0 h_c
+INSTt2:   1.0 h_e + 1.0 inost_e --> 1.0 inost_c + 1.0 h_c
+INSt2:   1.0 h_e + 1.0 ins_e --> 1.0 h_c + 1.0 ins_c
+IPC124PLC_SC:   1.0 h2o_c + 0.01 ipc124_SC_c --> 1.0 cer1_24_c + 1.0 mi1p_D_c + 1.0 h_c
+IPC126PLC_SC:   0.01 ipc126_SC_c + 1.0 h2o_c --> 1.0 mi1p_D_c + 1.0 cer1_26_c + 1.0 h_c
+IPC224PLC_SC:   0.01 ipc224_SC_c + 1.0 h2o_c --> 1.0 mi1p_D_c + 1.0 cer2_24_c + 1.0 h_c
+IPC226PLC_SC:   0.01 ipc226_SC_c + 1.0 h2o_c --> 1.0 mi1p_D_c + 1.0 cer2_26_c + 1.0 h_c
+IPC324PLC_SC:   0.01 ipc324_SC_c + 1.0 h2o_c --> 1.0 mi1p_D_c + 1.0 cer3_24_c + 1.0 h_c
+IPC326PLC_SC:   0.01 ipc326_SC_c + 1.0 h2o_c --> 1.0 mi1p_D_c + 1.0 cer3_26_c + 1.0 h_c
+IPCS124_SC:   1.0 cer1_24_c + 0.01 ptd1ino_SC_c --> 0.01 ipc124_SC_c + 0.01 12dgr_SC_c
+IPCS126_SC:   1.0 cer1_26_c + 0.01 ptd1ino_SC_c --> 0.01 ipc126_SC_c + 0.01 12dgr_SC_c
+IPCS224_SC:   1.0 cer2_24_c + 0.01 ptd1ino_SC_c --> 0.01 12dgr_SC_c + 0.01 ipc224_SC_c
+IPCS226_SC:   1.0 cer2_26_c + 0.01 ptd1ino_SC_c --> 0.01 ipc226_SC_c + 0.01 12dgr_SC_c
+IPCS324_SC:   1.0 cer3_24_c + 0.01 ptd1ino_SC_c --> 0.01 12dgr_SC_c + 0.01 ipc324_SC_c
+IPCS326_SC:   1.0 cer3_26_c + 0.01 ptd1ino_SC_c --> 0.01 ipc326_SC_c + 0.01 12dgr_SC_c
+IPDDI:   1.0 ipdp_c <==> 1.0 dmpp_c
+IPDPtm:   1.0 ipdp_c <==> 1.0 ipdp_m
+IPMD:   1.0 nad_c + 1.0 3c2hmp_c --> 1.0 h_c + 1.0 3c4mop_c + 1.0 nadh_c
+IPPMIa:   1.0 3c2hmp_c <==> 1.0 2ippm_c + 1.0 h2o_c
+IPPMIb:   1.0 2ippm_c + 1.0 h2o_c <==> 1.0 3c3hmp_c
+IPPS:   1.0 3mob_c + 1.0 accoa_c + 1.0 h2o_c --> 1.0 coa_c + 1.0 h_c + 1.0 3c3hmp_c
+IPPSm:   1.0 accoa_m + 1.0 h2o_m + 1.0 3mob_m --> 1.0 h_m + 1.0 coa_m + 1.0 3c3hmp_m
+ITCOALm:   1.0 atp_m + 1.0 coa_m + 1.0 itacon_m <==> 1.0 itaccoa_m + 1.0 adp_m + 1.0 pi_m
+KARA1im:   1.0 alac_S_m + 1.0 h_m + 1.0 nadph_m --> 1.0 nadp_m + 1.0 23dhmb_m
+KARA2im:   1.0 nadph_m + 1.0 h_m + 1.0 2ahbut_m --> 1.0 23dhmp_m + 1.0 nadp_m
+KYN:   1.0 Lkynr_c + 1.0 h2o_c --> 1.0 h_c + 1.0 anth_c + 1.0 ala_L_c
+KYN3OX:   1.0 Lkynr_c + 1.0 nadph_c + 1.0 o2_c + 1.0 h_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 hLkynr_c
+Kt2r:   1.0 h_e + 1.0 k_e <==> 1.0 h_c + 1.0 k_c
+LALDO3:   1.0 nadph_c + 1.0 h_c + 1.0 mthgxl_c --> 1.0 nadp_c + 1.0 lald_L_c
+LANOSTAT_SC:   0.02 pmtcoa_c + 0.01 lanost_c + 0.655 hdcoa_c + 0.01 hexccoa_c + 0.015 tdcoa_c + 0.27 odecoa_c + 0.03 stcoa_c --> 0.01 lanostest_SC_c + 1.0 coa_c
+LANOSTESTH_SC:   1.0 h2o_c + 0.01 lanostest_SC_c --> 0.655 hdcea_c + 1.0 h_c + 0.27 ocdcea_c + 0.01 lanost_c + 0.02 hdca_c + 0.01 hexc_c + 0.015 ttdca_c + 0.03 ocdca_c
+LANOSTESTH_SCe:   1.0 h2o_e + 0.01 lanostest_SC_e --> 0.015 ttdca_e + 0.655 hdcea_e + 0.27 ocdcea_e + 0.01 lanost_e + 0.01 hexc_e + 0.03 ocdca_e + 0.02 hdca_e + 1.0 h_e
+LANOSTt:   1.0 lanost_e <==> 1.0 lanost_c
+LCADi:   1.0 nad_c + 1.0 lald_L_c + 1.0 h2o_c --> 2.0 h_c + 1.0 lac_L_c + 1.0 nadh_c
+LCYSTintv:   1.0 h_v + 1.0 Lcystin_v --> 1.0 Lcystin_c + 1.0 h_c
+LEUTA:   1.0 leu_L_c + 1.0 akg_c <==> 1.0 glu_L_c + 1.0 4mop_c
+LEUTAm:   1.0 leu_L_m + 1.0 akg_m <==> 1.0 glu_L_m + 1.0 4mop_m
+LEUTRS:   1.0 atp_c + 1.0 trnaleu_c + 1.0 leu_L_c --> 1.0 amp_c + 1.0 leutrna_c + 1.0 ppi_c
+LEUTRSm:   1.0 leu_L_m + 1.0 atp_m + 1.0 trnaleu_m --> 1.0 ppi_m + 1.0 leutrna_m + 1.0 amp_m
+LEUt2r:   1.0 h_e + 1.0 leu_L_e <==> 1.0 h_c + 1.0 leu_L_c
+LEUt6:   1.0 h_v + 1.0 leu_L_c --> 1.0 leu_L_v + 1.0 h_c
+LEUt7:   1.0 h_v + 1.0 leu_L_v --> 1.0 h_c + 1.0 leu_L_c
+LGTHL:   1.0 gthrd_c + 1.0 mthgxl_c --> 1.0 lgt_S_c
+LNS14DM:   1.0 lanost_c + 3.0 o2_c + 2.0 h_c + 3.0 nadph_c --> 1.0 44mctr_c + 3.0 nadp_c + 4.0 h2o_c + 1.0 for_c
+LNS14DMx:   1.0 lanost_c + 3.0 o2_c + 2.0 h_c + 3.0 nadh_c --> 1.0 44mctr_c + 3.0 nad_c + 4.0 h2o_c + 1.0 for_c
+LNSTLS:   1.0 Ssq23epx_c --> 1.0 lanost_c
+LPCAT_SC:   0.02 dcacoa_c + 0.17 hdcoa_c + 0.06 ddcacoa_c + 0.09 ocdycacoa_c + 0.1 tdcoa_c + 0.27 pmtcoa_c + 0.24 odecoa_c + 0.05 stcoa_c + 0.01 1agpc_SC_c --> 1.0 coa_c + 0.01 pc_SC_c
+LPP_SC:   0.01 dagpy_SC_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 h_c + 0.01 pa_SC_c
+LSERDHr:   1.0 nadp_c + 1.0 ser_L_c <==> 1.0 nadph_c + 1.0 2amsa_c + 1.0 h_c
+LYSTRS:   1.0 atp_c + 1.0 lys_L_c + 1.0 trnalys_c --> 1.0 amp_c + 1.0 ppi_c + 1.0 lystrna_c
+LYSTRSm:   1.0 lys_L_m + 1.0 atp_m + 1.0 trnalys_m --> 1.0 ppi_m + 1.0 lystrna_m + 1.0 amp_m
+LYSt2m:   1.0 lys_L_c + 1.0 h_c <==> 1.0 lys_L_m + 1.0 h_m
+LYSt2r:   1.0 lys_L_e + 1.0 h_e <==> 1.0 lys_L_c + 1.0 h_c
+LYSt6:   1.0 h_v + 1.0 lys_L_c --> 1.0 lys_L_v + 1.0 h_c
+L_LACD2cm:   1.0 lac_L_c + 2.0 ficytc_m --> 1.0 pyr_c + 2.0 focytc_m
+L_LACt2r:   1.0 h_e + 1.0 lac_L_e --> 1.0 lac_L_c + 1.0 h_c
+L_LACtm:   1.0 lac_L_c + 1.0 h_c <==> 1.0 h_m + 1.0 lac_L_m
+MACACI:   1.0 4mlacac_c --> 1.0 4fumacac_c
+MALOAAtp:   1.0 oaa_c + 1.0 mal_L_x <==> 1.0 oaa_x + 1.0 mal_L_c
+MALS:   1.0 accoa_c + 1.0 h2o_c + 1.0 glx_c --> 1.0 coa_c + 1.0 h_c + 1.0 mal_L_c
+MALSp:   1.0 glx_x + 1.0 h2o_x + 1.0 accoa_x --> 1.0 mal_L_x + 1.0 h_x + 1.0 coa_x
+MALT:   1.0 malt_c + 1.0 h2o_c --> 2.0 glc_D_c
+MALTt2:   1.0 h_e + 1.0 malt_e --> 1.0 malt_c + 1.0 h_c
+MALt2r:   1.0 mal_L_e + 1.0 h_e <==> 1.0 mal_L_c + 1.0 h_c
+MALtm:   1.0 mal_L_c + 1.0 pi_m <==> 1.0 pi_c + 1.0 mal_L_m
+MAN1PT:   1.0 man1p_c + 1.0 h_c + 1.0 gtp_c --> 1.0 ppi_c + 1.0 gdpmann_c
+MAN6PI:   1.0 man6p_c <==> 1.0 f6p_c
+MANNANter:   1.0 mannan_c <==> 1.0 mannan_r
+MANt2:   1.0 man_e + 1.0 h_e --> 1.0 man_c + 1.0 h_c
+MCITDm:   1.0 hcit_m <==> 1.0 b124tc_m + 1.0 h2o_m
+MCITL2m:   1.0 micit_m --> 1.0 pyr_m + 1.0 succ_m
+MCITSm:   1.0 oaa_m + 1.0 h2o_m + 1.0 ppcoa_m --> 1.0 h_m + 1.0 coa_m + 1.0 2mcit_m
+MCOATA:   1.0 ACP_c + 1.0 malcoa_c <==> 1.0 malACP_c + 1.0 coa_c
+MCOATAm:   1.0 ACP_m + 1.0 malcoa_m <==> 1.0 coa_m + 1.0 malACP_m
+MDH:   1.0 mal_L_c + 1.0 nad_c <==> 1.0 oaa_c + 1.0 h_c + 1.0 nadh_c
+MDHm:   1.0 nad_m + 1.0 mal_L_m <==> 1.0 nadh_m + 1.0 oaa_m + 1.0 h_m
+MDHp:   1.0 nad_x + 1.0 mal_L_x <==> 1.0 nadh_x + 1.0 oaa_x + 1.0 h_x
+MDRPD:   1.0 5mdru1p_c --> 1.0 dkmpp_c + 1.0 h2o_c
+ME1m:   1.0 mal_L_m + 1.0 nad_m --> 1.0 pyr_m + 1.0 nadh_m + 1.0 co2_m
+ME2m:   1.0 nadp_m + 1.0 mal_L_m --> 1.0 co2_m + 1.0 pyr_m + 1.0 nadph_m
+MELIBt2:   1.0 h_e + 1.0 melib_e --> 1.0 melib_c + 1.0 h_c
+MELTGH:   1.0 h2o_c + 1.0 melt_c <==> 1.0 gal_c + 1.0 sbt_D_c
+METAT:   1.0 atp_c + 1.0 h2o_c + 1.0 met_L_c --> 1.0 pi_c + 1.0 amet_c + 1.0 ppi_c
+METB1:   1.0 cys_L_c + 1.0 achms_c --> 1.0 cyst_L_c + 1.0 ac_c + 1.0 h_c
+METS:   1.0 hcys_L_c + 1.0 5mthf_c --> 1.0 h_c + 1.0 thf_c + 1.0 met_L_c
+METTRS:   1.0 atp_c + 1.0 met_L_c + 1.0 trnamet_c --> 1.0 amp_c + 1.0 mettrna_c + 1.0 ppi_c
+METTRSm:   1.0 trnamet_m + 1.0 atp_m + 1.0 met_L_m --> 1.0 ppi_m + 1.0 amp_m + 1.0 mettrna_m
+METt2m:   1.0 h_m + 1.0 met_L_m <==> 1.0 h_c + 1.0 met_L_c
+METt2r:   1.0 h_e + 1.0 met_L_e <==> 1.0 h_c + 1.0 met_L_c
+MEVK1:   1.0 atp_c + 1.0 mev_R_c --> 1.0 5pmev_c + 1.0 h_c + 1.0 adp_c
+MEVK2:   1.0 ctp_c + 1.0 mev_R_c --> 1.0 5pmev_c + 1.0 cdp_c + 1.0 h_c
+MEVK3:   1.0 gtp_c + 1.0 mev_R_c --> 1.0 5pmev_c + 1.0 h_c + 1.0 gdp_c
+MEVK4:   1.0 utp_c + 1.0 mev_R_c --> 1.0 5pmev_c + 1.0 h_c + 1.0 udp_c
+MEVRt:   1.0 mev_R_e <==> 1.0 mev_R_c
+MFAPS_SC:   1.0 amet_c + 0.01 ptdmeeta_SC_c --> 0.01 ptd2meeta_SC_c + 1.0 ahcys_c + 1.0 h_c
+MGSA:   1.0 dhap_c --> 1.0 mthgxl_c + 1.0 pi_c
+MHPGLUT:   1.0 mhpglu_c + 1.0 hcys_L_c --> 1.0 hpglu_c + 1.0 met_L_c
+MI13456PKn:   1.0 atp_n + 1.0 mi13456p_n --> 1.0 adp_n + 1.0 h_n + 1.0 minohp_n
+MI1345PKn:   1.0 mi1345p_n + 1.0 atp_n --> 1.0 adp_n + 1.0 mi13456p_n + 1.0 h_n
+MI1456PKn:   1.0 atp_n + 1.0 mi1456p_n --> 1.0 adp_n + 1.0 h_n + 1.0 mi13456p_n
+MI145P6Kn:   1.0 atp_n + 1.0 mi145p_n --> 1.0 adp_n + 1.0 h_n + 1.0 mi1456p_n
+MI145PKn:   1.0 atp_n + 1.0 mi145p_n --> 1.0 adp_n + 1.0 mi1345p_n + 1.0 h_n
+MI145Ptn:   1.0 mi145p_c <==> 1.0 mi145p_n
+MI1PP:   1.0 mi1p_D_c + 1.0 h2o_c --> 1.0 inost_c + 1.0 pi_c
+MI1PS:   1.0 g6p_c --> 1.0 mi1p_D_c
+MINOHPtn:   1.0 minohp_c <==> 1.0 minohp_n
+MIP2C124PLC_SC:   0.01 mip2c124_SC_c + 1.0 h2o_c --> 1.0 h_c + 1.0 man2mi1p_D_c + 1.0 cer1_24_c
+MIP2C126PLC_SC:   0.01 mip2c126_SC_c + 1.0 h2o_c --> 1.0 cer1_26_c + 1.0 h_c + 1.0 man2mi1p_D_c
+MIP2C224PLC_SC:   0.01 mip2c224_SC_c + 1.0 h2o_c --> 1.0 cer2_24_c + 1.0 h_c + 1.0 man2mi1p_D_c
+MIP2C226PLC_SC:   0.01 mip2c226_SC_c + 1.0 h2o_c --> 1.0 cer2_26_c + 1.0 h_c + 1.0 man2mi1p_D_c
+MIP2C324PLC_SC:   0.01 mip2c324_SC_c + 1.0 h2o_c --> 1.0 cer3_24_c + 1.0 h_c + 1.0 man2mi1p_D_c
+MIP2C326PLC_SC:   0.01 mip2c326_SC_c + 1.0 h2o_c --> 1.0 h_c + 1.0 man2mi1p_D_c + 1.0 cer3_26_c
+MIP2CS124_SC:   0.01 mipc124_SC_c + 0.01 ptd1ino_SC_c --> 0.01 mip2c124_SC_c + 0.01 12dgr_SC_c
+MIP2CS126_SC:   0.01 mipc126_SC_c + 0.01 ptd1ino_SC_c --> 0.01 12dgr_SC_c + 0.01 mip2c126_SC_c
+MIP2CS224_SC:   0.01 mipc224_SC_c + 0.01 ptd1ino_SC_c --> 0.01 mip2c224_SC_c + 0.01 12dgr_SC_c
+MIP2CS226_SC:   0.01 mipc226_SC_c + 0.01 ptd1ino_SC_c --> 0.01 12dgr_SC_c + 0.01 mip2c226_SC_c
+MIP2CS324_SC:   0.01 mipc324_SC_c + 0.01 ptd1ino_SC_c --> 0.01 mip2c324_SC_c + 0.01 12dgr_SC_c
+MIP2CS326_SC:   0.01 mipc326_SC_c + 0.01 ptd1ino_SC_c --> 0.01 mip2c326_SC_c + 0.01 12dgr_SC_c
+MIPC124PLC_SC:   1.0 h2o_c + 0.01 mipc124_SC_c --> 1.0 cer1_24_c + 1.0 h_c + 1.0 manmi1p_D_c
+MIPC126PLC_SC:   0.01 mipc126_SC_c + 1.0 h2o_c --> 1.0 cer1_26_c + 1.0 manmi1p_D_c + 1.0 h_c
+MIPC224PLC_SC:   1.0 h2o_c + 0.01 mipc224_SC_c --> 1.0 cer2_24_c + 1.0 manmi1p_D_c + 1.0 h_c
+MIPC226PLC_SC:   1.0 h2o_c + 0.01 mipc226_SC_c --> 1.0 cer2_26_c + 1.0 manmi1p_D_c + 1.0 h_c
+MIPC324PLC_SC:   0.01 mipc324_SC_c + 1.0 h2o_c --> 1.0 cer3_24_c + 1.0 manmi1p_D_c + 1.0 h_c
+MIPC326PLC_SC:   0.01 mipc326_SC_c + 1.0 h2o_c --> 1.0 manmi1p_D_c + 1.0 cer3_26_c + 1.0 h_c
+MIPCS124_SC:   1.0 gdpmann_c + 0.01 ipc124_SC_c --> 0.01 mipc124_SC_c + 1.0 gdp_c + 1.0 h_c
+MIPCS126_SC:   0.01 ipc126_SC_c + 1.0 gdpmann_c --> 0.01 mipc126_SC_c + 1.0 gdp_c + 1.0 h_c
+MIPCS224_SC:   1.0 gdpmann_c + 0.01 ipc224_SC_c --> 0.01 mipc224_SC_c + 1.0 gdp_c + 1.0 h_c
+MIPCS226_SC:   0.01 ipc226_SC_c + 1.0 gdpmann_c --> 0.01 mipc226_SC_c + 1.0 gdp_c + 1.0 h_c
+MIPCS324_SC:   0.01 ipc324_SC_c + 1.0 gdpmann_c --> 0.01 mipc324_SC_c + 1.0 gdp_c + 1.0 h_c
+MIPCS326_SC:   0.01 ipc326_SC_c + 1.0 gdpmann_c --> 0.01 mipc326_SC_c + 1.0 gdp_c + 1.0 h_c
+MMETt2:   1.0 mmet_e + 1.0 h_e --> 1.0 mmet_c + 1.0 h_c
+MOHMT:   1.0 3mob_c + 1.0 h2o_c + 1.0 mlthf_c --> 1.0 2dhp_c + 1.0 thf_c
+MTAP:   1.0 pi_c + 1.0 5mta_c --> 1.0 5mdr1p_c + 1.0 ade_c
+MTHFC:   1.0 methf_c + 1.0 h2o_c <==> 1.0 h_c + 1.0 10fthf_c
+MTHFCm:   1.0 h2o_m + 1.0 methf_m <==> 1.0 h_m + 1.0 10fthf_m
+MTHFD:   1.0 nadp_c + 1.0 mlthf_c <==> 1.0 nadph_c + 1.0 methf_c
+MTHFD2i:   1.0 nad_c + 1.0 mlthf_c --> 1.0 methf_c + 1.0 nadh_c
+MTHFDm:   1.0 mlthf_m + 1.0 nadp_m <==> 1.0 nadph_m + 1.0 methf_m
+MTHFR3:   1.0 nadph_c + 2.0 h_c + 1.0 mlthf_c --> 1.0 5mthf_c + 1.0 nadp_c
+MTRI:   1.0 5mdr1p_c <==> 1.0 5mdru1p_c
+NABTNO:   1.0 nad_c + 1.0 n4abutn_c + 1.0 h2o_c --> 2.0 h_c + 1.0 4aabutn_c + 1.0 nadh_c
+NACt:   1.0 nac_e <==> 1.0 nac_c
+NADDPp:   1.0 nad_x + 1.0 h2o_x --> 2.0 h_x + 1.0 amp_x + 1.0 nmn_x
+NADH2_u6cm:   1.0 q6_m + 1.0 nadh_c + 1.0 h_c --> 1.0 nad_c + 1.0 q6h2_m
+NADH2_u6m:   1.0 nadh_m + 1.0 h_m + 1.0 q6_m --> 1.0 nad_m + 1.0 q6h2_m
+NADK:   1.0 atp_c + 1.0 nad_c --> 1.0 adp_c + 1.0 nadp_c + 1.0 h_c
+NADKm:   1.0 atp_m + 1.0 nad_m --> 1.0 adp_m + 1.0 nadp_m + 1.0 h_m
+NADN:   1.0 h2o_c + 1.0 nad_c --> 1.0 ncam_c + 1.0 h_c + 1.0 adprib_c
+NADNm:   1.0 h2o_m + 1.0 nad_m --> 1.0 h_m + 1.0 adprib_m + 1.0 ncam_m
+NADPPPS:   1.0 nadp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 nad_c
+NADPPPSm:   1.0 h2o_m + 1.0 nadp_m --> 1.0 nad_m + 1.0 pi_m
+NADPt:   1.0 nadp_c <==> 1.0 nadp_e
+NADS1:   1.0 atp_c + 1.0 nh4_c + 1.0 dnad_c --> 1.0 nad_c + 1.0 amp_c + 1.0 h_c + 1.0 ppi_c
+NADS1n:   1.0 dnad_n + 1.0 atp_n + 1.0 nh4_n --> 1.0 h_n + 1.0 ppi_n + 1.0 amp_n + 1.0 nad_n
+NADtn:   1.0 nad_n <==> 1.0 nad_c
+NAPRT:   1.0 prpp_c + 1.0 nac_c + 1.0 h_c --> 1.0 ppi_c + 1.0 nicrnt_c
+NAPRTm:   1.0 prpp_m + 1.0 nac_m + 1.0 h_m --> 1.0 ppi_m + 1.0 nicrnt_m
+NAt3_1:   1.0 h_e + 1.0 na1_c <==> 1.0 h_c + 1.0 na1_e
+NDP1:   1.0 h2o_c + 1.0 adp_c --> 1.0 pi_c + 1.0 h_c + 1.0 amp_c
+NDP3:   1.0 gdp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 h_c + 1.0 gmp_c
+NDP3g:   1.0 gdp_g + 1.0 h2o_g --> 1.0 pi_g + 1.0 gmp_g + 1.0 h_g
+NDP4:   1.0 dgdp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 dgmp_c + 1.0 h_c
+NDP7:   1.0 udp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 ump_c + 1.0 h_c
+NDPK1:   1.0 gdp_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 gtp_c
+NDPK2:   1.0 udp_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 utp_c
+NDPK3:   1.0 atp_c + 1.0 cdp_c <==> 1.0 adp_c + 1.0 ctp_c
+NDPK4:   1.0 dtdp_c + 1.0 atp_c <==> 1.0 dttp_c + 1.0 adp_c
+NDPK5:   1.0 dgdp_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 dgtp_c
+NDPK6:   1.0 atp_c + 1.0 dudp_c <==> 1.0 adp_c + 1.0 dutp_c
+NDPK7:   1.0 atp_c + 1.0 dcdp_c <==> 1.0 dctp_c + 1.0 adp_c
+NDPK8:   1.0 dadp_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 datp_c
+NDPK9:   1.0 idp_c + 1.0 atp_c <==> 1.0 itp_c + 1.0 adp_c
+NFORTYRt:   1.0 Nbfortyr_c --> 1.0 Nbfortyr_e
+NFTYROX:   1.0 nadph_c + 1.0 h_c + 2.0 Nfortyr_c --> 1.0 Nbfortyr_c + 1.0 nadp_c
+NH4t:   1.0 nh4_e <==> 1.0 nh4_c
+NH4ti:   1.0 nh4_c --> 1.0 nh4_e
+NH4tm:   1.0 nh4_c <==> 1.0 nh4_m
+NH4tn:   1.0 nh4_c <==> 1.0 nh4_n
+NH4tp:   1.0 nh4_c <==> 1.0 nh4_x
+NMNAT:   1.0 atp_c + 1.0 h_c + 1.0 nmn_c --> 1.0 nad_c + 1.0 ppi_c
+NMNATm:   1.0 h_m + 1.0 nmn_m + 1.0 atp_m --> 1.0 ppi_m + 1.0 nad_m
+NMNTP:   1.0 nmn_e + 1.0 h_e --> 1.0 h_c + 1.0 nmn_c
+NMNt2m:   1.0 nmn_c + 1.0 h_c <==> 1.0 nmn_m + 1.0 h_m
+NMNt2p:   1.0 nmn_c + 1.0 h_c <==> 1.0 nmn_x + 1.0 h_x
+NNAMr:   1.0 ncam_c + 1.0 h2o_c <==> 1.0 nh4_c + 1.0 nac_c
+NNAMrm:   1.0 h2o_m + 1.0 ncam_m <==> 1.0 nh4_m + 1.0 nac_m
+NNAT:   1.0 atp_c + 1.0 nicrnt_c + 1.0 h_c --> 1.0 dnad_c + 1.0 ppi_c
+NNATm:   1.0 h_m + 1.0 nicrnt_m + 1.0 atp_m --> 1.0 ppi_m + 1.0 dnad_m
+NNDPR:   1.0 quln_c + 1.0 prpp_c + 2.0 h_c --> 1.0 nicrnt_c + 1.0 co2_c + 1.0 ppi_c
+NNDPRm:   2.0 h_m + 1.0 quln_m + 1.0 prpp_m --> 1.0 ppi_m + 1.0 nicrnt_m + 1.0 co2_m
+NNMT:   1.0 amet_c + 1.0 ncam_c --> 1.0 1mncam_c + 1.0 ahcys_c
+NTD1:   1.0 h2o_c + 1.0 dump_c --> 1.0 pi_c + 1.0 duri_c
+NTD10:   1.0 xmp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 xtsn_c
+NTD11:   1.0 h2o_c + 1.0 imp_c --> 1.0 pi_c + 1.0 ins_c
+NTD2:   1.0 ump_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 uri_c
+NTD3:   1.0 dcmp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 dcyt_c
+NTD4:   1.0 cmp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 cytd_c
+NTD5:   1.0 dtmp_c + 1.0 h2o_c --> 1.0 thymd_c + 1.0 pi_c
+NTD6:   1.0 damp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 dad_2_c
+NTD7:   1.0 h2o_c + 1.0 amp_c --> 1.0 pi_c + 1.0 adn_c
+NTD8:   1.0 h2o_c + 1.0 dgmp_c --> 1.0 pi_c + 1.0 dgsn_c
+NTD9:   1.0 gmp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 gsn_c
+NTP3:   1.0 h2o_c + 1.0 gtp_c --> 1.0 pi_c + 1.0 gdp_c + 1.0 h_c
+NTP4:   1.0 dgtp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 dgdp_c + 1.0 h_c
+NTRLASE:   2.0 h2o_c + 1.0 ind3acnl_c --> 1.0 ind3ac_c + 1.0 nh4_c
+NTRLASE2:   2.0 h2o_c + 1.0 aprop_c --> 1.0 nh4_c + 1.0 ala_L_c
+NTRLASE3:   1.0 acybut_c + 2.0 h2o_c --> 1.0 glu_L_c + 1.0 nh4_c
+O2t:   1.0 o2_e <==> 1.0 o2_c
+O2ter:   1.0 o2_c <==> 1.0 o2_r
+O2tm:   1.0 o2_c <==> 1.0 o2_m
+OAAt:   1.0 oaa_c <==> 1.0 oaa_e
+OAAt2m:   1.0 oaa_c + 1.0 h_c <==> 1.0 oaa_m + 1.0 h_m
+OBDHm:   1.0 2obut_m + 1.0 nad_m + 1.0 coa_m --> 1.0 co2_m + 1.0 nadh_m + 1.0 ppcoa_m
+OCBTi:   1.0 cbp_c + 1.0 orn_c --> 1.0 pi_c + 1.0 h_c + 1.0 citr_L_c
+OCDCAt:   1.0 ocdca_e --> 1.0 ocdca_c
+OCDCEAt:   1.0 ocdcea_e --> 1.0 ocdcea_c
+OCDCYAt:   1.0 ocdcya_e --> 1.0 ocdcya_c
+OHACT1:   1.0 accoa_c + 1.0 etoh_c --> 1.0 aces_c + 1.0 coa_c
+OHACT2:   1.0 iamoh_c + 1.0 accoa_c --> 1.0 iamac_c + 1.0 coa_c
+OHACT3:   1.0 2mbtoh_c + 1.0 accoa_c --> 1.0 coa_c + 1.0 2mbac_c
+OHACT4:   1.0 ibutoh_c + 1.0 accoa_c --> 1.0 coa_c + 1.0 ibutac_c
+OHACT5:   1.0 accoa_c + 1.0 2phetoh_c --> 1.0 pheac_c + 1.0 coa_c
+OHPBAT:   1.0 glu_L_c + 1.0 ohpb_c <==> 1.0 phthr_c + 1.0 akg_c
+OMCDC:   1.0 3c4mop_c + 1.0 h_c --> 1.0 co2_c + 1.0 4mop_c
+OMCDCm:   1.0 3c4mop_m + 1.0 h_m --> 1.0 co2_m + 1.0 4mop_m
+OMPDC:   1.0 orot5p_c + 1.0 h_c --> 1.0 co2_c + 1.0 ump_c
+ORNDC:   1.0 orn_c + 1.0 h_c --> 1.0 ptrc_c + 1.0 co2_c
+ORNTA:   1.0 akg_c + 1.0 orn_c --> 1.0 glu_L_c + 1.0 glu5sa_c
+ORNTACim:   1.0 glu_L_m + 1.0 acorn_m --> 1.0 acglu_m + 1.0 orn_m
+ORNt2r:   1.0 orn_e + 1.0 h_e <==> 1.0 h_c + 1.0 orn_c
+ORNt3m:   1.0 orn_m + 1.0 h_c <==> 1.0 h_m + 1.0 orn_c
+ORPT:   1.0 orot5p_c + 1.0 ppi_c <==> 1.0 prpp_c + 1.0 orot_c
+OXAGm:   1.0 h_m + 1.0 oxag_m <==> 1.0 2oxoadp_m + 1.0 co2_m
+OXO2Ctm:   1.0 oxag_c + 1.0 akg_m <==> 1.0 oxag_m + 1.0 akg_c
+P5CDm:   1.0 nad_m + 1.0 1pyr5c_m + 2.0 h2o_m --> 1.0 nadh_m + 1.0 glu_L_m + 1.0 h_m
+P5CR:   1.0 1pyr5c_c + 2.0 h_c + 1.0 nadph_c --> 1.0 nadp_c + 1.0 pro_L_c
+PACALDt:   1.0 pacald_c <==> 1.0 pacald_e
+PACALDtm:   1.0 pacald_c <==> 1.0 pacald_m
+PAK_SC:   0.01 pa_SC_c + 1.0 atp_c --> 0.01 dagpy_SC_c + 1.0 adp_c
+PALOXR:   1.0 nad_c + 1.0 h2o_c + 1.0 hxdcal_c <==> 1.0 hdca_c + 1.0 nadh_c + 1.0 h_c
+PAN4Ptm:   1.0 pan4p_c <==> 1.0 pan4p_m
+PANTS:   1.0 atp_c + 1.0 ala_B_c + 1.0 pant_R_c --> 1.0 amp_c + 1.0 pnto_R_c + 1.0 h_c + 1.0 ppi_c
+PANTtm:   1.0 pant_R_c <==> 1.0 pant_R_m
+PAPSR:   1.0 trdrd_c + 1.0 paps_c --> 1.0 pap_c + 2.0 h_c + 1.0 so3_c + 1.0 trdox_c
+PAPt:   1.0 pap_e <==> 1.0 pap_c
+PAPtm:   1.0 pap_c <==> 1.0 pap_m
+PAtm_SC:   1.0 pa_SC_c <==> 1.0 pa_SC_m
+PC:   1.0 hco3_c + 1.0 atp_c + 1.0 pyr_c --> 1.0 adp_c + 1.0 pi_c + 1.0 oaa_c + 1.0 h_c
+PCDAGAT:   1.0 12dgr_SC_c + 1.0 pc_SC_c --> 1.0 1agpc_SC_c + 1.0 triglyc_SC_c
+PDE1:   1.0 camp_c + 1.0 h2o_c --> 1.0 amp_c + 1.0 h_c
+PDE2:   1.0 35cdamp_c + 1.0 h2o_c --> 1.0 damp_c + 1.0 h_c
+PDE3:   1.0 35cimp_c + 1.0 h2o_c --> 1.0 h_c + 1.0 imp_c
+PDE4:   1.0 35cgmp_c + 1.0 h2o_c --> 1.0 gmp_c + 1.0 h_c
+PDE5:   1.0 35ccmp_c + 1.0 h2o_c --> 1.0 cmp_c + 1.0 h_c
+PDHcm:   1.0 dhlam_m + 1.0 nad_m --> 1.0 lpam_m + 1.0 h_m + 1.0 nadh_m
+PDHm:   1.0 nad_m + 1.0 coa_m + 1.0 pyr_m --> 1.0 accoa_m + 1.0 co2_m + 1.0 nadh_m
+PDX5PO:   1.0 o2_c + 1.0 pdx5p_c <==> 1.0 pydx5p_c + 1.0 h2o2_c
+PENDPtm:   1.0 pendp_c <==> 1.0 pendp_m
+PEPAT:   1.0 pepd_c + 1.0 accoa_c --> 1.0 coa_c + 1.0 apep_c + 1.0 h_c
+PEPDt3:   1.0 h_e + 1.0 pepd_e --> 1.0 h_c + 1.0 pepd_c
+PETHCT:   1.0 ethamp_c + 1.0 ctp_c + 1.0 h_c --> 1.0 ppi_c + 1.0 cdpea_c
+PETOHM_SC:   1.0 amet_c + 0.01 pe_SC_c --> 1.0 ahcys_c + 1.0 h_c + 0.01 ptdmeeta_SC_c
+PEtg_SC:   1.0 pe_SC_c <==> 1.0 pe_SC_g
+PEtm_SC:   1.0 pe_SC_c <==> 1.0 pe_SC_m
+PEtv_SC:   1.0 pe_SC_c <==> 1.0 pe_SC_v
+PFK:   1.0 f6p_c + 1.0 atp_c --> 1.0 adp_c + 1.0 h_c + 1.0 fdp_c
+PFK26:   1.0 f6p_c + 1.0 atp_c --> 1.0 adp_c + 1.0 h_c + 1.0 f26bp_c
+PFK_2:   1.0 tag6p_D_c + 1.0 atp_c --> 1.0 adp_c + 1.0 tagdp_D_c + 1.0 h_c
+PFK_3:   1.0 atp_c + 1.0 s7p_c --> 1.0 adp_c + 1.0 s17bp_c + 1.0 h_c
+PGAMT:   1.0 gam1p_c <==> 1.0 gam6p_c
+PGCD:   1.0 nad_c + 1.0 3pg_c --> 1.0 3php_c + 1.0 nadh_c + 1.0 h_c
+PGI:   1.0 g6p_c <==> 1.0 f6p_c
+PGK:   1.0 3pg_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 13dpg_c
+PGL:   1.0 6pgl_c + 1.0 h2o_c --> 1.0 6pgc_c + 1.0 h_c
+PGM:   1.0 2pg_c <==> 1.0 3pg_c
+PGMT:   1.0 g1p_c <==> 1.0 g6p_c
+PGPPAm_SC:   1.0 h2o_m + 0.01 pgp_SC_m --> 0.01 pg_SC_m + 1.0 pi_m
+PHCDm:   1.0 1p3h5c_m + 2.0 h2o_m + 1.0 nad_m --> 1.0 h_m + 1.0 e4hglu_m + 1.0 nadh_m
+PHCHGSm:   1.0 h2o_m + 1.0 1p3h5c_m + 1.0 h_m --> 1.0 4hglusa_m
+PHEACt:   1.0 pheac_c --> 1.0 pheac_e
+PHETA1:   1.0 akg_c + 1.0 phe_L_c <==> 1.0 glu_L_c + 1.0 phpyr_c
+PHETRS:   1.0 atp_c + 1.0 phe_L_c + 1.0 trnaphe_c --> 1.0 amp_c + 1.0 ppi_c + 1.0 phetrna_c
+PHETRSm:   1.0 trnaphe_m + 1.0 atp_m + 1.0 phe_L_m --> 1.0 amp_m + 1.0 phetrna_m + 1.0 ppi_m
+PHEt2m:   1.0 phe_L_m + 1.0 h_m <==> 1.0 phe_L_c + 1.0 h_c
+PHEt2r:   1.0 phe_L_e + 1.0 h_e <==> 1.0 phe_L_c + 1.0 h_c
+PHLPDS1:   1.0 pc_SC_c --> 1.0 phospholipid_c
+PHLPDS2:   1.0 ptdmeeta_SC_c --> 1.0 phospholipid_c
+PHLPDS3:   1.0 ptd2meeta_SC_c --> 1.0 phospholipid_c
+PHLPDS4:   1.0 pe_SC_c --> 1.0 phospholipid_c
+PI35BP5P_SC:   1.0 h2o_c + 0.01 ptd135bp_SC_c --> 1.0 pi_c + 0.01 ptd3ino_SC_c
+PI3P4K_SC:   1.0 atp_c + 0.01 ptd3ino_SC_c --> 0.01 ptd134bp_SC_c + 1.0 h_c + 1.0 adp_c
+PI3P5K_SC:   0.01 ptd3ino_SC_c + 1.0 atp_c --> 0.01 ptd135bp_SC_c + 1.0 adp_c + 1.0 h_c
+PI45BP5P_SC:   0.01 ptd145bp_SC_c + 1.0 h2o_c --> 1.0 pi_c + 0.01 ptd4ino_SC_c
+PI45BPP_SC:   0.01 ptd145bp_SC_c + 1.0 h2o_c --> 1.0 mi145p_c + 0.01 12dgr_SC_c + 1.0 h_c
+PI4P5K_SC:   0.01 ptd4ino_SC_c + 1.0 atp_c --> 1.0 adp_c + 0.01 ptd145bp_SC_c + 1.0 h_c
+PIN3K_SC:   1.0 atp_c + 0.01 ptd1ino_SC_c --> 1.0 adp_c + 0.01 ptd3ino_SC_c + 1.0 h_c
+PIN4K_SC:   1.0 atp_c + 0.01 ptd1ino_SC_c --> 1.0 adp_c + 0.01 ptd4ino_SC_c + 1.0 h_c
+PIN4Kn_SC:   1.0 atp_n + 0.01 ptd1ino_SC_n --> 0.01 ptd4ino_SC_n + 1.0 adp_n + 1.0 h_n
+PINOS_SC:   0.01 cdpdag_SC_c + 1.0 inost_c --> 1.0 cmp_c + 1.0 h_c + 0.01 ptd1ino_SC_c
+PIt2m:   1.0 pi_c + 1.0 h_c <==> 1.0 pi_m + 1.0 h_m
+PIt2n:   1.0 pi_c + 1.0 h_c <==> 1.0 h_n + 1.0 pi_n
+PIt2p:   1.0 pi_c + 1.0 h_c <==> 1.0 pi_x + 1.0 h_x
+PIt2r:   1.0 h_e + 1.0 pi_e <==> 1.0 pi_c + 1.0 h_c
+PIt2v:   1.0 pi_c + 1.0 h_c <==> 1.0 h_v + 1.0 pi_v
+PIt5m:   1.0 pi_c + 1.0 oh1_m <==> 1.0 pi_m + 1.0 oh1_c
+PLBP1I_SCe:   0.005 ptd1ino_SC_e + 1.0 h2o_e --> 0.1 ttdca_e + 0.17 hdcea_e + 0.24 ocdcea_e + 0.5 g3pi_e + 0.06 ddca_e + 0.02 dca_e + 1.0 h_e + 0.05 ocdca_e + 0.09 ocdcya_e + 0.27 hdca_e
+PLBPC_SC:   0.005 pc_SC_c + 1.0 h2o_c --> 0.17 hdcea_c + 1.0 h_c + 0.09 ocdcya_c + 0.24 ocdcea_c + 0.5 g3pc_c + 0.06 ddca_c + 0.27 hdca_c + 0.1 ttdca_c + 0.02 dca_c + 0.05 ocdca_c
+PLBPC_SCe:   1.0 h2o_e + 0.005 pc_SC_e --> 0.1 ttdca_e + 0.17 hdcea_e + 0.24 ocdcea_e + 0.05 ocdca_e + 0.06 ddca_e + 0.02 dca_e + 0.5 g3pc_e + 1.0 h_e + 0.09 ocdcya_e + 0.27 hdca_e
+PLD_SC:   1.0 h2o_c + 0.01 pc_SC_c --> 0.01 pa_SC_c + 1.0 h_c + 1.0 chol_c
+PMANM:   1.0 man1p_c <==> 1.0 man6p_c
+PMDPHT:   1.0 h2o_c + 1.0 5aprbu_c --> 1.0 pi_c + 1.0 4r5au_c
+PMETM_SC:   1.0 amet_c + 0.01 ptd2meeta_SC_c --> 1.0 h_c + 1.0 ahcys_c + 0.01 pc_SC_c
+PMEVK:   1.0 5pmev_c + 1.0 atp_c --> 1.0 5dpmev_c + 1.0 adp_c
+PMI12346PH:   1.0 ppmi12346p_c + 1.0 h2o_c --> 1.0 minohp_c + 1.0 pi_c + 1.0 h_c
+PMI12346PS:   1.0 minohp_c + 1.0 atp_c --> 1.0 ppmi12346p_c + 1.0 adp_c
+PMI1346PH:   1.0 ppmi1346p_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 mi13456p_c + 1.0 h_c
+PMI1346PS:   1.0 mi13456p_c + 1.0 atp_c --> 1.0 ppmi1346p_c + 1.0 adp_c
+PMPK:   1.0 4ampm_c + 1.0 atp_c --> 1.0 adp_c + 1.0 2mahmp_c
+PNP:   1.0 pi_c + 1.0 rnam_c <==> 1.0 ncam_c + 1.0 h_c + 1.0 r1p_c
+PNTK:   1.0 pnto_R_c + 1.0 atp_c --> 1.0 4ppan_c + 1.0 h_c + 1.0 adp_c
+PNTOt2:   1.0 h_e + 1.0 pnto_R_e <==> 1.0 pnto_R_c + 1.0 h_c
+POLYAO:   1.0 h2o_c + 1.0 o2_c + 1.0 N1aspmd_c --> 1.0 aproa_c + 1.0 aprut_c + 1.0 h2o2_c
+POLYAO2:   1.0 h2o_c + 1.0 o2_c + 1.0 N1sprm_c --> 1.0 aproa_c + 1.0 h2o2_c + 1.0 N1aspmd_c
+POLYAO3:   1.0 sprm_c + 1.0 h2o_c + 1.0 o2_c --> 1.0 aproa_c + 1.0 h2o2_c + 1.0 spmd_c
+PPA:   1.0 ppi_c + 1.0 h2o_c --> 2.0 pi_c + 1.0 h_c
+PPAm:   1.0 h2o_m + 1.0 ppi_m --> 2.0 pi_m + 1.0 h_m
+PPBNGS:   2.0 5aop_c --> 1.0 ppbng_c + 2.0 h2o_c + 1.0 h_c
+PPCDC:   1.0 4ppcys_c + 1.0 h_c --> 1.0 pan4p_c + 1.0 co2_c
+PPCK:   1.0 oaa_c + 1.0 atp_c --> 1.0 co2_c + 1.0 pep_c + 1.0 adp_c
+PPItp:   1.0 ppi_x --> 1.0 ppi_c
+PPM:   1.0 r1p_c <==> 1.0 r5p_c
+PPNCL2:   1.0 cys_L_c + 1.0 ctp_c + 1.0 4ppan_c --> 1.0 cmp_c + 1.0 ppi_c + 1.0 h_c + 1.0 4ppcys_c
+PPND:   1.0 pphn_c + 1.0 nad_c --> 1.0 34hpp_c + 1.0 co2_c + 1.0 nadh_c
+PPND2:   1.0 pphn_c + 1.0 nadp_c --> 1.0 34hpp_c + 1.0 nadph_c + 1.0 co2_c
+PPNDH:   1.0 pphn_c + 1.0 h_c --> 1.0 phpyr_c + 1.0 co2_c + 1.0 h2o_c
+PPPG9tm:   1.0 pppg9_c <==> 1.0 pppg9_m
+PPPGOm:   3.0 o2_m + 2.0 pppg9_m --> 6.0 h2o_m + 2.0 ppp9_m
+PPTTm:   1.0 ipdp_m + 1.0 pendp_m --> 1.0 ppi_m + 1.0 hexdp_m
+PPYRDC:   1.0 phpyr_c + 1.0 h_c --> 1.0 pacald_c + 1.0 co2_c
+PRAGSr:   1.0 gly_c + 1.0 pram_c + 1.0 atp_c <==> 1.0 gar_c + 1.0 adp_c + 1.0 h_c + 1.0 pi_c
+PRAIS:   1.0 atp_c + 1.0 fpram_c --> 1.0 air_c + 1.0 adp_c + 2.0 h_c + 1.0 pi_c
+PRAIi:   1.0 pran_c --> 1.0 2cpr5p_c
+PRAMPC:   1.0 h2o_c + 1.0 prbamp_c --> 1.0 prfp_c
+PRASCS:   1.0 5aizc_c + 1.0 atp_c + 1.0 asp_L_c <==> 1.0 25aics_c + 1.0 pi_c + 1.0 adp_c + 1.0 h_c
+PRATPP:   1.0 prbatp_c + 1.0 h2o_c --> 1.0 prbamp_c + 1.0 ppi_c + 1.0 h_c
+PRFGS:   1.0 atp_c + 1.0 fgam_c + 1.0 h2o_c + 1.0 gln_L_c --> 1.0 pi_c + 1.0 fpram_c + 1.0 adp_c + 1.0 glu_L_c + 1.0 h_c
+PRMICIi:   1.0 prfp_c --> 1.0 prlp_c
+PRO1xm:   1.0 nad_m + 1.0 pro_L_m --> 1.0 nadh_m + 1.0 1pyr5c_m + 2.0 h_m
+PROTRS:   1.0 pro_L_c + 1.0 atp_c + 1.0 trnapro_c --> 1.0 amp_c + 1.0 protrna_c + 1.0 ppi_c
+PROt2r:   1.0 h_e + 1.0 pro_L_e <==> 1.0 pro_L_c + 1.0 h_c
+PROtm:   1.0 pro_L_c <==> 1.0 pro_L_m
+PRPPS:   1.0 r5p_c + 1.0 atp_c <==> 1.0 prpp_c + 1.0 h_c + 1.0 amp_c
+PRPPtm:   1.0 prpp_c <==> 1.0 prpp_m
+PSCVTi:   1.0 skm5p_c + 1.0 pep_c --> 1.0 pi_c + 1.0 3psme_c
+PSERDg_SC:   0.01 ps_SC_g + 1.0 h_g --> 1.0 co2_g + 0.01 pe_SC_g
+PSERDm_SC:   1.0 h_m + 0.01 ps_SC_m --> 1.0 co2_m + 0.01 pe_SC_m
+PSERDv_SC:   1.0 h_v + 0.01 ps_SC_v --> 0.01 pe_SC_v + 1.0 co2_v
+PSERS_SC:   1.0 ser_L_c + 0.01 cdpdag_SC_c <==> 1.0 cmp_c + 1.0 h_c + 0.01 ps_SC_c
+PSERSm_SC:   0.01 cdpdag_SC_m + 1.0 ser_L_m <==> 0.01 ps_SC_m + 1.0 cmp_m + 1.0 h_m
+PSERT:   1.0 3php_c + 1.0 glu_L_c --> 1.0 akg_c + 1.0 pser_L_c
+PSPH1Pter:   1.0 psph1p_c --> 1.0 psph1p_r
+PSPHPL:   1.0 psph1p_c --> 1.0 2hhxdal_c + 1.0 ethamp_c
+PSPHS:   1.0 h_c + 1.0 nadph_c + 1.0 o2_c + 1.0 sphgn_c --> 1.0 nadp_c + 1.0 h2o_c + 1.0 psphings_c
+PSP_L:   1.0 h2o_c + 1.0 pser_L_c --> 1.0 ser_L_c + 1.0 pi_c
+PStg_SC:   1.0 ps_SC_c <==> 1.0 ps_SC_g
+PStm_SC:   1.0 ps_SC_c <==> 1.0 ps_SC_m
+PStv_SC:   1.0 ps_SC_c <==> 1.0 ps_SC_v
+PTD1INOtn_SC:   1.0 ptd1ino_SC_c <==> 1.0 ptd1ino_SC_n
+PTD4INOtn_SC:   1.0 ptd4ino_SC_c <==> 1.0 ptd4ino_SC_n
+PTE10x:   1.0 h2o_x + 1.0 dcacoa_x --> 1.0 coa_x + 1.0 h_x + 1.0 dca_x
+PTE11x:   1.0 ddcacoa_x + 1.0 h2o_x --> 1.0 coa_x + 1.0 h_x + 1.0 ddca_x
+PTE12x:   1.0 h2o_x + 1.0 ttccoa_x --> 1.0 ttc_x + 1.0 coa_x + 1.0 h_x
+PTE2x:   1.0 h2o_x + 1.0 pmtcoa_x --> 1.0 coa_x + 1.0 h_x + 1.0 hdca_x
+PTE7x:   1.0 h2o_x + 1.0 tdcoa_x --> 1.0 coa_x + 1.0 h_x + 1.0 ttdca_x
+PTE8x:   1.0 h2o_x + 1.0 stcoa_x --> 1.0 coa_x + 1.0 ocdca_x + 1.0 h_x
+PTE9x:   1.0 h2o_x + 1.0 occoa_x --> 1.0 coa_x + 1.0 octa_x + 1.0 h_x
+PTPATi:   1.0 atp_c + 1.0 h_c + 1.0 pan4p_c --> 1.0 ppi_c + 1.0 dpcoa_c
+PTPATim:   1.0 pan4p_m + 1.0 atp_m + 1.0 h_m --> 1.0 dpcoa_m + 1.0 ppi_m
+PTRCt3i:   1.0 ptrc_e + 1.0 h_c --> 1.0 h_e + 1.0 ptrc_c
+PTRCtex2:   1.0 ptrc_c --> 1.0 ptrc_e
+PUNP1:   1.0 adn_c + 1.0 pi_c <==> 1.0 r1p_c + 1.0 ade_c
+PUNP1m:   1.0 pi_m + 1.0 adn_m <==> 1.0 r1p_m + 1.0 ade_m
+PUNP2:   1.0 pi_c + 1.0 dad_2_c <==> 1.0 ade_c + 1.0 2dr1p_c
+PUNP3:   1.0 gsn_c + 1.0 pi_c <==> 1.0 r1p_c + 1.0 gua_c
+PUNP3m:   1.0 pi_m + 1.0 gsn_m <==> 1.0 r1p_m + 1.0 gua_m
+PUNP4:   1.0 dgsn_c + 1.0 pi_c <==> 1.0 2dr1p_c + 1.0 gua_c
+PUNP5:   1.0 pi_c + 1.0 ins_c <==> 1.0 r1p_c + 1.0 hxan_c
+PUNP6:   1.0 pi_c + 1.0 din_c <==> 1.0 hxan_c + 1.0 2dr1p_c
+PUNP7:   1.0 pi_c + 1.0 xtsn_c <==> 1.0 r1p_c + 1.0 xan_c
+PYAM5PO:   1.0 h2o_c + 1.0 pyam5p_c + 1.0 o2_c --> 1.0 pydx5p_c + 1.0 h2o2_c + 1.0 nh4_c
+PYDAMK:   1.0 atp_c + 1.0 pydam_c --> 1.0 pyam5p_c + 1.0 h_c + 1.0 adp_c
+PYDXK:   1.0 atp_c + 1.0 pydx_c --> 1.0 adp_c + 1.0 pydx5p_c + 1.0 h_c
+PYDXNK:   1.0 atp_c + 1.0 pydxn_c --> 1.0 adp_c + 1.0 pdx5p_c + 1.0 h_c
+PYDXNO:   1.0 pydxn_c + 1.0 o2_c <==> 1.0 pydx_c + 1.0 h2o2_c
+PYDXO:   1.0 pydx_c + 2.0 h2o_c + 0.5 o2_c + 1.0 nh4_c <==> 1.0 pydam_c + 2.0 h2o2_c
+PYK:   1.0 adp_c + 1.0 h_c + 1.0 pep_c --> 1.0 atp_c + 1.0 pyr_c
+PYNP2r:   1.0 pi_c + 1.0 uri_c <==> 1.0 r1p_c + 1.0 ura_c
+PYR5CDm:   1.0 nadp_m + 1.0 glu5sa_m + 1.0 h2o_m --> 2.0 h_m + 1.0 glu_L_m + 1.0 nadph_m
+PYRDC:   1.0 pyr_c + 1.0 h_c --> 1.0 acald_c + 1.0 co2_c
+PYRDC2:   1.0 h_c + 1.0 acald_c + 1.0 pyr_c --> 1.0 actn_R_c + 1.0 co2_c
+PYRt:   1.0 pyr_c --> 1.0 pyr_e
+PYRt2:   1.0 pyr_e + 1.0 h_e <==> 1.0 pyr_c + 1.0 h_c
+PYRt2m:   1.0 pyr_c + 1.0 h_c <==> 1.0 h_m + 1.0 pyr_m
+PYRt2p:   1.0 h_c + 1.0 pyr_c <==> 1.0 pyr_x + 1.0 h_x
+QUILSYN:   1.0 cmusa_c --> 1.0 h2o_c + 1.0 quln_c + 1.0 h_c
+QULNS:   1.0 dhap_c + 1.0 iasp_c --> 1.0 pi_c + 2.0 h2o_c + 1.0 quln_c
+QULNtm:   1.0 quln_c <==> 1.0 quln_m
+RAFGH:   1.0 raffin_c + 1.0 h2o_c --> 1.0 gal_c + 1.0 sucr_c
+RBFK:   1.0 atp_c + 1.0 ribflv_c --> 1.0 adp_c + 1.0 fmn_c + 1.0 h_c
+RBFKm:   1.0 atp_m + 1.0 ribflv_m --> 1.0 adp_m + 1.0 h_m + 1.0 fmn_m
+RBFSa:   1.0 4r5au_c + 1.0 db4p_c --> 1.0 pi_c + 2.0 h2o_c + 1.0 dmlz_c
+RBFSb:   2.0 dmlz_c --> 1.0 ribflv_c + 1.0 4r5au_c
+RBK:   1.0 atp_c + 1.0 rib_D_c --> 1.0 adp_c + 1.0 h_c + 1.0 r5p_c
+RIBFLVt2:   1.0 ribflv_e + 1.0 h_e --> 1.0 ribflv_c + 1.0 h_c
+RIBFLVtm:   1.0 ribflv_c <==> 1.0 ribflv_m
+RIBt2:   1.0 h_e + 1.0 rib_D_e --> 1.0 h_c + 1.0 rib_D_c
+RNDR1:   1.0 adp_c + 1.0 trdrd_c --> 1.0 dadp_c + 1.0 h2o_c + 1.0 trdox_c
+RNDR1n:   1.0 trdrd_n + 1.0 adp_n --> 1.0 dadp_n + 1.0 trdox_n + 1.0 h2o_n
+RNDR2:   1.0 gdp_c + 1.0 trdrd_c --> 1.0 h2o_c + 1.0 dgdp_c + 1.0 trdox_c
+RNDR2n:   1.0 gdp_n + 1.0 trdrd_n --> 1.0 trdox_n + 1.0 dgdp_n + 1.0 h2o_n
+RNDR3:   1.0 cdp_c + 1.0 trdrd_c --> 1.0 h2o_c + 1.0 dcdp_c + 1.0 trdox_c
+RNDR3n:   1.0 cdp_n + 1.0 trdrd_n --> 1.0 trdox_n + 1.0 dcdp_n + 1.0 h2o_n
+RNDR4:   1.0 udp_c + 1.0 trdrd_c --> 1.0 h2o_c + 1.0 dudp_c + 1.0 trdox_c
+RNDR4n:   1.0 udp_n + 1.0 trdrd_n --> 1.0 trdox_n + 1.0 h2o_n + 1.0 dudp_n
+RNMK:   1.0 atp_c + 1.0 rnam_c --> 1.0 adp_c + 1.0 h_c + 1.0 nmn_c
+RNTR1:   1.0 atp_c + 1.0 trdrd_c --> 1.0 h2o_c + 1.0 trdox_c + 1.0 datp_c
+RNTR2:   1.0 gtp_c + 1.0 trdrd_c --> 1.0 h2o_c + 1.0 dgtp_c + 1.0 trdox_c
+RNTR3:   1.0 ctp_c + 1.0 trdrd_c --> 1.0 dctp_c + 1.0 h2o_c + 1.0 trdox_c
+RNTR4:   1.0 trdrd_c + 1.0 utp_c --> 1.0 h2o_c + 1.0 dutp_c + 1.0 trdox_c
+RPE:   1.0 ru5p_D_c <==> 1.0 xu5p_D_c
+RPI:   1.0 r5p_c <==> 1.0 ru5p_D_c
+SACCD1:   1.0 L2aadp6sa_c + 1.0 glu_L_c + 1.0 h_c + 1.0 nadph_c <==> 1.0 saccrp_L_c + 1.0 h2o_c + 1.0 nadp_c
+SACCD2:   1.0 nad_c + 1.0 saccrp_L_c + 1.0 h2o_c <==> 1.0 lys_L_c + 1.0 h_c + 1.0 nadh_c + 1.0 akg_c
+SADT:   1.0 so4_c + 1.0 h_c + 1.0 atp_c --> 1.0 ppi_c + 1.0 aps_c
+SAM24MT:   1.0 amet_c + 1.0 zymst_c --> 1.0 fecost_c + 1.0 ahcys_c + 1.0 h_c
+SBPP1er:   1.0 h2o_r + 1.0 sph1p_r --> 1.0 pi_r + 1.0 sphgn_r
+SBPP2er:   1.0 h2o_r + 1.0 psph1p_r --> 1.0 psphings_r + 1.0 pi_r
+SBTD_D2:   1.0 sbt_D_c + 1.0 nad_c --> 1.0 fru_c + 1.0 h_c + 1.0 nadh_c
+SBTD_L:   1.0 sbt_L_c + 1.0 nad_c --> 1.0 srb_L_c + 1.0 nadh_c + 1.0 h_c
+SBTR:   1.0 nadph_c + 1.0 glc_D_c + 1.0 h_c --> 1.0 sbt_D_c + 1.0 nadp_c
+SBT_Dt:   1.0 sbt_D_e <==> 1.0 sbt_D_c
+SBT_Lt:   1.0 sbt_L_e <==> 1.0 sbt_L_c
+SERATi:   1.0 ser_L_c + 1.0 accoa_c --> 1.0 coa_c + 1.0 acser_c
+SERD_L:   1.0 ser_L_c --> 1.0 pyr_c + 1.0 nh4_c
+SERPT:   1.0 ser_L_c + 1.0 h_c + 1.0 pmtcoa_c --> 1.0 3dsphgn_c + 1.0 co2_c + 1.0 coa_c
+SERTRS:   1.0 ser_L_c + 1.0 atp_c + 1.0 trnaser_c --> 1.0 amp_c + 1.0 sertrna_c + 1.0 ppi_c
+SERt2m:   1.0 ser_L_c + 1.0 h_c <==> 1.0 h_m + 1.0 ser_L_m
+SERt2r:   1.0 h_e + 1.0 ser_L_e <==> 1.0 ser_L_c + 1.0 h_c
+SFGTH:   1.0 Sfglutth_c + 1.0 h2o_c <==> 1.0 for_c + 1.0 gthrd_c + 1.0 h_c
+SHCHD:   1.0 dscl_c + 1.0 nadp_c --> 1.0 nadph_c + 1.0 h_c + 1.0 scl_c
+SHCHF:   1.0 scl_c + 1.0 fe2_c --> 3.0 h_c + 1.0 sheme_c
+SHK3D:   1.0 h_c + 1.0 nadph_c + 1.0 3dhsk_c --> 1.0 skm_c + 1.0 nadp_c
+SHKK:   1.0 atp_c + 1.0 skm_c --> 1.0 adp_c + 1.0 skm5p_c + 1.0 h_c
+SHSL1:   1.0 suchms_c + 1.0 cys_L_c --> 1.0 cyst_L_c + 1.0 h_c + 1.0 succ_c
+SHSL4r:   1.0 h2o_c + 1.0 suchms_c <==> 1.0 succ_c + 1.0 2obut_c + 1.0 nh4_c + 1.0 h_c
+SLCBK1:   1.0 atp_c + 1.0 sphgn_c --> 1.0 adp_c + 1.0 sph1p_c + 1.0 h_c
+SLCBK2:   1.0 atp_c + 1.0 psphings_c --> 1.0 adp_c + 1.0 psph1p_c + 1.0 h_c
+SLFAT:   1.0 adp_c + 1.0 h_c + 1.0 so4_c <==> 1.0 pi_c + 1.0 aps_c
+SO3ti:   1.0 so3_c --> 1.0 so3_e
+SO4ti:   1.0 so4_e --> 1.0 so4_c
+SPH1Pter:   1.0 sph1p_c --> 1.0 sph1p_r
+SPHPL:   1.0 sph1p_c --> 1.0 ethamp_c + 1.0 hxdcal_c
+SPMDAT1:   1.0 spmd_c + 1.0 accoa_c --> 1.0 coa_c + 1.0 h_c + 1.0 N1aspmd_c
+SPMDt3i:   1.0 h_c + 1.0 spmd_e --> 1.0 h_e + 1.0 spmd_c
+SPMDtex2:   1.0 spmd_c --> 1.0 spmd_e
+SPMS:   1.0 ptrc_c + 1.0 ametam_c --> 1.0 5mta_c + 1.0 h_c + 1.0 spmd_c
+SPRMS:   1.0 spmd_c + 1.0 ametam_c --> 1.0 5mta_c + 1.0 h_c + 1.0 sprm_c
+SPRMt2i:   1.0 sprm_e + 1.0 h_c --> 1.0 h_e + 1.0 sprm_c
+SQ23EPXter:   1.0 Ssq23epx_r <==> 1.0 Ssq23epx_c
+SQLEr:   1.0 nadph_r + 1.0 o2_r + 1.0 h_r + 1.0 sql_r --> 1.0 nadp_r + 1.0 h2o_r + 1.0 Ssq23epx_r
+SQLErx:   1.0 o2_r + 1.0 h_r + 1.0 sql_r + 1.0 nadh_r --> 1.0 h2o_r + 1.0 nad_r + 1.0 Ssq23epx_r
+SQLS:   2.0 frdp_c + 1.0 h_c + 1.0 nadph_c --> 1.0 nadp_c + 1.0 sql_c + 2.0 ppi_c
+SQLter:   1.0 sql_c <==> 1.0 sql_r
+SRB_Lt:   1.0 srb_L_e <==> 1.0 srb_L_c
+SSALy:   1.0 nadp_c + 1.0 sucsal_c + 1.0 h2o_c --> 1.0 succ_c + 2.0 h_c + 1.0 nadph_c
+STEROLS1:   1.0 ergst_c --> 1.0 sterol_c
+STEROLS2:   1.0 ergtetrol_c --> 1.0 sterol_c
+SUCCt2r:   1.0 succ_e + 1.0 h_e <==> 1.0 succ_c + 1.0 h_c
+SUCCtm:   1.0 succ_c + 1.0 pi_m --> 1.0 pi_c + 1.0 succ_m
+SUCD1m:   1.0 fad_m + 1.0 succ_m <==> 1.0 fadh2_m + 1.0 fum_m
+SUCD2_u6m:   1.0 q6_m + 1.0 succ_m --> 1.0 q6h2_m + 1.0 fum_m
+SUCD3_u6m:   1.0 fadh2_m + 1.0 q6_m <==> 1.0 fad_m + 1.0 q6h2_m
+SUCFUMtm:   1.0 fum_m + 1.0 succ_c --> 1.0 fum_c + 1.0 succ_m
+SUCOASm:   1.0 atp_m + 1.0 coa_m + 1.0 succ_m <==> 1.0 succoa_m + 1.0 adp_m + 1.0 pi_m
+SUCRe:   1.0 h2o_e + 1.0 sucr_e --> 1.0 fru_e + 1.0 glc_D_e
+SUCRt2:   1.0 h_e + 1.0 sucr_e --> 1.0 h_c + 1.0 sucr_c
+SULR:   3.0 nadp_c + 1.0 h2s_c + 3.0 h2o_c <==> 5.0 h_c + 3.0 nadph_c + 1.0 so3_c
+T4HCINNMFM:   1.0 34hpl_m --> 1.0 h2o_m + 1.0 T4hcinnm_m
+TAGL_SC:   0.01 triglyc_SC_c + 1.0 h2o_c --> 0.17 hdcea_c + 1.0 h_c + 0.24 ocdcea_c + 0.01 12dgr_SC_c + 0.06 ddca_c + 0.27 hdca_c + 0.05 ocdca_c + 0.1 ttdca_c + 0.02 dca_c + 0.09 ocdcya_c
+TALA:   1.0 g3p_c + 1.0 s7p_c <==> 1.0 f6p_c + 1.0 e4p_c
+TAUDO:   1.0 akg_c + 1.0 o2_c + 1.0 taur_c --> 1.0 aacald_c + 1.0 succ_c + 1.0 co2_c + 1.0 so3_c + 1.0 h_c
+TAURt:   1.0 taur_c <==> 1.0 taur_e
+TCHOLAabcv:   1.0 h2o_v + 1.0 atp_v + 1.0 tchola_c --> 1.0 tchola_v + 1.0 adp_v + 1.0 h_v + 1.0 pi_v
+THFATm:   1.0 h2o_m + 1.0 methf_m --> 1.0 h_m + 1.0 5fthf_m
+THFGLUS:   1.0 atp_c + 1.0 glu_L_c + 1.0 thf_c <==> 1.0 adp_c + 1.0 pi_c + 1.0 thfglu_c + 1.0 h_c
+THFOXR:   2.0 nad_c + 1.0 thf_c <==> 1.0 fola_c + 2.0 h_c + 2.0 nadh_c
+THIORDXi:   1.0 h2o2_c + 1.0 trdrd_c --> 1.0 trdox_c + 2.0 h2o_c
+THIORDXm:   1.0 h2o2_m + 1.0 trdrd_m <==> 2.0 h2o_m + 1.0 trdox_m
+THIORDXni:   1.0 trdrd_n + 1.0 h2o2_n --> 1.0 trdox_n + 2.0 h2o_n
+THIORDXp:   1.0 h2o2_x + 1.0 trdrd_x <==> 2.0 h2o_x + 1.0 trdox_x
+THMDPe:   2.0 h2o_e + 1.0 thmpp_e --> 1.0 h_e + 1.0 thm_e + 2.0 pi_e
+THMDt2:   1.0 thymd_e + 1.0 h_e --> 1.0 h_c + 1.0 thymd_c
+THMP:   1.0 thmmp_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 thm_c
+THMPPt2m:   1.0 thmpp_c --> 1.0 thmpp_m
+THMPe:   1.0 h2o_e + 1.0 thmmp_e --> 1.0 pi_e + 1.0 thm_e
+THMt2:   1.0 h_e + 1.0 thm_e --> 1.0 h_c + 1.0 thm_c
+THRA2i:   1.0 athr_L_c --> 1.0 acald_c + 1.0 gly_c
+THRAi:   1.0 thr_L_c --> 1.0 gly_c + 1.0 acald_c
+THRD_L:   1.0 thr_L_c --> 1.0 2obut_c + 1.0 nh4_c
+THRD_Lm:   1.0 thr_L_m --> 1.0 nh4_m + 1.0 2obut_m
+THRS:   1.0 h2o_c + 1.0 phom_c --> 1.0 thr_L_c + 1.0 pi_c
+THRTRS:   1.0 atp_c + 1.0 thr_L_c + 1.0 trnathr_c --> 1.0 amp_c + 1.0 thrtrna_c + 1.0 ppi_c
+THRTRSm:   1.0 atp_m + 1.0 trnathr_m + 1.0 thr_L_m --> 1.0 thrtrna_m + 1.0 ppi_m + 1.0 amp_m
+THRt2m:   1.0 thr_L_c + 1.0 h_c <==> 1.0 h_m + 1.0 thr_L_m
+THRt2r:   1.0 h_e + 1.0 thr_L_e <==> 1.0 thr_L_c + 1.0 h_c
+THYMt3r:   1.0 thym_c + 1.0 h_e <==> 1.0 thym_e + 1.0 h_c
+THZPSN1_SC:   1.0 gly_c + 1.0 achms_c + 1.0 cys_L_c + 1.0 h_c + 1.0 xu5p_D_c --> 1.0 4mpetz_c + 1.0 pyr_c + 1.0 ac_c + 3.0 h2o_c + 1.0 co2_c + 1.0 nh4_c + 1.0 4abut_c
+THZPSN2_SC:   1.0 h_c + 1.0 gly_c + 1.0 achms_c + 1.0 cys_L_c + 1.0 r5p_c --> 1.0 4mpetz_c + 1.0 pyr_c + 3.0 h2o_c + 1.0 co2_c + 1.0 nh4_c + 1.0 4abut_c + 1.0 ac_c
+TKT1:   1.0 r5p_c + 1.0 xu5p_D_c <==> 1.0 g3p_c + 1.0 s7p_c
+TKT2:   1.0 e4p_c + 1.0 xu5p_D_c <==> 1.0 f6p_c + 1.0 g3p_c
+TMDK1:   1.0 thymd_c + 1.0 atp_c --> 1.0 adp_c + 1.0 dtmp_c + 1.0 h_c
+TMDPK:   1.0 atp_c + 1.0 thm_c --> 1.0 thmpp_c + 1.0 amp_c + 1.0 h_c
+TMDPP:   1.0 pi_c + 1.0 thymd_c <==> 1.0 thym_c + 1.0 2dr1p_c
+TMDPPK:   1.0 thmpp_c + 1.0 atp_c --> 1.0 thmtp_c + 1.0 adp_c
+TMDS:   1.0 mlthf_c + 1.0 dump_c --> 1.0 dhf_c + 1.0 dtmp_c
+TMN:   1.0 h2o_c + 1.0 thm_c --> 1.0 4mhetz_c + 1.0 4ahmmp_c + 1.0 h_c
+TMPKr:   1.0 atp_c + 1.0 thmmp_c <==> 1.0 adp_c + 1.0 thmpp_c
+TMPPP:   1.0 4mpetz_c + 1.0 2mahmp_c + 1.0 h_c --> 1.0 thmmp_c + 1.0 ppi_c
+TPI:   1.0 dhap_c <==> 1.0 g3p_c
+TRDOXtp:   1.0 trdox_c <==> 1.0 trdox_x
+TRDR:   1.0 nadph_c + 1.0 h_c + 1.0 trdox_c --> 1.0 nadp_c + 1.0 trdrd_c
+TRDRDtp:   1.0 trdrd_c <==> 1.0 trdrd_x
+TRDRm:   1.0 trdox_m + 1.0 h_m + 1.0 nadph_m --> 1.0 trdrd_m + 1.0 nadp_m
+TRE6PP:   1.0 tre6p_c + 1.0 h2o_c --> 1.0 pi_c + 1.0 tre_c
+TRE6PS:   1.0 g6p_c + 1.0 udpg_c --> 1.0 h_c + 1.0 tre6p_c + 1.0 udp_c
+TREH:   1.0 tre_c + 1.0 h2o_c --> 2.0 glc_D_c
+TREHv:   1.0 tre_v + 1.0 h2o_v --> 2.0 glc_D_v
+TREt2:   1.0 h_e + 1.0 tre_e --> 1.0 tre_c + 1.0 h_c
+TREt2v:   1.0 h_c + 1.0 tre_c <==> 1.0 h_v + 1.0 tre_v
+TRIGS_SC:   0.02 dcacoa_c + 0.01 12dgr_SC_c + 0.27 pmtcoa_c + 0.17 hdcoa_c + 0.06 ddcacoa_c + 0.09 ocdycacoa_c + 0.1 tdcoa_c + 0.24 odecoa_c + 0.05 stcoa_c --> 0.01 triglyc_SC_c + 1.0 coa_c
+TRPO2:   1.0 trp_L_c + 1.0 o2_c --> 1.0 Lfmkynr_c
+TRPS1:   1.0 ser_L_c + 1.0 3ig3p_c --> 1.0 g3p_c + 1.0 h2o_c + 1.0 trp_L_c
+TRPTA:   1.0 trp_L_c + 1.0 akg_c <==> 1.0 indpyr_c + 1.0 glu_L_c
+TRPTRS:   1.0 atp_c + 1.0 trp_L_c + 1.0 trnatrp_c --> 1.0 trptrna_c + 1.0 amp_c + 1.0 ppi_c
+TRPTRSm:   1.0 trnatrp_m + 1.0 atp_m + 1.0 trp_L_m --> 1.0 trptrna_m + 1.0 ppi_m + 1.0 amp_m
+TRPt2m:   1.0 h_c + 1.0 trp_L_c <==> 1.0 trp_L_m + 1.0 h_m
+TRPt2r:   1.0 trp_L_e + 1.0 h_e <==> 1.0 h_c + 1.0 trp_L_c
+TTCCOAtx:   1.0 ttccoa_c <==> 1.0 ttccoa_x
+TTDCAtr:   1.0 ttdca_e <==> 1.0 ttdca_c
+TYRNFT:   1.0 tyr_L_c + 1.0 10fthf_c --> 1.0 Nfortyr_c + 1.0 h_c + 1.0 thf_c
+TYRTAi:   1.0 glu_L_c + 1.0 34hpp_c --> 1.0 akg_c + 1.0 tyr_L_c
+TYRTAim:   1.0 glu_L_m + 1.0 34hpp_m --> 1.0 tyr_L_m + 1.0 akg_m
+TYRTAip:   1.0 34hpp_x + 1.0 glu_L_x --> 1.0 tyr_L_x + 1.0 akg_x
+TYRTRS:   1.0 atp_c + 1.0 trnatyr_c + 1.0 tyr_L_c --> 1.0 amp_c + 1.0 ppi_c + 1.0 tyrtrna_c
+TYRTRSm:   1.0 trnatyr_m + 1.0 atp_m + 1.0 tyr_L_m --> 1.0 ppi_m + 1.0 amp_m + 1.0 tyrtrna_m
+TYRt2m:   1.0 tyr_L_c + 1.0 h_c <==> 1.0 tyr_L_m + 1.0 h_m
+TYRt2p:   1.0 tyr_L_c + 1.0 h_c <==> 1.0 tyr_L_x + 1.0 h_x
+TYRt2r:   1.0 h_e + 1.0 tyr_L_e <==> 1.0 tyr_L_c + 1.0 h_c
+TYRt6:   1.0 tyr_L_c + 1.0 h_v --> 1.0 tyr_L_v + 1.0 h_c
+TYRt7:   1.0 tyr_L_v + 1.0 h_v --> 1.0 h_c + 1.0 tyr_L_c
+UDPACGLP:   1.0 h_c + 1.0 utp_c + 1.0 acgam1p_c <==> 1.0 ppi_c + 1.0 udpacgal_c
+UDPG4E:   1.0 udpg_c <==> 1.0 udpgal_c
+UDPGALt2g:   1.0 udpgal_c --> 1.0 udpgal_g
+UGLT:   1.0 udpg_c + 1.0 gal1p_c <==> 1.0 g1p_c + 1.0 udpgal_c
+UGLYCHr:   1.0 h2o_c + 2.0 h_c + 1.0 urdglyc_c <==> 1.0 co2_c + 2.0 nh4_c + 1.0 glx_c
+UMPK:   1.0 ump_c + 1.0 atp_c <==> 1.0 adp_c + 1.0 udp_c
+UMPKn:   1.0 ump_n + 1.0 atp_n <==> 1.0 udp_n + 1.0 adp_n
+UMPtn:   1.0 ump_c <==> 1.0 ump_n
+UNK3:   1.0 2kmb_c + 1.0 glu_L_c --> 1.0 met_L_c + 1.0 akg_c
+UPP3MT:   2.0 amet_c + 1.0 uppg3_c --> 2.0 ahcys_c + 1.0 h_c + 1.0 dscl_c
+UPP3S:   1.0 hmbil_c --> 1.0 h2o_c + 1.0 uppg3_c
+UPPDC1:   1.0 uppg3_c + 4.0 h_c --> 1.0 cpppg3_c + 4.0 co2_c
+UPPRT:   1.0 prpp_c + 1.0 ura_c --> 1.0 ppi_c + 1.0 ump_c
+URAt2:   1.0 h_e + 1.0 ura_e --> 1.0 h_c + 1.0 ura_c
+UREA2t2:   1.0 urea_e + 2.0 h_e <==> 1.0 urea_c + 2.0 h_c
+UREASE:   1.0 hco3_c + 1.0 urea_c + 1.0 atp_c <==> 1.0 allphn_c + 1.0 pi_c + 1.0 adp_c + 1.0 h_c
+URIDK2r:   1.0 dump_c + 1.0 atp_c <==> 1.0 dudp_c + 1.0 adp_c
+URIDK2rn:   1.0 atp_n + 1.0 dump_n <==> 1.0 adp_n + 1.0 dudp_n
+URIK1:   1.0 atp_c + 1.0 uri_c --> 1.0 adp_c + 1.0 ump_c + 1.0 h_c
+URIK2:   1.0 gtp_c + 1.0 uri_c --> 1.0 ump_c + 1.0 gdp_c + 1.0 h_c
+URIt2:   1.0 uri_e + 1.0 h_e --> 1.0 uri_c + 1.0 h_c
+UTPH1:   1.0 utp_c + 2.0 h2o_c --> 2.0 pi_c + 1.0 ump_c + 2.0 h_c
+UTPtm:   1.0 ump_m + 2.0 h_c + 1.0 utp_c --> 2.0 h_m + 1.0 ump_c + 1.0 utp_m
+VALTA:   1.0 akg_c + 1.0 val_L_c <==> 1.0 3mob_c + 1.0 glu_L_c
+VALTAim:   1.0 akg_m + 1.0 val_L_m --> 1.0 glu_L_m + 1.0 3mob_m
+VALTRS:   1.0 atp_c + 1.0 trnaval_c + 1.0 val_L_c --> 1.0 valtrna_c + 1.0 amp_c + 1.0 ppi_c
+VALTRSm:   1.0 val_L_m + 1.0 atp_m + 1.0 trnaval_m --> 1.0 ppi_m + 1.0 valtrna_m + 1.0 amp_m
+VALt2m:   1.0 h_c + 1.0 val_L_c <==> 1.0 val_L_m + 1.0 h_m
+VALt2r:   1.0 val_L_e + 1.0 h_e <==> 1.0 val_L_c + 1.0 h_c
+XANt:   1.0 xan_e <==> 1.0 xan_c
+XPPT:   1.0 prpp_c + 1.0 xan_c --> 1.0 xmp_c + 1.0 ppi_c
+XTSNt2:   1.0 xtsn_e + 1.0 h_e --> 1.0 xtsn_c + 1.0 h_c
+XYLK:   1.0 xylu_D_c + 1.0 atp_c --> 1.0 adp_c + 1.0 h_c + 1.0 xu5p_D_c
+XYLR:   1.0 xyl_D_c + 1.0 nadph_c + 1.0 h_c --> 1.0 nadp_c + 1.0 xylt_c
+XYLTD_D:   1.0 nad_c + 1.0 xylt_c --> 1.0 nadh_c + 1.0 h_c + 1.0 xylu_D_c
+XYLTt:   1.0 xylt_e <==> 1.0 xylt_c
+XYLt:   1.0 xyl_D_e <==> 1.0 xyl_D_c
+YUMPS:   1.0 r5p_c + 1.0 ura_c <==> 1.0 psd5p_c + 1.0 h2o_c
+ZYMSTAT_SC:   0.01 zymst_c + 0.02 pmtcoa_c + 0.655 hdcoa_c + 0.01 hexccoa_c + 0.015 tdcoa_c + 0.27 odecoa_c + 0.03 stcoa_c --> 0.01 zymstest_SC_c + 1.0 coa_c
+ZYMSTESTH_SC:   1.0 h2o_c + 0.01 zymstest_SC_c --> 0.655 hdcea_c + 1.0 h_c + 0.27 ocdcea_c + 0.01 zymst_c + 0.01 hexc_c + 0.02 hdca_c + 0.015 ttdca_c + 0.03 ocdca_c
+ZYMSTESTH_SCe:   0.01 zymstest_SC_e + 1.0 h2o_e --> 0.015 ttdca_e + 0.655 hdcea_e + 0.01 zymst_e + 0.01 hexc_e + 1.0 h_e + 0.02 hdca_e + 0.03 ocdca_e + 0.27 ocdcea_e
+ZYMSTt:   1.0 zymst_e <==> 1.0 zymst_c
+biomass_core:   0.0284 trptrna_c + 6.6e-05 triglyc_SC_c + 4.5e-05 pe_SC_c + 0.0007 sterol_c + 1.1348 16BDglcn_c + 0.1017 asntrna_c + 0.1854 sertrna_c + 0.0507 mettrna_c + 0.4588 alatrna_c + 0.1914 thrtrna_c + 0.02 so4_c + 0.0447 cmp_c + 59.276 atp_c + 0.046 gmp_c + 0.046 amp_c + 0.0024 dgmp_c + 0.3018 glutrna_c + 0.2904 glytrna_c + 0.0066 cystrna_c + 0.0036 dtmp_c + 0.1927 iletrna_c + 0.0024 dcmp_c + 0.0663 histrna_c + 0.5185 glycogen_c + 0.102 tyrtrna_c + 1.7e-05 ps_SC_c + 0.2964 leutrna_c + 59.276 h2o_c + 1.1348 13BDglcn_c + 0.0036 damp_c + 0.00099 ribflv_c + 0.1647 protrna_c + 5.3e-05 ptd1ino_SC_c + 6e-06 pa_SC_c + 0.0599 ump_c + 0.0015 zymst_c + 0.1339 phetrna_c + 0.8079 mannan_c + 0.2975 asptrna_c + 0.2646 valtrna_c + 0.1054 glntrna_c + 6e-05 phospholipid_c + 0.1607 argtrna_c + 0.2862 lystrna_c --> 59.305 pi_c + 58.70001 h_c + 0.1054 trnagln_c + 0.2646 trnaval_c + 59.276 adp_c + 0.2904 trnagly_c + 0.1927 trnaile_c + 0.3018 trnaglu_c + 0.1854 trnaser_c + 0.0663 trnahis_c + 0.2862 trnalys_c + 0.0066 trnacys_c + 0.0507 trnamet_c + 0.1339 trnaphe_c + 0.1647 trnapro_c + 0.2964 trnaleu_c + 0.1914 trnathr_c + 0.0284 trnatrp_c + 0.102 trnatyr_c + 0.4588 trnaala_c + 0.1607 trnaarg_c + 0.2975 trnaasp_c + 0.1017 trnaasn_c
+biomass_wildType:   0.0284 trptrna_c + 6.6e-05 triglyc_SC_c + 4.5e-05 pe_SC_c + 0.0007 sterol_c + 1.1348 16BDglcn_c + 0.1017 asntrna_c + 0.1854 sertrna_c + 0.0507 mettrna_c + 0.4588 alatrna_c + 0.1914 thrtrna_c + 0.02 so4_c + 0.0447 cmp_c + 59.276 atp_c + 0.046 gmp_c + 0.046 amp_c + 0.0024 dgmp_c + 0.3018 glutrna_c + 0.2904 glytrna_c + 0.0066 cystrna_c + 0.0036 dtmp_c + 0.1927 iletrna_c + 0.0024 dcmp_c + 0.0663 histrna_c + 0.5185 glycogen_c + 0.102 tyrtrna_c + 1.7e-05 ps_SC_c + 0.2964 leutrna_c + 59.276 h2o_c + 1.1348 13BDglcn_c + 0.0036 damp_c + 0.0234 tre_c + 0.00099 ribflv_c + 0.1647 protrna_c + 5.3e-05 ptd1ino_SC_c + 6e-06 pa_SC_c + 0.0599 ump_c + 0.0015 zymst_c + 0.1339 phetrna_c + 0.8079 mannan_c + 0.2975 asptrna_c + 0.2646 valtrna_c + 0.1054 glntrna_c + 6e-05 phospholipid_c + 0.1607 argtrna_c + 0.2862 lystrna_c --> 59.305 pi_c + 58.70001 h_c + 0.1054 trnagln_c + 0.2646 trnaval_c + 59.276 adp_c + 0.2904 trnagly_c + 0.1927 trnaile_c + 0.3018 trnaglu_c + 0.1854 trnaser_c + 0.0663 trnahis_c + 0.2862 trnalys_c + 0.0066 trnacys_c + 0.0507 trnamet_c + 0.1339 trnaphe_c + 0.1647 trnapro_c + 0.2964 trnaleu_c + 0.1914 trnathr_c + 0.0284 trnatrp_c + 0.102 trnatyr_c + 0.4588 trnaala_c + 0.1607 trnaarg_c + 0.2975 trnaasp_c + 0.1017 trnaasn_c
