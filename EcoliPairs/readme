@@ -1,0 +1,49 @@
+mutantInfo.py:
+Data file holding a list of mutant pairs with corresponding reactions that should be 
+removed
+
+auxoMetabs_inMutants.py:
+Determines what metabolites each mutant requires to survive
+
+gameCreator.py:
+Creates the instances of the class game for different pairs of mutants
+
+compare.py:
+Compares the experimentally observed co-growth with the identifed Nash equilibria of
+the game
+
+testMutants.py:
+Tests the growth of each mutant in the presence/absence of selected metabolites
+
+rankAA.py
+Ranks amino acids according to their cost of production for the cell
+
+enumerate_caes.py
+Examines all possible combinations of cooperation-defection for a certain number of time points
+
+process_emc_results.py
+Processes the results of enumerate_caes.py
+
+DMMM_moma.py
+DMMM with moma instead of FBA at each time step
+
+mutants_moma.py
+Performs DMMM_moma for all mutant pairs 
+
+process_moma_results.m
+Processes the results of mutants_moma.py
+
+DMMM_mortality.py
+performs DMMM while including free compounds in the cell becoming available due to cell death 
+
+mutants_mortality.py
+Performs DMMM_mortality for all mutant pairs
+
+process_mortality_results.m
+Processes the results of mutants_mortality.py
+
+read_exp_data.py
+Read the experimental data for E. coli pairs and returns the results as a python dictionary
+
+coopr_level.py
+Investigates the level of cooperaiton in mutant pairs

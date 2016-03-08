@@ -1,0 +1,17 @@
+archive
+results
+heatmaps
+jobs
+links
+*.pyc
+*.txt
+*.pdf
+*.log
+*test*.*
+t.py
+*.m
+*.sh
+1
+2
+3
+4
