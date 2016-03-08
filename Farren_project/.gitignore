@@ -1,0 +1,9 @@
+archive
+results
+jobs
+alizom_code
+*.pyc
+*.txt
+*.pdf
+*.log
+*test*.*
