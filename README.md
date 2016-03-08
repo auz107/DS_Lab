@@ -1,1 +1,1 @@
-Segre lab codes
+Segre lab codes and projects
