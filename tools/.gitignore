@@ -1,0 +1,11 @@
+archive
+FBA
+*.pyc
+*.txt
+*.pdf
+*.log
+*test*.*
+1
+2
+3
+4

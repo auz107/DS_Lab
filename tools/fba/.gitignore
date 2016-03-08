@@ -1,0 +1,11 @@
+archive
+*.pyc
+*.txt
+*.pdf
+*.log
+*test*.*
+t.py
+1
+2
+3
+4

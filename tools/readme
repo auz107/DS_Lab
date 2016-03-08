@@ -1,0 +1,46 @@
+FBA:
+----
+metabolicModel.py:
+A general class for creating metabolic models
+
+fba.py:
+A python class for performing FBA
+
+dFBA:
+---- 
+sharedMetab.py:
+A general class for the shared metabolites
+
+dFBA.py:
+A python class for performing dFBA
+
+Game theory:
+------------
+game.py
+A general class holding information for a N-player game 
+
+findNashEq.py
+Find the pure strategy Nash equilibria for a general N-player game
+
+Spatial variations:
+------------------
+layout2D.py:
+A python class for creating a 2-dimensional layout
+
+
+SAMPLES:
+--------
+sample_createMetabolicModel.py:
+A sample for crating a FBA model
+
+sample_fbaModel.py:
+sample for creating a fbaModel
+
+sampleFBA.py:
+Sample for performing FBA
+
+sampleDynamics.py:
+Sample dFBA analysis
+
+
+

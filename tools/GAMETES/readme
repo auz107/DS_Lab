@@ -1,0 +1,8 @@
+Game theory:
+------------
+game.py
+A general class holding information for a N-player game 
+
+findNashEq.py
+Find the pure strategy Nash equilibria for a general N-player game
+

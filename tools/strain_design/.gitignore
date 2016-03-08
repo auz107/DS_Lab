@@ -1,0 +1,6 @@
+archive
+*.pyc
+*.txt
+*.pdf
+*.log
+*test*.*
