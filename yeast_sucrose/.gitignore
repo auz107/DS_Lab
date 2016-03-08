@@ -1,0 +1,14 @@
+archive
+results
+jobs
+*.pyc
+*.txt
+*.pdf
+*.log
+*test*.*
+t.py
+.nfs*
+1
+2
+3
+4
