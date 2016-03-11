@@ -23,7 +23,7 @@ This file contains the folloiwng functions:
 
 FUNCTIONS:
 ---------
-  remove_compartment: Removes compartment ids from metabolite or reaciton names or ids
+  remove_compartment: Removes compartment ids from metabolite or reaction names or ids
 get_cpd_ModelSEED_id: Tries to get the ModelSEED ids for one or more compounds
 get_rxn_ModelSEED_id: Tries to get the ModelSEED ids for one or more reactions
 
@@ -118,11 +118,11 @@ def get_cpd_ModelSEED_id(cpd_list, compart_list = None, warnings = True, stdout_
 
     # counters showing how many of common reactions were found by comparing their
     # KEGG id, name or model id
+    id_counter = 0
     KEGG_counter = 0
     name_counter = 0
     formula_counter = 0
     BiGG_counter = 0
-    id_counter = 0
 
     for cpd in [c for c in cpd_list if c.ModelSEED_id == []]:
         # Remove non-alphanumeric characters and compartment ids from the id and replace 
@@ -145,21 +145,25 @@ def get_cpd_ModelSEED_id(cpd_list, compart_list = None, warnings = True, stdout_
         else:
             # Search by BiGG id
             if clean_id in ModelSEED_cpds_clean_BiGG_ids:
-                ModelSEED_id_byBiGG = ModelSEED_cpds_by_clean_BiGG_id[clean_id] 
+                ModelSEED_id_byBiGG = ModelSEED_cpds_by_clean_BiGG_id[clean_id]
                 BiGG_counter += 1
   
             # Search by KEGG_id, if it is available 
-            if cpd.KEGG_id != [] and cpd.KEGG_id in ModelSEED_cpd_KEGG_ids: 
-                ModelSEED_id_byKEGG = ModelSEED_cpds_by_KEGG_id[cpd.KEGG_id] 
-                KEGG_counter += 1
+            if cpd.KEGG_id != []:
+                for ckid in cpd_KEGG_id: 
+                    if ckid in ModelSEED_cpd_KEGG_ids: 
+                        ModelSEED_id_byKEGG += ModelSEED_cpds_by_KEGG_id[cpd.KEGG_id]
+                ModelSEED_id_byKEGG = list(set(ModelSEED_id_byKEGG))
+                if len(ModelSEED_id_byKEGG) > 0:
+                    KEGG_counter += 1
 
             # Search by name where all non-alphanumeric characters are removed 
-            if cpd.name != None and clean_name in ModelSEED_cpd_clean_names:
+            if cpd.name != '' and clean_name in ModelSEED_cpd_clean_names:
 	        ModelSEED_id_byName = ModelSEED_cpds_by_clean_name[clean_name]
                 name_counter += 1
 
             # Search by formula 
-            if cpd.formula != None and cpd.formula in ModelSEED_cpd_formulas: 
+            if cpd.formula != '' and cpd.formula in ModelSEED_cpd_formulas: 
                 ModelSEED_id_byFormula = ModelSEED_cpds_by_formula[clean_formula] 
                 formula_counter += 1
 
@@ -181,73 +185,46 @@ def get_cpd_ModelSEED_id(cpd_list, compart_list = None, warnings = True, stdout_
                     ModelSEED_id_intersect = list(set.intersection(*[set(lst) for lst in [ModelSEED_id_byKEGG,ModelSEED_id_byBiGG,ModelSEED_id_byName,ModelSEED_id_byFormula] if len(lst) > 0])) 
 
                     # If the intersection is not empty assign it as the ModelSEED id
-                    if len( ModelSEED_id_intersec) > 0:
-                        cpd.ModelSEED_id =  ModelSEED_id_intersec
+                    if len(ModelSEED_id_intersec) > 0:
+                        cpd.ModelSEED_id = ModelSEED_id_intersec
 
                     # Otherwise find their union
                     else:
                         cpd.ModelSEED_id = set(ModelSEED_id_byKEGG + ModelSEED_id_byBiGG + ModelSEED_id_byName + ModelSEED_id_byFormula)
-
  
-        # If a ModelSEED id is found replace the name, KEGG_id and formula from the ModelSEED 
-        if cpd.ModelSEED_id != []:
-            # If more than one ModelSEED is was found
-            if isinstance(cpd.ModelSEED_id,list) and len(cpd.ModelSEED_id) > 1:
-                # If more than one ModelSEED id is found, then don't assign the name because it
-                # can be confusing. Just specify synonyms as a set of sets
-                cpd.synonyms = []
-                cpd.formula = []
-                cpd.KEGG_id = []
-                for seed_id in cpd.ModelSEED_id:
-                    cpd.synonyms += ModelSEED_cpds[seed_id]['name']
-                    if ModelSEED_cpds[seed_id]['formula'] != None:
-                        cpd.formula += ModelSEED_cpds[seed_id]['formula']
-                    if ModelSEED_cpds[seed_id]['KEGG_id'] != None:
-                        cpd.KEGG_id += ModelSEED_cpds[seed_id]['KEGG_id']
-
-            # If only ModelSEED id was found
-            elif isinstance(cpd.ModelSEED_id,list) and len(cpd.ModelSEED_id) == 1:
-                cpd.ModelSEED_id = cpd.ModelSEED_id[0]      
-                # If the compound does not already have a name, use the first name
-                # as the name and the rest as synonyms
-                if cpd.name == None or (cpd.name != None and len(cpd.name) == 0):
-                    cpd.name = ModelSEED_cpds[cpd.ModelSEED_id]['name'][0]
-                    cpd.synonyms = ModelSEED_cpds[cpd.ModelSEED_id]['name'][1:]
-                # Otherwise assign the ModelSEED names as synonyms
-                else:
-                    cpd.synonyms = ModelSEED_cpds[cpd.ModelSEED_id]['name']
-                if ModelSEED_cpds[cpd.ModelSEED_id]['formula'] != None:
-                    cpd.formula = ModelSEED_cpds[cpd.ModelSEED_id]['formula']
-                if ModelSEED_cpds[cpd.ModelSEED_id]['KEGG_id'] != None:
-                    cpd.KEGG_id = ModelSEED_cpds[cpd.ModelSEED_id]['KEGG_id']
-
-            # If a ModelSEED has already been assigned (as a string) in the original model 
+        # Replace name, KEGG_id and formula from the ModelSEED, if only one ModelSEED_id is found 
+        if len(cpd.ModelSEED_id) == 1:
+            # If the compound does not already have a name, use the first name
+            # as the name and the rest as name_aliases
+            if cpd.name == '':
+                cpd.name = ModelSEED_cpds[cpd.ModelSEED_id]['name']
+                cpd.name_aliases = ModelSEED_cpds[cpd.ModelSEED_id[0]]['name_aliases']
+            # Otherwise assign the ModelSEED names as name_aliases
             else:
-                if cpd.name == None or (cpd.name != None and len(cpd.name) == 0):
-                    cpd.name = ModelSEED_cpds[cpd.ModelSEED_id]['name'][0]
-                    cpd.synonyms = ModelSEED_cpds[cpd.ModelSEED_id]['name'][1:]
-                else:
-                    cpd.synonyms = ModelSEED_cpds[cpd.ModelSEED_id]['name']
-                if ModelSEED_cpds[cpd.ModelSEED_id]['formula'] != None:
-                    cpd.formula = ModelSEED_cpds[cpd.ModelSEED_id]['formula']
-                if ModelSEED_cpds[cpd.ModelSEED_id]['KEGG_id'] != None:
-                    cpd.KEGG_id = ModelSEED_cpds[cpd.ModelSEED_id]['KEGG_id']
+                cpd.name_aliases = [ModelSEED_cpds[cpd.ModelSEED_id[0]]['name']] + ModelSEED_cpds[cpd.ModelSEED_id[0]]['name_aliases']
+
+            # Assign KEGG id, BiGG_id and formula
+            if cpd.KEGG_id == []:
+                cpd.KEGG_id = ModelSEED_cpds[cpd.ModelSEED_id[0]]['KEGG_id']
+            if cpd.BiGG_id == []:
+                cpd.BiGG_id = ModelSEED_cpds[cpd.ModelSEED_id[0]]['BiGG_id']
+            if cpd.formula == None:
+                cpd.formula = ModelSEED_cpds[cpd.ModelSEED_id[0]]['formula']
 
     # Compounds with more than one ModelSEED id
-    more_than_one_ModelSEED_id_cpds = [c for c in cpd_list if c.ModelSEED_id != [] and isinstance(c.ModelSEED_id,list)]
+    more_than_one_ModelSEED_id_cpds = [c for c in cpd_list if len(c.ModelSEED_id) > 1]
     if stdout_msgs:
         if len(more_than_one_ModelSEED_id_cpds) > 0 and warnings:
-            print '\nWARNING! More than one ModelSEED id was found for %i compounds including:'%(len(more_than_one_ModelSEED_id_cpds))
-        for cpd in more_than_one_ModelSEED_id_cpds:
-            print '\t',cpd.id,'\t',cpd.ModelSEED_id
+            print '\nWARNING! More than one ModelSEED id was found for {i} compounds including: {}'.format(len(more_than_one_ModelSEED_id_cpds), [(c.id,c.ModelSEED_id) for c in more_than_one_ModelSEED_id_cpds])
 
         print '\nSummary of the search for the ModelSEED id of compounds:'
-        print '\tTotal # of compounds with a ModelSEED id = %i (out of %i)'%(KEGG_counter + name_counter + id_counter + formula_counter,len(cpd_list))
-        print '\t\t# of compounds matched by KEGG id = ',KEGG_counter
-        print '\t\t# of compounds matched by name = ',name_counter
+        print '\tTotal # of compounds with a ModelSEED id = {} (out of {})'.format(id_counter + KEGG_counter + name_counter + formula_counter + BiGG_counter,len(cpd_list))
         print '\t\t# of compounds matached by model id = ',id_counter
+        print '\t\t# of compounds matched by KEGG id = ',KEGG_counter
+        print '\t\t# of compounds matched by BiGG id = ',BiGG_counter
+        print '\t\t# of compounds matched by name = ',name_counter
         print '\t\t# of compounds matached by formula = ',formula_counter
-        print '\tTotal # of compounds with no ModelSEED id = %i (out of %i)\n'%(len(cpd_list) - (KEGG_counter + name_counter + id_counter + formula_counter),len(cpd_list))
+        print '\tTotal # of compounds with no ModelSEED id = {} (out of {})\n'.format(len(cpd_list) - (id_counter + KEGG_counter + name_counter + formula_counter + BiGG_counter),len(cpd_list))
 
 def get_rxn_ModelSEED_id(rxn_list, compart_list = None, warnings = True, stdout_msgs = True): 
     """
@@ -272,6 +249,9 @@ def get_rxn_ModelSEED_id(rxn_list, compart_list = None, warnings = True, stdout_
     if not isinstance(warnings,bool):
         raise TypeError('warnings must be True or False')
 
+    if not isinstance(rxn_list,list):
+        rxn_list = [rxn_list]
+
     # List of all compartments in the input compounds
     if compart_list == None:
         compart_list = list(set([compart.id for r in rxn_list for compart in r.compartments if r.compartments != None]))
@@ -285,17 +265,18 @@ def get_rxn_ModelSEED_id(rxn_list, compart_list = None, warnings = True, stdout_
     # KEGG ids for reactions in the ModelSEED 
     ModelSEED_rxn_KEGG_ids = ModelSEED_rxns_by_KEGG_id.keys() 
 
+    # BiGG ids of ModelSEED compounds 
+    ModelSEED_rxns_clean_BiGG_ids = ModelSEED_rxns_by_clean_BiGG_id.keys()
+
     # counters showing how many of common reactions were found by comparing their
-    # ModelSEED id, KEGG id, name or model id
+    # ModelSEED id, KEGG id, BiGG id, name or model id
+    id_counter = 0
     KEGG_counter = 0
     name_counter = 0
-    id_counter = 0
+    BiGG_counter = 0
     exch_counter = 0
 
-    if not isinstance(rxn_list,list):
-        rxn_list = [rxn_list]
-
-    # Examine non-exchange reacitons first
+    # Examine non-exchange reactions first
     for rxn in [r for r in rxn_list if r.ModelSEED_id == [] and 'exchange' not in r.type.lower()]:
         # Remove non-alphanumeric characters and compartment ids from the id and replace 
         # all upper case letters with lowercase for name, id and formula
@@ -322,28 +303,28 @@ def get_rxn_ModelSEED_id(rxn_list, compart_list = None, warnings = True, stdout_
             # If more than one ModelSEED id was found
             if isinstance(rxn.ModelSEED_id,list) and len(rxn.ModelSEED_id) > 1:
                 # If there are more than one ModelSEED id don't assign the names from ModelSEED
-                # because it can be confusing. Just specify the synonyms as a list of lists
-                rxn.synonyms = []
+                # because it can be confusing. Just specify the name_aliases as a list of lists
+                rxn.name_aliases = []
                 rxn.EC_number = []
                 rxn.KEGG_id = []
-                for seed_id in rxn.ModelSEED_id:
-                    rxn.synonyms += ModelSEED_rxns[seed_id]['name']
-                    if ModelSEED_rxns[seed_id]['EC_number'] != None:
-                        rxn.EC_number += ModelSEED_rxns[seed_id]['EC_number']
-                    if ModelSEED_rxns[seed_id]['KEGG_id'] != None:
-                        rxn.KEGG_id += ModelSEED_rxns[seed_id]['KEGG_id']
+                for ModelSEED_id in rxn.ModelSEED_id:
+                    rxn.name_aliases += ModelSEED_rxns[ModelSEED_id]['name']
+                    if ModelSEED_rxns[ModelSEED_id]['EC_number'] != None:
+                        rxn.EC_number += ModelSEED_rxns[ModelSEED_id]['EC_number']
+                    if ModelSEED_rxns[ModelSEED_id]['KEGG_id'] != None:
+                        rxn.KEGG_id += ModelSEED_rxns[ModelSEED_id]['KEGG_id']
     
             # If only one ModelSEED id was found
             elif isinstance(rxn.ModelSEED_id,list) and len(rxn.ModelSEED_id) == 1:
                 rxn.ModelSEED_id = rxn.ModelSEED_id[0]      
                 # If a name has not already been assigned, assign the first element from
-                # ModelSEED names to name and the rest to synonyms
+                # ModelSEED names to name and the rest to name_aliases
                 if rxn.name == None or (rxn.name != None and len(rxn.name) == 0):
                     rxn.name = ModelSEED_rxns[rxn.ModelSEED_id]['name'][0]
-                    rxn.synonyms = ModelSEED_rxns[rxn.ModelSEED_id]['name'][1:]
-                # Otherwise assign the ModelSEED names to synonyms
+                    rxn.name_aliases = ModelSEED_rxns[rxn.ModelSEED_id]['name'][1:]
+                # Otherwise assign the ModelSEED names to name_aliases
                 else:
-                    rxn.synonyms = ModelSEED_rxns[rxn.ModelSEED_id]['name']
+                    rxn.name_aliases = ModelSEED_rxns[rxn.ModelSEED_id]['name']
                 if ModelSEED_rxns[rxn.ModelSEED_id]['EC_number'] != None:
                     rxn.EC_number = ModelSEED_rxns[rxn.ModelSEED_id]['EC_number']
                 if ModelSEED_rxns[rxn.ModelSEED_id]['KEGG_id'] != None:
@@ -353,9 +334,9 @@ def get_rxn_ModelSEED_id(rxn_list, compart_list = None, warnings = True, stdout_
             else: 
                 if rxn.name == None or (rxn.name != None and len(rxn.name) == 0):
                     rxn.name = ModelSEED_rxns[rxn.ModelSEED_id]['name'][0]
-                    rxn.synonyms = ModelSEED_rxns[rxn.ModelSEED_id]['name'][1:]
+                    rxn.name_aliases = ModelSEED_rxns[rxn.ModelSEED_id]['name'][1:]
                 else:
-                    rxn.synonyms = ModelSEED_rxns[rxn.ModelSEED_id]['name']
+                    rxn.name_aliases = ModelSEED_rxns[rxn.ModelSEED_id]['name']
                 if ModelSEED_rxns[rxn.ModelSEED_id]['EC_number'] != None:
                     rxn.EC_number = ModelSEED_rxns[rxn.ModelSEED_id]['EC_number']
                 if ModelSEED_rxns[rxn.ModelSEED_id]['KEGG_id'] != None:
