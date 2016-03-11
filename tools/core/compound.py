@@ -26,7 +26,7 @@ class compound(object):
     Last updated: 12-07-2015
     """
 
-    def __init__(self, id, compartment = None, name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], formula = None, molecular_weight = None, charge = None, reactions = [], reactant_reactions = [], product_reactions = [], concentration = None, deltaG = None, deltaG_uncertainty = None, deltaG_range = [], notes = None, warnings = True): 
+    def __init__(self, id, compartment = None, name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], formula = '', molecular_weight = None, charge = None, reactions = [], reactant_reactions = [], product_reactions = [], concentration = None, deltaG = None, deltaG_uncertainty = None, deltaG_range = [], notes = None, warnings = True): 
 
         # Warnings 
         self.warnings = warnings
@@ -51,7 +51,12 @@ class compound(object):
         # ModelSEED id
         self.ModelSEED_id = ModelSEED_id 
         if isinstance(self.ModelSEED_id,str):
-            self.ModelSEED_id = [ModelSEED_id]
+            self.ModelSEED_id = [self.ModelSEED_id]
+
+        # BiGG id (BiGG is the database of metabolic models in Palsson's lab)
+        self.BiGG_id = BiGG_id
+        if isinstance(self.BiGG,str):
+            self.BiGG_id = [self.BiGG_id]
 
         # Chemical formula of this metabolite (string) 
         self.formula = formula
@@ -164,8 +169,15 @@ class compound(object):
         if attr_name == 'ModelSEED_id' and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
             raise TypeError("Invalid 'ModelSEED_id' for compound " + str(self.id) + "! 'ModelSEED_id' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
 
+        # ModelSEED id
+        if attr_name == 'BiGG_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
+            raise TypeError("Invalid 'BiGG_id' for compound " + str(self.id) + "! 'BiGG_id' must be either a string or a list of strings. A " + str(type(attr_value)) + " type object was entered instead")
+        if attr_name == 'BiGG_id' and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
+            raise TypeError("Invalid 'BiGG_id' for compound " + str(self.id) + "! 'BiGG_id' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
+
+
         # Formula 
-        if attr_name == 'formula' and (attr_value is not None and not isinstance(attr_value,str)):
+        if attr_name == 'formula' and and not isinstance(attr_value,str):
             raise TypeError("Invalid 'formula' for compound " + str(self.id) + "! 'formula'  must be a string. A " + str(type(attr_value)) + " type object was entered instead")
 
         # Molecular weight

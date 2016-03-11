@@ -25,7 +25,7 @@ class reaction(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: 01-05-2016
     """
-    def __init__(self, id, stoichiometry = {}, type = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], EC_numbers = [], subsystem = None, pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
+    def __init__(self, id, stoichiometry = {}, type = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = None, pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
 
         # Warnings and messages in the standard output
         self.warnings = warnings
@@ -57,8 +57,13 @@ class reaction(object):
         # ModelSEED id
         self.ModelSEED_id = ModelSEED_id
         if isinstance(self.ModelSEED_id,str):
-            self.ModelSEED_id = [ModelSEED_id]
+            self.ModelSEED_id = [self.ModelSEED_id]
  
+        # BiGG id (BiGG is the database of metabolic models in Palsson's lab)
+        self.BiGG_id = BiGG_id
+        if isinstance(self.BiGG,str):
+            self.BiGG_id = [self.BiGG_id]
+
         # EC number of the enzyme coding for the reaction
         self.EC_numbers = EC_numbers
 
@@ -204,6 +209,12 @@ class reaction(object):
             raise TypeError("Invalid 'ModelSEED_id' for reaction " + self.id + "! 'ModelSEED_id'  must be either a string or a list of strings. A " + str(attr_value) + " type object was entered instead")
         if attr_name == 'ModelSEED_id' and len([n for n in attr_value if not isinstance(n,str)]) > 0:
             raise TypeError("Invalid 'ModelSEED_id' for reaction " + self.id + "! 'ModelSEED_id'  must be a list of strings. Objects that are not string found in the list:" + str([n for n in attr_value if not isinstance(n,str)]))
+
+        # ModelSEED id
+        if attr_name == 'BiGG_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
+            raise TypeError("Invalid 'BiGG_id' for reaction " + self.id + "! 'BiGG_id'  must be either a string or a list of strings. A " + str(attr_value) + " type object was entered instead")
+        if attr_name == 'BiGG_id' and len([n for n in attr_value if not isinstance(n,str)]) > 0:
+            raise TypeError("Invalid 'BiGG_id' for reaction " + self.id + "! 'BiGG_id'  must be a list of strings. Objects that are not string found in the list:" + str([n for n in attr_value if not isinstance(n,str)]))
 
         # EC numbers of the enzyme coding for the reaction
         if attr_name == 'EC_numbers' and not isinstance(attr_value,list):
