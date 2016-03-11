@@ -29,14 +29,13 @@ class compartment(object):
         # Notes and comments
         self.notes = notes
 
-    def check_attr(self,attr_name,attr_value):
+    def __setattr__(self,attr_name,attr_value):
         """
-        Checks the conditions on the class attributes
- 
+        Redefines funciton __setattr__
         INPUTS:
         -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
+        attr_name: Attribute name
+        attr_value: Attribute value
         """
         # id 
         if attr_name == 'id' and not isinstance(attr_value,str):
@@ -46,16 +45,5 @@ class compartment(object):
         if attr_name == 'name' and (attr_value is not None and not isinstance(attr_value,str)):
             raise TypeError("Invalid 'name' for compartment " + self.id + "! 'name' must be a string. A " + str(type(attr_value)) + " type object was entered instead")
     
-    def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name in ['id','name']:
-           self.check_attr(attr_name,attr_value)
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
 
-  

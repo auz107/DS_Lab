@@ -41,7 +41,7 @@ class reaction(object):
         # A string indicating the type of reaction. Allowable reaction types 
         # include (case insensitive): irreversible, reversible, reversible_forward,
         # reversible_backward, exchange, exchange_forward, exchange_backward 
-        self.reversibility = type
+        self.reversibility = reversibility
 
         # A string containing the name of the reaction (complete or expanded)
         self.name = name
@@ -61,7 +61,7 @@ class reaction(object):
  
         # BiGG id (BiGG is the database of metabolic models in Palsson's lab)
         self.BiGG_id = BiGG_id
-        if isinstance(self.BiGG,str):
+        if isinstance(self.BiGG_id,str):
             self.BiGG_id = [self.BiGG_id]
 
         # EC number of the enzyme coding for the reaction
@@ -86,10 +86,9 @@ class reaction(object):
         self.flux = flux
 
         # A list of the form [LB,UB] containing the flux bounds for this reaction 
+        self.flux_bounds = flux_bounds
         if flux_bounds == []: 
             self.assign_flux_bounds()
-        else:
-            self.flux_bounds = flux_bounds
 
         # A parameter showing whether or not to store the value of the flux after performing
         # FBA or other similar analysis 
@@ -161,14 +160,13 @@ class reaction(object):
         if len(models) == 0:
            self.model = None 
 
-    def check_attr(self,attr_name,attr_value):
+    def __setattr__(self,attr_name,attr_value):
         """
-        Checks the conditions on the class attributes
- 
+        Redefines funciton __setattr__
         INPUTS:
         -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
+        attr_name: Attribute name
+        attr_value: Attribute value
         """
         # warnings 
         if attr_name == 'warnings' and not isinstance(attr_value,bool):
@@ -271,11 +269,13 @@ class reaction(object):
             raise TypeError("Invlaud 'objective_coefficient' for reaction " + self.id + "! 'objective_coefficient'  must be either a float or an integer. A " + str(attr_value) + " type object was entered instead")
 
         # Flux bounds
-        if attr_name == 'flux_bounds' and (attr_value is not None and not isinstance(attr_value,list)):
+        if attr_name == 'flux_bounds' and not isinstance(attr_value,list):
             raise TypeError("Invlaud 'flux_bounds' for reaction " + self.id + "! 'flux_bounds' must be a list of two integer or float elements. A " + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'flux_bounds' and (attr_value is not None and isinstance(attr_value,list) and attr_value[0] > attr_value[1]):
+        if attr_name == 'flux_bounds' and not (len(attr_value) == 0 or len(attr_value) == 2):
+            raise ValueError("flux_bounds for reaction {} must be either an empty list or a list with two elements: {} ".format(self.id,attr_value))
+        if attr_name == 'flux_bounds' and len(attr_value) == 2 and attr_value[0] > attr_value[1]:
             raise ValueError("Lower bound is greater than upper bound for reaction " + self.id + "! flux_bounds = " + str(attr_value))
-
+        
         # store_flux 
         if attr_name == 'store_flux' and not isinstance(attr_value,bool):
             raise TypeError("Invlaud 'store_flux' for reaction " + self.id + "! 'store_flux' must be True or False. A " + str(attr_value) + " type object was entered instead")
@@ -298,38 +298,59 @@ class reaction(object):
         if attr_name == 'confidence_level' and attr_value is not None and  (attr_value < 0 or attr_value > 1):
             raise TypeError("Invlaud 'confidence_level' for reaction " + self.id + "! 'confidence_level' must be either a float or an integer between zero and one")
 
-    def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name in ['warnings','id','type','stoichiometry','type','name','name_aliases','KEGG_id','ModelSEED_id','EC_numbers','subsystem','pathways','reactants','reactants','products','compartmenets','genes','gene_reaction_rule','objective_coefficient','store_flux','deltaG','deltaG_uncertainty','deltaG_range','confidence_level']: 
-           self.check_attr(attr_name,attr_value)
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
 
-    def assign_flux_bounds(self):
+    def assign_flux_bounds(self, assignLB = True, assignUB = True):
         """
         Assigns general bounds to fluxes based on the reaction type 
+        assignLB and assignUB indicate whether to assign the computed lower and upper bounds
         """
-        if self.reversibility.lower() == 'irreversible':
-            self.flux_bounds = [0,1000]
-        elif self.reversibility.lower() == 'reversible':
-            self.flux_bounds = [-1000,1000]
-        elif self.reversibility.lower() == 'reversible_forward':
-            self.flux_bounds = [0,1000]
-        elif self.reversibility.lower() == 'reversible_backward':
-            self.flux_bounds = [0,1000]
-        elif self.reversibility.lower() == 'exchange':
-            self.flux_bounds = [0,1000]
-        elif self.reversibility.lower() == 'exchange_forward':
-            self.flux_bounds = [0,1000]
-        elif self.reversibility.lower() == 'exchange_backward':
-            self.flux_bounds = [0,0]
+        if len(self.flux_bounds) == 2:
+            flux_LB = self.flux_bounds[0]
+            flux_UB = self.flux_bounds[1]
         else:
-            raise userError('Unknown reaction type')
+            flux_LB = None
+            flux_UB = None
+
+        if self.reversibility.lower() == 'irreversible':
+            if assignLB:
+                flux_LB = 0
+            if assignUB:
+                flux_UB = 1000
+        elif self.reversibility.lower() == 'reversible':
+            if assignLB:
+                flux_LB = -1000
+            if assignUB:
+                flux_UB = 1000
+        elif self.reversibility.lower() == 'reversible_forward':
+            if assignLB:
+                flux_LB = 0
+            if assignUB:
+                flux_UB = 1000
+        elif self.reversibility.lower() == 'reversible_backward':
+            if assignLB:
+                flux_LB = 0
+            if assignUB:
+                flux_UB = 1000
+        elif self.reversibility.lower() == 'exchange':
+            if assignLB:
+                flux_LB = 0
+            if assignUB:
+                flux_UB = 1000
+        elif self.reversibility.lower() == 'exchange_forward':
+            if assignLB:
+                flux_LB = 0
+            if assignUB:
+                flux_UB = 1000
+        elif self.reversibility.lower() == 'exchange_backward':
+            if assignLB:
+                flux_LB = 0
+            if assignUB:
+                flux_UB = 0
+        else:
+            raise userError('Unknown reaction reversibility')
+
+        self.flux_bounds = [flux_LB,flux_UB]
 
     def get_compounds(self,ref_type = 'id'):
         """

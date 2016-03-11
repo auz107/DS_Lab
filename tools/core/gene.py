@@ -35,14 +35,13 @@ class gene(object):
         # Notes and comments
         self.notes = notes
 
-    def check_attr(self,attr_name,attr_value):
+    def __setattr__(self,attr_name,attr_value):
         """
-        Checks the conditions on the class attributes
- 
+        Redefines funciton __setattr__
         INPUTS:
         -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
+        attr_name: Attribute name
+        attr_value: Attribute value
         """
         # id 
         if attr_name == 'id' and not isinstance(attr_value,str):
@@ -58,16 +57,6 @@ class gene(object):
         if attr_name == 'name_aliases' and len([n for n in attr_value if not isinstance(r,str)]) > 0:
             raise TypeError("Invalid 'name_aliases' for gene " + str(id) + "! 'name_aliases' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(r,str)]))
 
-    def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name in ['id','name','name_aliases']:
-           self.check_attr(attr_name,attr_value)
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
 
    

@@ -55,7 +55,7 @@ class compound(object):
 
         # BiGG id (BiGG is the database of metabolic models in Palsson's lab)
         self.BiGG_id = BiGG_id
-        if isinstance(self.BiGG,str):
+        if isinstance(self.BiGG_id,str):
             self.BiGG_id = [self.BiGG_id]
 
         # Chemical formula of this metabolite (string) 
@@ -126,14 +126,13 @@ class compound(object):
                 self.product_reactions.append(rxn)
         self.product_treactions = sorted(self.product_reactions,key=lambda x:x.id)
     
-    def check_attr(self,attr_name,attr_value):
+    def __setattr__(self,attr_name,attr_value):
         """
-        Checks the conditions on the class attributes
- 
+        Redefines funciton __setattr__
         INPUTS:
         -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
+        attr_name: Attribute name
+        attr_value: Attribute value
         """
         # Output messages and warnings 
         if attr_name == 'warnings' and not isinstance(attr_value,bool):
@@ -177,7 +176,7 @@ class compound(object):
 
 
         # Formula 
-        if attr_name == 'formula' and and not isinstance(attr_value,str):
+        if attr_name == 'formula' and not isinstance(attr_value,str):
             raise TypeError("Invalid 'formula' for compound " + str(self.id) + "! 'formula'  must be a string. A " + str(type(attr_value)) + " type object was entered instead")
 
         # Molecular weight
@@ -222,17 +221,7 @@ class compound(object):
         if attr_name == 'concentration' and (attr_value is not None and not isinstance(attr_value,int) and not isinstance(attr_value,float) and not isinstance(attr_value,dict)):
             raise TypeError("Invalid 'concentration' for compound " + str(id) + "! 'concentration' must be either a float or an integer or a dictionary. A " + str(type(attr_value)) + " type object was entered instead")
 
-    def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name in ['warnings','id','name','name_aliases','compartment','KEGG_id','ModelSEED_id','formula','molecular_weight','charge','deltaG','deltaG_uncertainty','deltaG_range','reactions','reactant_reactions','product_reactions','concentration']:
-           self.check_attr(attr_name,attr_value)
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
 
 
     def print_reactions_by(self,ref_type, metab_ref = None):

@@ -5,6 +5,7 @@ sys.path.append('../../')
 from tools.userError import userError
 from organism import organism
 from compound import compound
+from compartment import compartment
 from gene import gene
 from reaction import reaction
 from tools.ancillary.remove_non_alphanumeric import remove_non_alphanumeric
@@ -92,14 +93,13 @@ class model(object):
         # Check for probable issues in the model
         self.validate(reassign_props = False)
 
-    def check_attr(self,attr_name,attr_value):
+    def __setattr__(self,attr_name,attr_value):
         """
-        Checks the conditions on the class attributes
- 
+        Redefines funciton __setattr__
         INPUTS:
-        -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
+       -------
+        attr_name: Attribute name
+        attr_value: Attribute value
         """
         # Output messages and warnings 
         if attr_name == 'stdout_msgs' and not isinstance(attr_value,bool):
@@ -157,17 +157,7 @@ class model(object):
             raise TypeError("Invalid 'atpm_reactions' for model " + self.id + "! 'atpm_reaction' must be of type reaction. A " + str(attr_value) + " type object was entered instead")
 
 
-    def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name in ['stdout_msgs','warnings','id','name','type','organism','reactions','compounds','genes','name','biomass_reactions','atpm_reactions']: 
-           self.check_attr(attr_name,attr_value)
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
            
     def _create_compounds_list(self):
         """
@@ -1074,7 +1064,6 @@ class model(object):
         """
         for r in self.reactions:
             r.assign_flux_bounds()
-
 
     def print_compounds(self,ref_type = 'id'):
         """

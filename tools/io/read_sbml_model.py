@@ -105,13 +105,13 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
     
         #-- Reactions --
         for rxn in sorted(cobra_model.reactions, key = lambda x:x.id):
-            # Reaction type
+            # Reaction reversibility
             if rxn.id.find('EX_') == 0 or 'exchange' in rxn.name.lower():
-                rxn_type = 'exchange'
+                rxn_rev = 'exchange'
             elif rxn.reversibility == False: 
-                rxn_type = 'irreversible'
+                rxn_rev = 'irreversible'
             elif rxn.reversibility == True: 
-                rxn_type = 'reversible'
+                rxn_rev = 'reversible'
     
             # Reaction stoichiometry
             stoichiometry = []
@@ -136,11 +136,11 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
                 r_obj_coeff = rxn.objective_coefficient
                 r_notes = rxn.notes
             else:
-                r_flux_bounds = None
+                r_flux_bounds = []
                 r_obj_coeff = None
                 r_notes = ''
 
-            r = reaction(id = rxn.id, stoichiometry = dict(stoichiometry), type = rxn_type, name = rxn.name, subsystem = rxn.subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = rxn.gene_reaction_rule, objective_coefficient = r_obj_coeff, flux_bounds = r_flux_bounds, notes = r_notes)
+            r = reaction(id = rxn.id, stoichiometry = dict(stoichiometry), reversibility = rxn_rev, name = rxn.name, subsystem = rxn.subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = rxn.gene_reaction_rule, objective_coefficient = r_obj_coeff, flux_bounds = r_flux_bounds, notes = r_notes)
             reactions.append(r)
     
     #--------- Do not use cobra parser ------
@@ -227,11 +227,11 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
 
             # Reaction type
             if 'EX_' in rxn_id or 'EX_' in rxn.getName() or 'exchange' in rxn.getName().lower():
-                r_type = 'exchange'
+                r_rev = 'exchange'
             elif rxn.reversible == False: 
-                r_type = 'irreversible'
+                r_rev = 'irreversible'
             elif rxn.reversible == True: 
-                r_type = 'reversible'
+                r_rev = 'reversible'
     
             # Reaction stoichiometry and compartments
             r_stoichiometry = {}
@@ -341,7 +341,7 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
             else:
                 r_confidence = None
 
-            r = reaction(id = rxn_id, stoichiometry = r_stoichiometry, type = r_type, name = r_name, EC_number = r_EC_num, subsystem = r_subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = r_gene_rxn_rule, objective_coefficient = r_obj_coeff, flux_bounds = [r_LB,r_UB])
+            r = reaction(id = rxn_id, stoichiometry = r_stoichiometry, reversibility = r_rev, name = r_name, EC_number = r_EC_num, subsystem = r_subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = r_gene_rxn_rule, objective_coefficient = r_obj_coeff, flux_bounds = [r_LB,r_UB])
             reactions.append(r)
 
     #--- Biomass and ATPM ---
