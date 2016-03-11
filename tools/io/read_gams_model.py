@@ -87,21 +87,21 @@ def read_gams_model(file_name,model_name,model_organism, model_type, warnings = 
     for rxn_id in sorted(gams_model.rxn_names):
         stoichiometry = []
 
-        # Reaction type
+        # Reaction reversibility
         if gams_model.rxn_types[rxn_id] == 0:
-            reaction_type = 'irreversible'
+            reaction_rev = 'irreversible'
         elif gams_model.rxn_types[rxn_id] == 1 and 2 not in gams_model.rxn_types.values():
-            reaction_type = 'reversible'
+            reaction_rev = 'reversible'
         elif gams_model.rxn_types[rxn_id] == 1 and 2 in gams_model.rxn_types.values():
-            reaction_type = 'reversible_forward'
+            reaction_rev = 'reversible_forward'
         elif gams_model.rxn_types[rxn_id] == 2: 
-            reaction_type = 'reversible_backward'
+            reaction_rev = 'reversible_backward'
         elif gams_model.rxn_types[rxn_id] == 3 and 4 not in gams_model.rxn_types.values():
-            reaction_type = 'exchange'
+            reaction_rev = 'exchange'
         elif gams_model.rxn_types[rxn_id] == 3 and 4 in gams_model.rxn_types.values():
-            reaction_type = 'exchange_forward'
+            reaction_rev = 'exchange_forward'
         elif gams_model.rxn_types[rxn_id] == 4:
-            reaction_type = 'exchange_backward'
+            reaction_rev = 'exchange_backward'
 
 
         # Reaction stoichiometry
@@ -111,7 +111,7 @@ def read_gams_model(file_name,model_name,model_organism, model_type, warnings = 
         if len(stoichiometry) == 0:
             raise userError("**Error! The field 'stoichiometry' was not assigned for reaction " + str(rxn_id))
 
-        reactions.append(reaction(id = rxn_id, stoichiometry = dict(stoichiometry), type = reaction_type))
+        reactions.append(reaction(id = rxn_id, stoichiometry = dict(stoichiometry), reversibility = reaction_rev))
  
     # biomass reaction
     biomass_reaction = [r for r in reactions for b in gams_model.biomass_rxn_names if r.id == b]
