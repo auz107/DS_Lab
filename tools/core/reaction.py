@@ -23,9 +23,9 @@ class reaction(object):
     kinetic_rate_calc: Computes the kinetic rate of the reaction
 
     Ali R. Zomorrodi - Segre Lab @ BU
-    Last updated: 01-05-2016
+    Last updated: 03-11-2016
     """
-    def __init__(self, id, stoichiometry = {}, type = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = None, pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
+    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = None, pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
 
         # Warnings and messages in the standard output
         self.warnings = warnings
@@ -41,7 +41,7 @@ class reaction(object):
         # A string indicating the type of reaction. Allowable reaction types 
         # include (case insensitive): irreversible, reversible, reversible_forward,
         # reversible_backward, exchange, exchange_forward, exchange_backward 
-        self.type = type
+        self.reversibility = type
 
         # A string containing the name of the reaction (complete or expanded)
         self.name = name
@@ -178,11 +178,11 @@ class reaction(object):
         if attr_name == 'id' and not isinstance(attr_value,str):
             raise TypeError("Invalid reaction id " + str(attr_value) + "! reaction id must be a string. A " + str(attr_value) + " type object was entered instead")
 
-        # Type 
-        if attr_name == 'type' and not isinstance(attr_value,str):
-            raise TypeError("Invalid 'type' for reaaction " + self.id +"! reaction type must be a string. A " + str(attr_value) + " type object was entered instead")
-        elif attr_name == 'type' and attr_value.lower() not in ['irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward']: 
-            raise ValueError("Invalid 'type' for reaaction " + self.id + "! Eligible choices are 'irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward'") 
+        # Reversibility 
+        if attr_name == 'reversibility' and not isinstance(attr_value,str):
+            raise TypeError("Invalid 'reversibility' for reaaction " + self.id +"! reaction type must be a string. A " + str(attr_value) + " type object was entered instead")
+        elif attr_name == 'reversibility' and attr_value.lower() not in ['irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward']: 
+            raise ValueError("Invalid 'reversibility' for reaaction " + self.id + "! Eligible choices are 'irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward'") 
 
         # stoichiometry
         if attr_name == 'stoichiometry' and not isinstance(attr_value,dict):
@@ -314,19 +314,19 @@ class reaction(object):
         """
         Assigns general bounds to fluxes based on the reaction type 
         """
-        if self.type.lower() == 'irreversible':
+        if self.reversibility.lower() == 'irreversible':
             self.flux_bounds = [0,1000]
-        elif self.type.lower() == 'reversible':
+        elif self.reversibility.lower() == 'reversible':
             self.flux_bounds = [-1000,1000]
-        elif self.type.lower() == 'reversible_forward':
+        elif self.reversibility.lower() == 'reversible_forward':
             self.flux_bounds = [0,1000]
-        elif self.type.lower() == 'reversible_backward':
+        elif self.reversibility.lower() == 'reversible_backward':
             self.flux_bounds = [0,1000]
-        elif self.type.lower() == 'exchange':
+        elif self.reversibility.lower() == 'exchange':
             self.flux_bounds = [0,1000]
-        elif self.type.lower() == 'exchange_forward':
+        elif self.reversibility.lower() == 'exchange_forward':
             self.flux_bounds = [0,1000]
-        elif self.type.lower() == 'exchange_backward':
+        elif self.reversibility.lower() == 'exchange_backward':
             self.flux_bounds = [0,0]
         else:
             raise userError('Unknown reaction type')
@@ -438,7 +438,7 @@ class reaction(object):
             raise userError("**Error! Invalid reference type (eligible choices are 'id' and 'name')")
         
         # Type of the reaction arrow
-        if self.type.lower() in ['reversible','exchange']:
+        if self.reversibility.lower() in ['reversible','exchange']:
             arrow_type = '<==>'
         else:
             arrow_type = '-->'

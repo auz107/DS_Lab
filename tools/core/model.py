@@ -1133,7 +1133,7 @@ class model(object):
             cobra_rxn.name = rxn.name
             cobra_rxn.lower_bound = rxn.flux_bounds[0]
             # Cobra does not allow to set the reaction reversibility
-            if rxn.type.lower() == 'exchange': 
+            if rxn.reversibility.lower() == 'exchange': 
                 cobra_rxn.lower_bound = -1000
             else:
                 cobra_rxn.subsyste = rxn.subsystem
