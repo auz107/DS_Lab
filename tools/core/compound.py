@@ -366,7 +366,7 @@ class compound(object):
             raise TypeError('warnings must be either True or False')
 
         # Find the exchange reaction this metabolite participates in
-        exch_rxn = [r for r in self.reactant_reactions if r.type.lower() == 'exchange']
+        exch_rxn = [r for r in self.reactant_reactions if r.reversibility.lower() == 'exchange']
         if len(exch_rxn) == 0:
             raise userError('Unable to compute the biomass yield for metabolite ' + self.id +'. The metabolite must have an excange reaction in reactant_reactions ...')
         elif len(exch_rxn) > 1:
@@ -464,7 +464,7 @@ class compound(object):
             raise TypeError('warnings must be either True or False')
 
         # Find the exchange reaction this metabolite participates in
-        exch_rxn = [r for r in self.reactant_reactions if r.type.lower() == 'exchange']
+        exch_rxn = [r for r in self.reactant_reactions if r.reversibility.lower() == 'exchange']
         if len(exch_rxn) == 0:
             raise userError('Unable to compute the biomass yield for metabolite ' + self.id +'. The metabolite must have an excange reaction in reactant_reactions ...')
         elif len(exch_rxn) > 1:
