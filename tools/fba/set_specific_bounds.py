@@ -30,7 +30,7 @@ def set_specific_bounds(model, flux_bounds = {}, file_name = None, simulation_co
           arguments they will overwrite those given in the file
 
     Ali R. Zomorrodi - Segre Lab @ BU
-    Last updated: 03-03-2016
+    Last updated: 03-11-2016
     """
     # Reset all reaction bounds
     if reset_flux_bounds:
@@ -65,7 +65,12 @@ def set_specific_bounds(model, flux_bounds = {}, file_name = None, simulation_co
         if rxn == None:
             raise ValueError('Reaction ' + rxn_id + ' was not found in the model.')
         else:
-            rxn.flux_bounds = flux_bounds_fromFile[rxn_id]
+            if rxn.flux_bounds == []:
+                rxn.assign_flux_bounds()
+            if flux_bounds_fromFile[rxn_id][0] != None:
+                rxn.flux_bounds[0] = flux_bounds_fromFile[rxn_id][0]
+            if flux_bounds_fromFile[rxn_id][1] != None:
+                rxn.flux_bounds[1] = flux_bounds_fromFile[rxn_id][1]
  
     #--- Next set the flux bounds using flux_bounds and other optimal input arguments ---
     flux_bounds_fromInput = flux_bounds.items()
@@ -80,8 +85,10 @@ def set_specific_bounds(model, flux_bounds = {}, file_name = None, simulation_co
         if rxn == None:
             raise ValueError('Reaction ' + rxn_id + ' was not found in the model.')
         else:
-            rxn.flux_bounds = flux_bounds_fromInput[rxn_id]
+            if rxn.flux_bounds == []:
+                rxn.assign_flux_bounds()
+            if flux_bounds_fromInput[rxn_id][0] != None:
+                rxn.flux_bounds[0] = flux_bounds_fromInput[rxn_id][0]
+            if flux_bounds_fromInput[rxn_id][1] != None:
+                rxn.flux_bounds[1] = flux_bounds_fromInput[rxn_id][1]
  
-
-
-
