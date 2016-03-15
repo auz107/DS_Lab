@@ -6,6 +6,7 @@ from coopr.opt import *
 from coopr.environ import *
 from tools.pyomoSolverCreator import *
 from tools.userError import userError
+from tools.core.model import model
 from tools.core.compound import compound
 from tools.core.reaction import reaction
 
@@ -132,13 +133,13 @@ class fbaTools(object):
             raise userError('There are compounds with non unique ids in the model. (# of unique cpd ids = ' + str(uniq_cpd_ids_num) + ' , # of cpd ids = ' + str(cpd_ids_num))
 
     def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-        attr_name: Attribute name
-       attr_value: Attribute value
-       """
+        """
+        Redefines funciton __setattr__
+        INPUTS:
+        -------
+         attr_name: Attribute name
+        attr_value: Attribute value
+        """
         # model 
         if attr_name == 'model' and not isinstance(attr_value,model):
             raise TypeError('model must be instance of class model')

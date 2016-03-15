@@ -17,7 +17,10 @@ class fba(fbaTools):
         """
         # Reactions for which the objective coefficient has not bee assigned
         non_obj_rxns = [j.id for j in self.model.reactions if j.objective_coefficient == None]
-        if len(non_obj_rxns) >= 1: 
-            raise userError("'objective_coefficient' has not been defined for the following reactions: " + str(non_obj_rxns))
+        if len(non_obj_rxns) > 0: 
+            if len(non_obj_rxns) <= 10:
+                raise userError("'objective_coefficient' has not been defined for the following reactions: {}".format(non_obj_rxns[:10]))
+            else:
+                raise userError("'objective_coefficient' has not been defined for the following reactions: {} and {} more.".format(non_obj_rxns[:10],len(non_obj_rxns) - 10))
         return sum(j.objective_coefficient*fba_optModel.v[j.id] for j in self.model.reactions)
 
