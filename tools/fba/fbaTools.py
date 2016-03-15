@@ -131,15 +131,18 @@ class fbaTools(object):
         if uniq_cpd_ids_num != cpd_ids_num: 
             raise userError('There are compounds with non unique ids in the model. (# of unique cpd ids = ' + str(uniq_cpd_ids_num) + ' , # of cpd ids = ' + str(cpd_ids_num))
 
-    def check_attr(self,attr_name,attr_value):
-        """
-        Checks the conditions on the class attributes
- 
-        INPUTS:
-        -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
-        """
+    def __setattr__(self,attr_name,attr_value):
+       """
+       Redefines funciton __setattr__
+       INPUTS:
+       -------
+        attr_name: Attribute name
+       attr_value: Attribute value
+       """
+        # model 
+        if attr_name == 'model' and not isinstance(attr_value,model):
+            raise TypeError('model must be instance of class model')
+
         # Solver name
         if attr_name == 'optimization_solver' and attr_value.lower() not in ['cplex','gurobi']:
             raise userError('Invalid solver name (eligible choices are cplex and gurobi)\n')
@@ -148,28 +151,17 @@ class fbaTools(object):
         if attr_name == 'simulation_conditions' and (attr_value is not None and not isinstance(attr_value,str)): 
             raise userError('Invalid simulation_conditions for fba model. simulation_conditions must be a striing')
 
-        # Warnings and messages in the standard output
+        # build_new_optModel 
         if attr_name == 'build_new_optModel' and not isinstance(attr_value,bool):
             raise TypeError("'build_new_optModel' must be either True or False")
 
         # Warnings and messages in the standard output
         if attr_name == 'stdout_msgs' and not isinstance(attr_value,bool):
             raise TypeError("'stdout_msgs' must be either True or False")
-
         if attr_name == 'warnings' and not isinstance(attr_value,bool):
             raise TypeError("'warnings' must be either True or False")
 
-    def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name in ['model','optimization_solver','build_new_optModel','flux_key','store_opt_fluxes','simulation_conditions','stdout_msgs','warnings']:
-           self.check_attr(attr_name,attr_value)
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
 
     def objectiveFunc_rule(self,optModel):
         """
