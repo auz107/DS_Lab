@@ -1176,7 +1176,7 @@ class model(object):
         elif output_format.lower() == 'pickle':
             pass
    
-    def fba(self,optimization_solver = 'gurobi', build_new_optModel = True, reset_fluxes = True, store_opt_fluxes = True, store_all_rxn_fluxes = False, flux_key = None, run = True, assign_wildType_max_biomass = False, simulation_conditions = None, stdout_msgs = True, warnings = True):
+    def fba(self,optimization_solver = 'gurobi', build_new_optModel = True, reset_fluxes = True, store_opt_fluxes = True, store_all_rxn_fluxes = False, flux_key = None, run = True, assign_wildType_max_biomass = False, simulation_conditions = '', stdout_msgs = True, warnings = True):
         """
         Creates a fba model for this model and runs fba 
 
