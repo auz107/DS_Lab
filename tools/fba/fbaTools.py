@@ -19,34 +19,21 @@ class fbaTools(object):
     A general class for performing various types of FBA methods (FBA, FVA, MOMA, etc) 
 
     Ali R. Zomorrodi - Segre Lab @ Boston University
-    Last updated: 12-14-2015 
+    Last updated: 11-15-2016 
     """   
-
-    def __init__(self,model, optimization_solver = 'gurobi', build_new_optModel = True, store_opt_fluxes = True, flux_key = None, simulation_conditions = None, stdout_msgs = True, warnings = True,  **additional_args): 
+    def __init__(self,model, optimization_solver = 'gurobi', build_new_optModel = True, maximize = True, store_opt_fluxes = True, flux_key = None, simulation_conditions = '', stdout_msgs = True, warnings = True,  **additional_args): 
         """
-        INPUTS (required):
-        ------
                       model: An instance of class model containing the information
                              about the metabolic model
-
-        INPUTS (optional):
-        ------
         optimization_solver: Name of the LP solver to be used to solve the LP. Current 
                              allowable choices are cplex and gurobi
-                stdout_msgs: By default (on) writes  a summary including the solve 
-                             status, optimality status (if not optimal), objective 
-                             function value and the elapsed time on the screen.
-                             if set to a value of 'off' no resuults are written on 
-                             the screen, in which case The user can instead specifiy 
-                             an output fiile using the option outputFile, or store 
-                             them in the variable solution (see the 'run' method for
-                             details)
          build_new_optModel: A parameter indicating whether a new pyomo optimizaiton model should be 
                              created (True) or or an existing one should be used (False). The options is useful
                              for the cases a model is already created and one just 
                              wants to change some model attributes (e.g., flux bounds)
                              and rerun FBA. Setting this parameter to False will save 
                              some runtime as the model need not to be created again.
+                   maximize: If True, the objective is maximized. If False, the objective funciton is minimized
            store_opt_fluxes: If True, it stores the optimal reaction flux value for any reaction  
                              with store_flux parameter set to True.  
                    flux_key: Optimal reaction fluxes after performing FBA are saved into
@@ -81,7 +68,6 @@ class fbaTools(object):
 
         These are the outputs of the method 'run'
         """
-       
         # Metabolic model
         self.model = model
 
@@ -90,6 +76,9 @@ class fbaTools(object):
 
         # Whether to create a pyomo model
         self.build_new_optModel = build_new_optModel
+               
+        # Whether to maximize the objective function 
+        self.maximize = maximize
                
         # Warnings and messages in the standard output
         self.stdout_msgs = stdout_msgs
@@ -103,7 +92,7 @@ class fbaTools(object):
 
         # Make sure that all reactions in the model have store_flux assigned
         if self.store_opt_fluxes:
-            no_store_flux_rxns =  [r.id for r in self.model.reactions if not hasattr(r,'store_flux')]
+            no_store_flux_rxns = [r.id for r in self.model.reactions if not hasattr(r,'store_flux')]
             if len(no_store_flux_rxns) > 0: 
                 if len(no_store_flux_rxns) > 10:
                     raise userError("'store_flux' has not been assigned for the following reactions: " + str(no_store_flux_rxns[:10]) + " and " + str(len(no_store_flux_rxns) - 10) + " other reactions")
@@ -149,12 +138,16 @@ class fbaTools(object):
             raise userError('Invalid solver name (eligible choices are cplex and gurobi)\n')
 
         # Simulation conditions name
-        if attr_name == 'simulation_conditions' and (attr_value is not None and not isinstance(attr_value,str)): 
-            raise userError('Invalid simulation_conditions for fba model. simulation_conditions must be a striing')
+        if attr_name == 'simulation_conditions' and not isinstance(attr_value,str): 
+            raise userError('simulation_conditions must be a striing')
 
         # build_new_optModel 
         if attr_name == 'build_new_optModel' and not isinstance(attr_value,bool):
             raise TypeError("'build_new_optModel' must be either True or False")
+
+        # maximize 
+        if attr_name == 'maximize' and not isinstance(attr_value,bool):
+            raise TypeError("'maximize' must be either True or False")
 
         # Warnings and messages in the standard output
         if attr_name == 'stdout_msgs' and not isinstance(attr_value,bool):
@@ -200,8 +193,11 @@ class fbaTools(object):
         optModel.v = Var(optModel.J, domain=Reals, bounds = self.assignFluxBounds)
         
         #--- Defiine the objective function and constraints ----
-         # Objective function
-        optModel.objectiveFunc = Objective(rule=self.objectiveFunc_rule, sense = maximize)
+        # Objective function
+        if self.maximize:
+            optModel.objectiveFunc = Objective(rule=self.objectiveFunc_rule, sense = maximize)
+        else:
+            optModel.objectiveFunc = Objective(rule=self.objectiveFunc_rule, sense = minimize)
 
         # Mass balance 
         optModel.massBalance_const = Constraint(optModel.I, rule=self.massBalance_rule)

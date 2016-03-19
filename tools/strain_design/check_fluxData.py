@@ -9,6 +9,8 @@ from tools.core.reaction import reaction
 from tools.core.organism import organism
 from tools.core.model import model
 from tools.fba.fba import fba
+from tools.fba.fva import fva
+from tools.fba.create_model import create_model
 from tools.fba.set_specific_bounds import set_specific_bounds
 from imp import load_source
 # Increse the recursion limit, otherwise deepcopy will complain
@@ -113,48 +115,8 @@ class check_fluxData(object):
         pass
 
 #-------------------------------------------------------------------------------
-def create_model(organism_info = {'id':'', 'name':''}, model_info = {'id':'', 'sbml_filename':None, 'biomassrxn_id':None}, media_info = {'media_filename':None, 'other_flux_bounds': {}}, stdout_msgs = True, warnings = True):
-    """
-    Creates a metabolic model and assigns the flux bounds for a desired growth media and performs FBA.
-
-    INPUTS:
-    ------
-     organism_info: A dictionary containing the information about he organism (id and anme)
-        model_info: A dictionary containing the metabolic model information with the following keys:
-                                'id': model id
-                     'sbml_filename': Name of and path of the SBML file containing the model
-                     'biomassrxn_id': The if of biomass reaction
-        media_info: Information about growth media
-                       media_filename: Name of and path of the file containing the flux bounds
-                                       file for exchange reactions corresponding to compounds in 
-                                       in the growth media
-                    other_flux_bounds: A dictionary containing the flux bounds for other reactions (such as carbon
-                                       source uptake, oxygen uptake, etc), that have to be set for reactions not 
-                                       in flux_data_filenam or media_filename
-    """
-    # Define the organism
-    model_organism = organism(id = organism_info['id'], name = organism_info['name'])
-
-    model = read_sbml_model(file_name = model_info['sbml_filename'], model_id = model_info['id'], model_organism = model_organism, model_type = 'metabolic',import_params = False)
-
-    model.biomass_reaction = model.reactions_by_id[model_info['biomassrxn_id']]
-
-    # Assign the objective function coefficients
-    for rxn in model.reactions:
-        rxn.objective_coefficient = 0
-    model.biomass_reaction.objective_coefficient = 1
-
-    # Growth medium
-    set_specific_bounds(model = model, file_name = media_info['media_filename'], flux_bounds = media_info['other_flux_bounds'])
-
-    # Perform FBA for the wild-type
-    model.fba(assign_wildType_max_biomass = True, stdout_msgs = stdout_msgs)
-
-    return model
-
-#-------------------------------------------------------------------------------
 def Ecoli_minimalAerobic(): 
-    use_iAF1260 = True
+    use_iAF1260 = False
     use_iJO1366 = True
 
     # Import the flux bounds in flux_data_filename
@@ -167,7 +129,7 @@ def Ecoli_minimalAerobic():
         # Model path
         model_path = '/usr2/postdoc/alizom/work/models/Escherichia_coli/iAF1260/'
         print '\nFBA before adding flux data: '
-        iAF1260 = create_model(organism_info = {'id':'Ecoli', 'name':'Escherichia_coli'}, model_info = {'id':'iAF1260_minimal_aerobic_glc_PMID_23036703', 'sbml_filename':model_path + 'iAF1260_updated.xml', 'biomassrxn_id':'Ec_biomass_iAF1260_core_59p81M'}, media_info = {'media_filename':model_path + 'iAF1260_minimal_glucose_aerobic.py', 'other_flux_bounds': {'EX_glc(e)':[-100,1000], 'EX_o2(e)':[-200,1000]}}, stdout_msgs = True, warnings = True)
+        iAF1260 = create_model(organism_info = {'id':'Ecoli', 'name':'Escherichia_coli'}, model_info = {'id':'iAF1260_minimal_aerobic_glc_PMID_23036703', 'sbml_filename':model_path + 'iAF1260_updated.xml', 'biomassrxn_id':'Ec_biomass_iAF1260_core_59p81M'}, growthMedium_fluxBounds = {'media_filename':model_path + 'iAF1260_minimal_glucose_aerobic.py', 'other_flux_bounds': {'EX_glc(e)':[-100,1000], 'EX_o2(e)':[-200,1000]}}, stdout_msgs = True, warnings = True)
 
         print '\nFBA after adding flux data: '
         checkFlux_iAF1260 = check_fluxData(model = iAF1260, exp_flux_bounds = exp_flux_bounds, simulation_conditions = 'minimal aetobic glucose', stdout_msgs = True, warnings = True)
@@ -176,11 +138,22 @@ def Ecoli_minimalAerobic():
     if use_iJO1366:
         print '---- iJO1366 model ---'
         model_path = '/usr2/postdoc/alizom/work/models/Escherichia_coli/iJO1366/'
-        iJO1366 = create_model(organism_info = {'id':'Ecoli', 'name':'Escherichia_coli'}, model_info = {'id':'iJO1366_minimal_aerobic_glc_PMID_23036703', 'sbml_filename':model_path + 'iJO1366_updated.xml', 'biomassrxn_id':'Ec_biomass_iJO1366_core_53p95M'}, media_info = {'media_filename':model_path + 'iJO1366_minimal_glucose_aerobic.py', 'other_flux_bounds': {'EX_glc(e)':[-100,1000], 'EX_o2(e)':[-200,1000]}}, stdout_msgs = True, warnings = True)
+        iJO1366 = create_model(organism_info = {'id':'Ecoli', 'name':'Escherichia_coli'}, model_info = {'id':'iJO1366_minimal_aerobic_glc_PMID_23036703', 'sbml_filename':model_path + 'iJO1366_updated.xml', 'biomassrxn_id':'Ec_biomass_iJO1366_core_53p95M'}, growthMedium_fluxBounds = {'fluxBounds_filename':model_path + 'iJO1366_minimal_glucose_aerobic.py', 'fluxBounds_dict': {'EX_glc(e)':[-100,1000], 'EX_o2(e)':[-200,1000]}}, stdout_msgs = True, warnings = True)
 
         print '\nFBA after adding flux data: '
         checkFlux_iJO1366 = check_fluxData(model = iJO1366, exp_flux_bounds = exp_flux_bounds, simulation_conditions = 'minimal aetobic glucose', stdout_msgs = True, warnings = True)
         checkFlux_iJO1366.check_feasbility()
+
+        print '\nFBA after incorporating the biomass flux obtained with using exp flux data on top of the flux data themselves: '
+        exp_flux_bounds[iJO1366.biomass_reaction.id] = [5.04,5.04]
+        checkFlux_iJO1366 = check_fluxData(model = iJO1366, exp_flux_bounds = exp_flux_bounds, simulation_conditions = 'minimal aetobic glucose', stdout_msgs = True, warnings = True)
+        checkFlux_iJO1366.check_feasbility()
+
+        #fva_flux_bounds = fva(model = iJO1366, store_fva_flux_bounds = False, stdout_msgs = True)
+        #print '\n\n',fva_flux_bounds
+        #with open('res.txt','w') as f:
+        #    for r in fva_flux_bounds.keys():
+        #        f.write('{}:{}\n'.format(r,fva_flux_bounds[r]))
 
 #-------------------------
 if __name__ == '__main__':

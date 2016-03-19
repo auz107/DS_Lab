@@ -1,4 +1,4 @@
-__all__ = ["growth_medium","fba","DMMM"]
+__all__ = ["growth_medium","fba","fva","DMMM","create_model"]
 
 # Add Directories to PYTHONPATH
 import sys, os

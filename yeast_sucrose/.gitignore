@@ -5,6 +5,8 @@ jobs
 *.txt
 *.pdf
 *.log
+.nfs*
+.*.swp
 *test*.*
 [a-z].py
 .nfs*

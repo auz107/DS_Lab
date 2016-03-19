@@ -8,6 +8,8 @@ links
 *.pdf
 *.log
 *test*.*
+.nfs*
+.*.swp
 [a-z].py
 core.*
 *.m

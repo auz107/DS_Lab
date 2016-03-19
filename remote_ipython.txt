@@ -1,0 +1,15 @@
+1. On the remote machine :
+    ipython notebook --no-browser --port=7000
+
+this doesn’t open the browser
+
+2. On the local machine do: 
+    ssh -N -f -L localhost:8888:localhost:7000 username@dest.ination.com
+
+3. Copy http://localhost:8888 or https://localhost:8888 into the favorite browser on your local machine.
+
+NOTE. In the first step don’t do:
+ ipython notebook --no-browser --port=7000 notebook_name.ipynb
+
+It opens the browser on the remote machine. If you do not provide the browser name, after completing step 3, you will see the list of files in the directory you did Step 1 and from there you can open the particular notebook you’d like.
+

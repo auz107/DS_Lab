@@ -3,6 +3,8 @@ archive
 *.txt
 *.pdf
 *test*.*
+.nfs*
+.*.swp
 t.py
 1
 2

@@ -2,6 +2,8 @@ archive
 *.pyc
 *.txt
 *.pdf
+.nfs*
+.*.swp
 t.py
 1
 2

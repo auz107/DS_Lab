@@ -409,7 +409,7 @@ def performDMMM(input_data):
     stdout_msgs = input_data['stdout_msgs']
     warnings = input_data['warnings'] 
     results_filename = input_data['results_filename'] 
-    save_details = input_data['save_details'] 
+    save_results = input_data['save_results'] 
 
     # Compute the initial uptake rates (for demonstration purposes only)
     if stdout_msgs:
@@ -604,14 +604,12 @@ def performDMMM(input_data):
     #-- Histidine --
     if simulate_his:
         if his_uptake_byCheater:
-            #reactant_reactions = [Cooperator.get_reactions({'EX_his_L_e_'}),Cheater.get_reactions({'EX_his_L_e_'})]
             reactant_reactions = [Cooperator.reactions_by_id['EX_his_L_e_'],Cheater.reactions_by_id['EX_his_L_e_']]
         else:
-            #reactant_reactions = [Cooperator.get_reactions({'EX_his_L_e_'})]
             reactant_reactions = [Cooperator.reactions_by_id['EX_his_L_e_']]
 
         his_shared = compound(id = 'his_e', name = 'Histidine', ModelSEED_id = 'cpd00119', KEGG_id = 'C00135', reactant_reactions = reactant_reactions,product_reactions = [], reactions = reactant_reactions, concentration = {0:init_concs['his_mM']})
-        shared_cmps = [sucr_shared,glc_shared,fru_shared,his_shared]
+        shared_cpds = [sucr_shared,glc_shared,fru_shared,his_shared]
 
     #--- Reset the bounds for Cooperator and Cheater ---
     if Cooperator.fixed_o2:
@@ -633,7 +631,7 @@ def performDMMM(input_data):
         set_specific_bounds(model = Cheater,file_name = model_path + 'iAZ900_minimal.py',flux_bounds = {'SUCRe':[0,0]})
 
     # Lag phase time was set according to PMID: 23637571 (see the table in supplementary material)
-    DMMM_CooprDefec = DMMM_yeast(community_members = [Cooperator,Cheater],shared_compounds = shared_cmps,time_range = [t0,delta_t,tf],reactor_type = reactor_type, carrying_capacity = {'cells_per_ml':1e20,'compounds_mM':1e15}, serial_dilution_params = serial_dilution_params, lag_phase_time = 3, warnings = warnings, stdout_msgs = stdout_msgs)
+    DMMM_CooprDefec = DMMM_yeast(community_members = [Cooperator,Cheater],shared_compounds = shared_cpds,time_range = [t0,delta_t,tf],reactor_type = reactor_type, carrying_capacity = {'cells_per_ml':1e20,'compounds_mM':1e15}, serial_dilution_params = serial_dilution_params, lag_phase_time = 3, warnings = warnings, stdout_msgs = stdout_msgs)
     DMMM_CooprDefec.run()
 
     # The fraction of Cooperator at the end of the experiment
@@ -646,28 +644,36 @@ def performDMMM(input_data):
     # shared_cpds_rxns = Flux of exchange reactions for shared compounds. This is a dictionary where keys are a tuple with the 
     # first and second element being the id of the respective community member and that of the exchange reaction, respectively.
     # Write the final fraction of Cooperator into a file
-    results = {}
-    results['cooperator_conc'] = Cooperator.organism.cells_per_ml    
-    results['cheater_conc'] = Cheater.organism.cells_per_ml    
-    results['cooperator_frac'] = cooperator_frac
-    results['shared_cpds_conc'] = {}
-    for shared_cmp in shared_cmps:
-        results['shared_cpds_conc'][shared_cmp.id] = shared_cmp.concentration 
+    results = {'species':{'cooperator':{'conc':{},'mu':{},'frequency':{}},'cheater':{'conc':{},'mu':{},'frequency':{}}},'shared_cpds':dict([(cpd.id,{'conc':{}, 'uptake_rxnfluxes':{}, 'export_rxnfluxes':{}}) for cpd in shared_cpds])}
 
-    if save_details:
-        results['cooperator_mu'] = Cooperator.organism.mu
-        results['cheater_mu'] = Cheater.organism.mu
+    if save_results['species_concs']:
+        results['species']['cooperator']['conc'] = Cooperator.organism.cells_per_ml    
+        results['species']['cheater']['conc'] = Cheater.organism.cells_per_ml    
 
-        results['shared_cpds_rxns'] = {}
-        for rxn in list(set([r for c in shared_cmps for r in c.reactions])):
-            results['shared_cpds_rxns'][(rxn.model.id,rxn.id)] = rxn.flux
+    if save_results['species_frequencies']:
+        results['species']['cooperator']['frequency'] = [Cooperator.organism.cells_per_ml[t]/(Cooperator.organism.cells_per_ml[t] + Cheater.organism.cells_per_ml[t]) for t in Cooperator.organism.cells_per_ml.keys()] 
+        results['species']['cheater']['frequency'] = [Cheater.organism.cells_per_ml[t]/(Cooperator.organism.cells_per_ml[t] + Cheater.organism.cells_per_ml[t]) for t in Cooperator.organism.cells_per_ml.keys()] 
+
+    if save_results['species_mu']:
+        results['species']['cooperator']['mu'] = Cooperator.organism.mu
+        results['species']['cheater']['mu'] = Cheater.organism.mu
+
+    if save_results['shared_cpds_concs']:
+        for shared_cpd in shared_cpds:
+            results['shared_cpds'][shared_cpd.id]['conc'] = shared_cpd.concentration 
+
+            if save_results['shared_cpds_rxnfluxes']:
+                for rxn in shared_cpd.reactant_reactions:
+                    results['shared_cpds'][shared_cpd.id]['uptake_rxnfluxes'][(rxn.model.id,rxn.id)] = rxn.flux
+                for rxn in shared_cpd.product_reactions:
+                    results['shared_cpds'][shared_cpd.id]['export_rxnfluxes'][(rxn.model.id,rxn.id)] = rxn.flux
  
     if results_filename != '':
         with open(results_filename,'a') as f:
             if simulate_his:
-                f.write('results[' + str((('coopr_frac',coopr_frac_init), ('capture_eff',capture_eff), ('atp_coeff',atp_coeff),('his',init_concs['his_mM']),('glc',init_concs['glc_mM']),('fru',init_concs['fru_mM']))) + '] = ' + str(results) + '\n')
+                f.write('results[' + str((('coopr_frac_init',coopr_frac_init), ('total_cells_conc_init',init_concs['coopr_cells_per_ml'] + init_concs['cheater_cells_per_ml']), ('capture_eff',capture_eff), ('atp_coeff',atp_coeff),('his_init',init_concs['his_mM']),('glc_init',init_concs['glc_mM']),('fru_init',init_concs['fru_mM']))) + '] = ' + str(results) + '\n')
             else:
-                f.write('results[' + str((('coopr_frac',coopr_frac_init), ('capture_eff',capture_eff), ('atp_coeff',atp_coeff),('glc',init_concs['glc_mM']),('fru',init_concs['fru_mM']))) + '] = ' + str(results) + '\n')
+                f.write('results[' + str((('coopr_frac_init',coopr_frac_init), ('total_cells_conc_init',init_concs['coopr_cells_per_ml'] + init_concs['cheater_cells_per_ml']), ('capture_eff',capture_eff), ('atp_coeff',atp_coeff),('glc_init',init_concs['glc_mM']),('fru_init',init_concs['fru_mM']))) + '] = ' + str(results) + '\n')
 
 def create_model(stdout_msgs = True):
     """
@@ -700,7 +706,7 @@ def create_model(stdout_msgs = True):
 
     return iAZ900
 
-def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficiency = 0.99, SUCRe_atp = 0.115, serial_dilution_params = {'dilution_factor':1000,'time_between_dilutions':24}, reactor_type = 'batch', initial_concs = {'sucr_mM':10, 'glc_mM':0,'fru_mM':0,'his_mM':10,'total_cells_per_ml':1e5,'cooperator_frac_init':0.5}, simulate_his = True, his_uptake_byCheater = True, fixed_o2 = True, warnings = True, stdout_msgs = True, results_filename = '', save_details = True):
+def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficiency = 0.99, SUCRe_atp = 0.115, serial_dilution_params = {'dilution_factor':1000,'time_between_dilutions':24}, reactor_type = 'batch', initial_concs = {'sucr_mM':10, 'glc_mM':0,'fru_mM':0,'his_mM':10,'total_cells_per_ml':1e5,'cooperator_frac_init':0.5}, simulate_his = True, his_uptake_byCheater = True, fixed_o2 = True, warnings = True, stdout_msgs = True, results_filename = '', save_results = {'species_concs':True, 'species_frequencies':True, 'species_mu':False, 'shared_cpds_concs':True, 'shared_cpds_rxnfluxes':False}):
     """
     Performs DMMM
 
@@ -718,14 +724,42 @@ def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficie
     his_uptake_byCheater: Indicates whether to allow histidine uptake by cheater (True) or not (False)
                 fixed_o2: A parameter showing whether the oxygen uptake rate is fixed (True) or not (False)
        results_filesname: Name of the file containing the results (with NO ".py" extension
+           save_resutlts: A dictionary indicating which components of the results need to be saved:
+                          'species_concs':species concentrations, 'species_frequencies':species frequencies, 'species_mu':species specific growth rate
+                          'shared_cpds_conc':Concentration of shared compounds, 'shared_cpds_rxns':Uptake and export rxn fluxes for shared compounds}
     """
     if not isinstance(stdout_msgs,bool):
         raise TypeError('stdout_msgs must be True or False')
     if not isinstance(warnings,bool):
         raise TypeError('warnings must be True or False')
-    if not isinstance(save_details,bool):
-        raise TypeError('save_details must be True or False')
 
+    if not isinstance(save_results,dict):
+        raise TypeError('save_results must be a dict')
+    elif len([k for k in save_results.keys() if k not in ['species_concs', 'species_frequencies', 'species_mu', 'shared_cpds_concs', 'shared_cpds_rxnfluxes']]) > 0:
+        raise ValueError('Unknonw key(s) for save_results: {}'.format([k for k in save_results.keys() and k not in ['species_concs', 'species_frequencies', 'species_mu', 'shared_cpds_concs', 'shared_cpds_rxnfluxes']]))
+    elif 'species_concs' in save_results.keys() and not isinstance(save_results['species_concs'],bool):
+        TypeError("save_results['species_concs'] must be either True or False")
+    elif 'species_frequencies' in save_results.keys() and isinstance(save_results['species_frequencies'],bool):
+        TypeError("save_results['species_frequencies'] must be either True or False")
+    elif 'species_mu' in save_results.keys() and not isinstance(save_results['species_mu'],bool):
+        TypeError("save_results['species_mu'] must be either True or False")
+    elif 'shared_cpds_concs' in save_results.keys() and not isinstance(save_results['shared_cpds_concs'],bool):
+        TypeError("save_results['shared_cpds_concs'] must be either True or False")
+    elif 'shared_cpds_rxnfluxes' in save_results.keys() and not isinstance(save_results['shared_cpds_rxnfluxes'],bool):
+        TypeError("save_results['shared_cpds_rxnfluxes'] must be either True or False")
+    if 'species_concs' not in save_results.keys():
+        save_results['species_concs'] = False 
+    if 'species_frequencies' not in save_results.keys():
+        save_results['species_frequencies'] = False 
+    if 'species_mu' not in save_results.keys():
+        save_results['species_mu'] = False 
+    if 'shared_cpds_concs' not in save_results.keys():
+        save_results['shared_cpds_concs'] = False 
+    if 'shared_cpds_rxnfluxes' not in save_results.keys():
+        save_results['shared_cpds_rxnfluxes'] = False 
+ 
+    print 'save_results = ',save_results 
+        
     if not isinstance(capture_efficiency,float) and not isinstance(capture_efficiency,int) and not isinstance(capture_efficiency,list):
         raise TypeError('capture_efficiency must be either a float or list')
     if not isinstance(SUCRe_atp,float) and not isinstance(SUCRe_atp,int) and not isinstance(SUCRe_atp,list):
@@ -740,6 +774,8 @@ def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficie
         raise TypeError("initial_concs['fru_mM'] must be either a float or list")
     if not isinstance(initial_concs['cooperator_frac_init'],float) and not isinstance(initial_concs['cooperator_frac_init'],int) and not isinstance(initial_concs['cooperator_frac_init'],list):
         raise TypeError("initial_concs['cooperator_frac_init'] must be either a float or list")
+    if not isinstance(initial_concs['total_cells_per_ml'],float) and not isinstance(initial_concs['total_cells_per_ml'],int) and not isinstance(initial_concs['total_cells_per_ml'],list):
+        raise TypeError("initial_concs['total_cells_per_ml'] must be either a float or list")
    
     # If a float is provided for capture efficiency, convert it to a list
     if isinstance(capture_efficiency,float) or isinstance(capture_efficiency,int):
@@ -785,7 +821,7 @@ def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficie
     iAZ900.fixed_o2 = fixed_o2
 
     # All possible cases to consider
-    all_cases = [(coopr_frac_init,capture_eff,atp_coeff,his_init_conc,glc_init_conc,fru_init_conc) for coopr_frac_init in initial_concs['cooperator_frac_init'] for atp_coeff in SUCRe_atp for capture_eff in capture_efficiency for his_init_conc in initial_concs['his_mM'] for glc_init_conc in initial_concs['glc_mM'] for fru_init_conc in initial_concs['fru_mM']]
+    all_cases = [(total_cell_conc_init, coopr_frac_init,capture_eff,atp_coeff,his_init_conc,glc_init_conc,fru_init_conc) for total_cell_conc_init in initial_concs['total_cells_per_ml'] for coopr_frac_init in initial_concs['cooperator_frac_init'] for atp_coeff in SUCRe_atp for capture_eff in capture_efficiency for his_init_conc in initial_concs['his_mM'] for glc_init_conc in initial_concs['glc_mM'] for fru_init_conc in initial_concs['fru_mM']]
     print '\nThe total # of cases to consider = {}'.format(len(all_cases))
     print 'Simulating slice {}\n'.format((start_pos,end_pos))
 
@@ -807,12 +843,12 @@ def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficie
         start_pt = time.clock()
         start_wt = time.time()
 
-    for (coopr_frac_init,capture_eff,atp_coeff,his_init_conc,glc_init_conc,fru_init_conc) in cases_to_consider: 
+    for (total_cell_conc_init, coopr_frac_init,capture_eff,atp_coeff,his_init_conc,glc_init_conc,fru_init_conc) in cases_to_consider: 
                        
         counter += 1
         print '{}. coopr_frac = {}, capture_eff = {}, atp_coeff = {}, (his_conc, glc_conc, fru_conc) = ({}, {}, {})'.format(counter, coopr_frac_init, capture_eff, atp_coeff, his_init_conc, glc_init_conc, fru_init_conc)
         
-        init_concs = {'sucr_mM':initial_concs['sucr_mM'], 'his_mM':his_init_conc, 'glc_mM':glc_init_conc, 'fru_mM':fru_init_conc, 'coopr_cells_per_ml':initial_concs['total_cells_per_ml']*coopr_frac_init, 'cheater_cells_per_ml':initial_concs['total_cells_per_ml']*(1 - coopr_frac_init)}
+        init_concs = {'sucr_mM':initial_concs['sucr_mM'], 'his_mM':his_init_conc, 'glc_mM':glc_init_conc, 'fru_mM':fru_init_conc, 'coopr_cells_per_ml':total_cell_conc_init*coopr_frac_init, 'cheater_cells_per_ml':total_cell_conc_init*(1 - coopr_frac_init)}
     
         #--- Creating a shared memory using the manager ---
         input_data = {}
@@ -832,7 +868,7 @@ def master_func(t0,delta_t,tf, start_pos = None, end_pos = None, capture_efficie
         input_data['stdout_msgs'] = stdout_msgs
         input_data['warnings'] = warnings
         input_data['results_filename'] = results_filename 
-        input_data['save_details'] = save_details 
+        input_data['save_results'] = save_results 
                 
         p = Process(target = performDMMM, args = (input_data,))
         p.start()
@@ -1109,25 +1145,22 @@ def coopr_density_effect_on_mu():
     # Number of cycles of serial dilution
     cycles_num = 1
 
+    # Final time point
+    tf = 2*24
+
     # Initial fraction of cooperator cells
     coopr_frac = 1
 
     print "\nsimulation parameters:  capture_efficiency = {}%, initial sucrose conc. = {} mM, initial histidine conc. = {} mM  ,  Cooperators' fraction = {}\n".format(100*capture_efficiency[0], sucr_mM, histidine_init_conc[0], coopr_frac)
+  
 
     print '\n---- Simulating low cell density ----\n'
-    # Total initial cell conc per ml = 150000 (tests were prformed in 5 ml batch culture). 
-    for total_cell_conc_init in [0.5*150000, 150000, 2*150000]:
-        if total_cell_conc_init == 0.5*150000:
-            results_filename = 'results/dynamic_coopr_density_effect_on_mu_low.py'
-        elif total_cell_conc_init == 150000:
-            results_filename = 'results/dynamic_coopr_density_effect_on_mu_base.py'
-        elif total_cell_conc_init == 2*150000:
-            results_filename = 'results/dynamic_coopr_density_effect_on_mu_high.py'
+    total_cell_conc_init = [1000, 5000, 10000, 15000, 20000, 25000, 35000, 50000, 75000, 100000]
 
-        master_func(t0 = 0, delta_t = 0.25, tf = cycles_num*24, capture_efficiency = capture_efficiency, SUCRe_atp = SUCRe_atp, reactor_type = 'serial_dilution', serial_dilution_params = {'dilution_factor':None,'time_between_dilutions':24,'total_cell_conc_beginCycle':total_cell_conc_init}, initial_concs = {'sucr_percent':sucr_percent,'sucr_mM':sucr_mM, 'his_mM':histidine_init_conc, 'glc_mM':0,'fru_mM':0,'total_cells_per_ml':total_cell_conc_init, 'cooperator_frac_init':coopr_frac}, warnings = True, stdout_msgs = True, results_filename = results_filename)
+    master_func(t0 = 0, delta_t = 0.25, tf = tf, capture_efficiency = capture_efficiency, SUCRe_atp = SUCRe_atp, reactor_type = 'batch', initial_concs = {'sucr_percent':sucr_percent,'sucr_mM':sucr_mM, 'his_mM':histidine_init_conc, 'glc_mM':0,'fru_mM':0,'total_cells_per_ml':total_cell_conc_init, 'cooperator_frac_init':coopr_frac}, warnings = True, stdout_msgs = True, save_results = {'species_mu':True}, results_filename = 'results/dynamic_coopr_density_effect_on_mu.py')
 
 
-def plot_density(results_filenames, output_filename):
+def plot_density(results_filename, output_filename):
     """
     Makes a plot of the cell densities for two low and high starting cell densities
 
@@ -1138,33 +1171,44 @@ def plot_density(results_filenames, output_filename):
     from imp import load_source
     from tools.ancillary.plot import plot, axis
  
-    linplot = plot(xaxis = axis(label = 'Time ($h$}', spines_format = {'bottom':{'linewidth':2},'top':{'linewidth':2}}), yaxis = axis(label = '$\mu \, (h^{-1})$', spines_format = {'left':{'linewidth':2}, 'right':{'linewidth':2}}), plot_gridlines = True, show_legend = True, legend_format = {'location':'center left', 'bbox_to_anchor':(1.05,0.5)}, fig_format = {'mathtext_fontname':'Arial'}, output_filename = output_filename)
+    # A dictionary whose keys are total initial cell concentrations and values are mu at the end of simulations time
+    mu_cellconc = {}
+
+    # Load the data from the files
+    load_source('dataFile',results_filename)
+    import dataFile
+    results = dataFile.results
+
+    # Plot mu as a function of time for all cases   
+    linplot1 = plot(xaxis = axis(label = 'Time ($h$}', spines_format = {'bottom':{'linewidth':2},'top':{'linewidth':2}}), yaxis = axis(label = '$\mu \, (h^{-1})$', spines_format = {'left':{'linewidth':2}, 'right':{'linewidth':2}}), plot_gridlines = True, show_legend = True, legend_format = {'location':'center left', 'bbox_to_anchor':(1.05,0.5)}, fig_format = {'mathtext_fontname':'Arial'}, output_filename = '')
     
     counter = 0
-
-    for results_filename in results_filenames:
+    for res_key in results.keys():
         counter += 1
 
-        # Load the data from the files
-        load_source('dataFile',results_filename)
-        import dataFile
-        results = dataFile.results
-    
         if counter == 1:
             # Time points
-            time_points = sorted(results[results.keys()[0]]['cooperator_mu'].keys())
+            time_points = sorted(results[res_key]['species']['cooperator']['mu'].keys())
             tf = max(time_points)
- 
-            linplot.xaxis.custom_ticks = range(0,int(tf)+1,24)
-            linplot.xaxis.limits = (0,tf)
+
+            linplot1.xaxis.custom_ticks = range(0,int(tf)+1,12)
+            linplot1.xaxis.limits = (0,tf)
             create_new_figure = True
         else:
             create_new_figure = False
 
-        current_label = str('{:.1E}'.format(int(results[results.keys()[0]]['cooperator_conc'][0])))
-        linplot.plot2D(x = time_points, y = [results[results.keys()[0]]['cooperator_mu'][t] for t in time_points], sort_data = False, label = current_label, line_format = {'width':3}, create_new_figure = create_new_figure, save_current = False)
+        mu_cellconc[dict(res_key)['total_cells_conc_init']] = results[res_key]['species']['cooperator']['mu'][tf] 
+
+        current_label = str('{:.1E}'.format(int(dict(res_key)['total_cells_conc_init'])))
+        linplot1.plot2D(x = time_points, y = [results[res_key]['species']['cooperator']['mu'][t] for t in time_points], sort_data = False, label = current_label, line_format = {'width':3}, create_new_figure = create_new_figure, save_current = False)
     
-    linplot.customize_and_save()
+    linplot1.customize_and_save()
+
+    # plot mu as a function of total initial cell concentration
+    linplot2 = plot(xaxis = axis(label = r'Population density $\left(\frac{cells}{ml}\right)$', ticklabels_format = {'rotation':270}, spines_format = {'bottom':{'linewidth':2},'top':{'linewidth':2}}, limits = (min(mu_cellconc.keys()),max(mu_cellconc.keys()))), yaxis = axis(label = r'$mu \, (h^{-1})$', spines_format = {'left':{'linewidth':2}, 'right':{'linewidth':2}}), plot_gridlines = True, fig_format = {'figsize':[7,5],'mathtext_fontname':'Arial'}, output_filename = output_filename)
+    linplot2.plot2D(x = sorted(mu_cellconc.keys()), y = [mu_cellconc[c] for c in sorted(mu_cellconc.keys())], sort_data = False, line_format = {'width':3}, create_new_figure = True, save_current = True)
+    linplot2.customize_and_save()
+
 
 def coopr_cheater_invade():
     """

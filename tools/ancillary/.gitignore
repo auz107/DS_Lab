@@ -2,5 +2,10 @@ archive
 *.pyc
 *.txt
 *.pdf
-*.log
-*test*.*
+.nfs*
+.*.swp
+t.py
+1
+2
+3
+4

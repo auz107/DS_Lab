@@ -4,6 +4,8 @@ jobs
 *.pyc
 *.pdf
 *.log
+.nfs*
+.*.swp
 *test*.*
 [a-z].py
 plot*.m

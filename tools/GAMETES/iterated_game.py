@@ -3,151 +3,225 @@ import re, sys, math, copy, time, random
 from scipy.linalg import eig
 from copy import deepcopy
 sys.path.append('../../')
-from tools.userError import *
-from stochasticStrategy import *
-from game import *
+from tools.userError import userError
+from stochastic_strategy import stochastic_strategy
+from game import game
 
 class iteratedGame(object):
     """
     This is a general class simulating an iterated game with N players 
-    Replicator dynamics is used to simualte the evolution of the community. 
+    Replicator dynamics is used to simulate the evolution of the community. 
 
     Ali R. Zomorrodi - Daniel Segre lab @ BU
-    Last updated: 06-11-2015
+    Last updated: 03-09-2016
     """
-
-    def __init__(self, game, iStrategies, x_init, sim_time, dt = None):
+    def __init__(self, game, stoch_strategies, x_init, time_range = [0,1,10], ignore_same_player_encounter = False, warnings = True, stdout_msgs = True):
         """
         INPUTS:     
         -------
-                   game: An instance of the class game 
-            iStrategies: A dictionary holding the information about strategies 
-                         that should be played in the iterated games. Keys and 
-                         values of this dictionary are as follows:
-                           Keys: A tuple with two elements: 
-                                 1st element: Name of the player playing this strategy
-                                 2nd element: is the Name of the strategy (e.g., ('lysA','ALLD'))
-                         Values: An instance of the class stochasticStrategy
-                 x_init: A dictionary containing the initial composition of the community 
-                           Keys: The same keys as iStrategies
-                         Values: The fraction of each community member playing that strategy
-               sim_time: Simulation time for  replicator dynamics. The units are arbitrary
-                     dt: Time step for simulations using replicator dynamics (default = 1) 
+                    game: An instance of the class game 
+        stoch_strategies: A list of stochastic strategies. For example, if have two players p1 and p2 in the classic game 
+                          and in the iterated game we have two versions of p1 one playing ALLD and the other TFT and also 
+                          two versions of p2 one playing ALLD and the other ALLC, then the set of stochastic strategies will
+                          by a list of instances of four stochastic_strategy for (p1,ALLD), (p1,TFT), (p2, ALLD) and (p2,ALLC)
+                  x_init: A dictionary containing the frequency of each stochastic strategy at the beginning of simulation time 
+                            Keys: Elements of stoch_strategies
+                          Values: Fraction (frequency) of each stochastic strategy 
+              time_range: Range of the simulation time. This is a list with 
+                          either two or three elements.
+                          Two-element format: [startTime,endTime]
+                          Three-element format: [startTime,timeStep,endTime]. If the 
+                          time step is not given a time step of one is used
+        ignore_same_player_encounter: Ignores whether we should ignore (assign a zero payoff) the encouter of the same players with 
+                          any stochastic strategies (True) or not (False). This is sometimes relevant, for example, when we 
+                          deal with two E. coli mutants cross feeding each other the amino acids they cannot produce. In this case, if
+                          for example, a lysA playing ALLD faces with another lysA mustant (no matter if the play the same or a different
+                          stochastic strategy), they will gain nothing and zero is assigned as the payoff. This is mainly because in this
+                          case cooperate and defect strategies are essentially defined in connection to a different mutant. 
         """
         # Game
         self.game = game
 
         # Payoff matrix of the original game
-        self._payoffMatrix = self.game.payoffMatrix
+        self._payoff_matrix = self.game.payoff_matrix
 
         # Total possible states of the game
-        self._gameStates = self._payoffMatrix.keys() 
+        # Example: For (lysA, ilvE) E. coli mutants, we have:
+        # [(('lysA', 'EX_ile-L(e)'), ('ilvE', 'Defect')), (('lysA', 'EX_ile-L(e)'), ('ilvE', 'EX_lys-L(e)')), 
+        #  (('lysA', 'Defect'), ('ilvE', 'EX_lys-L(e)')), (('lysA', 'Defect'), ('ilvE', 'Defect'))]
+        self._game_states = self._payoff_matrix.keys() 
 
-        # Iterated strategies
-        self.iStrategies = deepcopy(iStrategies)
+        # Players' strategies for iterated games
+        self.stoch_strategies = deepcopy(stoch_strategies)
 
         # Initial concentrations
         self.x_init = x_init
 
-        # Simulation time
-        self.sim_time = sim_time
+        if len(time_range) == 3:
+            # Initial time
+            self._t0 = time_range[0]
 
-        # Time step for discretized replicator dynamics
-        if dt == None:
-            self.dt = 1
-        else:         
-            self.dt = dt
+            # Original dt. This mught be adjusted during the simulations
+            self._dt = time_range[1]
 
-    def createPayoff_iStrategies(self):
+            # Final simulation time
+            self._tf = time_range[2]
+        elif len(time_range) == 2:
+            # Initial time
+            self._t0 = time_range[0]
+
+            # Original dt. This mught be adjusted during the simulations
+            self._dt = 1
+
+            # Final simulation time
+            self._tf = time_range[1]   # Final simulation time
+        else:
+            userError("**ERROR! Invalid time_range (allowable size of the vectors are two or three)")
+
+        # Ignore the encounter of the same players
+        self.ignore_same_player_encounter = ignore_same_player_encounter
+
+        # warnings and stdout_msgs
+        self.warnings = warnings
+        self.stdout_msgs = stdout_msgs
+    
+        # Dictionaries where keys are time points and values are the average fitness
+        # or frequency (relative abundance) of each stochastic strategy 
+        for stoch_strategy in self.stoch_strategies:
+            stoch_strategy.fitness = {}
+            stoch_strategy.frequency = {}
+
+        # A dictionary with keys and values being the time pionts and the average fitness
+        # of the community
+        self.phi = {}
+
+    def __setattr__(self,attr_name,attr_value):
         """
-        This function creates the payoff matrix of the iterated strategies.
-        The output of this function is a dictionary called payoff_iStrategies
+        Redefines funciton __setattr__
+        INPUTS:
+        -------
+        attr_name: Attribute name
+        attr_value: Attribute value
+        """
+        # game
+        if attr_name.lower() == 'game' and not isinstance(attr_value,game):
+            raise TypeError('game must be an instance of class game')
+
+        # Stochastic strategies in the iterated game 
+        if attr_name.lower() == 'stoch_strategies' and not isinstance(attr_value,list):
+            raise TypeError('stoch_strategies must be a list')
+
+        # Players' frequencies 
+        if attr_name.lower() == 'x_init' and not isinstance(attr_value,dict):
+            raise TypeError('x_init must be a dictionary')
+
+        # time range
+        if attr_name.lower() == 'time_range' and not isinstance(attr_value,list):
+            raise TypeError('time_range must be a list')
+
+        # ignore_same_player_encounter
+        if attr_name.lower() == 'ignore_same_player_encounter' and not isinstance(attr_value,bool):
+            raise TypeError('ignore_same_player_encounter must be either True or False')
+
+        # warnings and stdout_msgs 
+        if attr_name.lower() == 'warnings' and not isinstance(attr_value,bool):
+            raise TypeError('warnings must be either True or False')
+        if attr_name.lower() == 'stdout_msgs' and not isinstance(attr_value,bool):
+            raise TypeError('stdout_msgs must be either True or False')
+
+        self.__dict__[attr_name] = attr_value
+
+    def create_iteratedGame_payoffMatrix(self):
+        """
+        This function creates the payoff matrix of the iterated game with stochastic strategies.
+        The output of this function is a dictionary called iteratedGame_payoffMatrix
         with keys and values as follows:
           keys: A tuple with two elements, where each element is a key of
-                self.iStrategies, which is a tuple with the first element being
+                self.stoch_strategies, which is a tuple with the first element being
                 the name of the player and the second the name of the iterated
-                strategy
+                strategy it takes
         values: Another dictionary with keys and values as follows: 
                   keys: Name of the player 
                 values: The payoff of the player
         """
-        self.payoff_iStrategies = {}
+        self.iteratedGame_payoffMatrix = {}
 
-        for iStrategy1 in self.iStrategies.keys():
-            for iStrategy2 in self.iStrategies.keys():
+        for stoch_strategy1 in self.stoch_strategies:
+            for stoch_strategy2 in self.stoch_strategies:
                 # Players of the same type get nothing when facing with each other 
-                if iStrategy1[0].lower() == iStrategy2[0].lower():
-                    self.payoff_iStrategies[(iStrategy1,iStrategy2)] = {iStrategy1[0]:0, iStrategy2[0]:0}
+                if self.ignore_same_player_encounter and stoch_strategy1.player.lower() == stoch_strategy2.player.lower():
+                    self.iteratedGame_payoffMatrix[(stoch_strategy1,stoch_strategy2)] = {stoch_strategy1:0, stoch_strategy2:0}
 
-                elif self.iStrategies.keys().index(iStrategy2) > self.iStrategies.keys().index(iStrategy1):
-                    self._iStrategies_curr = {}
-                    # If we have TFT vs TFT it's similar to ALLC vs. ALLC
-                    if iStrategy1[1].lower() == 'tft' and iStrategy2[1].lower() == 'tft':
-                        print 'iStrategy1[1] = ',iStrategy1[1],'\tiStrategy 2 = ',iStrategy2[1] 
-                        iStrategy1[1] == 'ALLC'
-                        iStrategy2[1] == 'ALLC'
-                    # If we have sTFT vs sTFT it's similar to ALLD vs. ALLD
-                    elif iStrategy1[1].lower() == 'stft' and iStrategy2[1].lower() == 'stft':
-                        print 'iStrategy1[1] = ',iStrategy1[1],'\tiStrategy 2 = ',iStrategy2[1] 
-                        iStrategy1[1] == 'ALLD'
-                        iStrategy2[1] == 'ALLD'
+                elif self.stoch_strategies.index(stoch_strategy2) > self.stoch_strategies.index(stoch_strategy1):
+                    self._stoch_strategies_pairs = [stoch_strategy1,stoch_strategy2]
  
-                    self._iStrategies_curr[iStrategy1] = self.iStrategies[iStrategy1]
-                    self._iStrategies_curr[iStrategy2] = self.iStrategies[iStrategy2]
-
                     # Create the Markov chain transition matrix
-                    self.createTransitionMatrix()
+                    self._create_transition_matrix()
 
                     # Find the stationary probabilities
-                    self.findStationaryProbs()
+                    self._find_stationary_probs()
 
-                    # Compute the expected payoff for each player
-                    # Player playing strategies iStrategy1 and iStrategy2
-                    p1,p2 = iStrategy1[0], iStrategy2[0]
-                    p1Payoff, p2Payoff = [], []
-                    for stationaryProbs in self._stationaryProbs:
-                        p1Payoff.append(sum([stationaryProbs[k]*self._payoffMatrix[k][p1] for k in stationaryProbs.keys()]))
-                        p2Payoff.append(sum([stationaryProbs[k]*self._payoffMatrix[k][p2] for k in stationaryProbs.keys()]))
+                    # Compute the expected payoff for each stoch_strategy1 and stoch_strategy2 when these two 
+                    # strategies facing each other
+                    stoch_strategy1_payoff, stoch_strategy2_payoff = [], []
+                    for stationary_probs in self._stationary_probs_list:
+                        stoch_strategy1_payoff.append(sum([stationary_probs[game_state]*self._payoff_matrix[game_state][stoch_strategy1.player] for game_state in stationary_probs.keys()]))
+                        stoch_strategy2_payoff.append(sum([stationary_probs[game_state]*self._payoff_matrix[gaem_state][stoch_strategy2.player] for game_state in stationary_probs.keys()]))
 
                     # If there are more than one set of stationary probabilities, the payoffs are
                     # computed by taking the average over all
-                    self.payoff_iStrategies[(iStrategy1,iStrategy2)] = {p1:sum(p1Payoff)/len(p1Payoff),p2:sum(p2Payoff)/len(p2Payoff)} 
+                    self.iteratedGame_payoffMatrix[(stoch_strategy1,stoch_strategy2)] = {stoch_strategy1:sum(stoch_strategy1_payoff)/len(stoch_strategy1_payoff),stoch_strategy2:sum(stoch_strategy2_payoff)/len(stoch_strategy2_payoff)} 
+                    if self.warnings and len(self._stationary_probs_list) > 1:
+                        print 'WARNING! more than one stationary probability distribution was found for {}. The payoffs were averaged.'.format(((stoch_strategy1.player,stoch_strategy1.name),(stoch_strategy2.player,stoch_strategy2.name)))
 
                 # Otherwise this strategy pair has already been considered
-                elif self.iStrategies.keys().index(iStrategy2) < self.iStrategies.keys().index(iStrategy1):
-                    self.payoff_iStrategies[(iStrategy1,iStrategy2)] = self.payoff_iStrategies[(iStrategy2,iStrategy1)] 
+                elif self.stoch_strategies.index(stoch_strategy2) < self.stoch_strategies.index(stoch_strategy1):
+                    self.iteratedGame_payoffMatrix[(stoch_strategy1,stoch_strategy2)] = self.iteratedGame_payoffMatrix[(stoch_strategy2,stoch_strategy1)] 
 
                 else:
-                    raise userError('**Error! Unknonw strategy pair!\n')
+                    raise userError('Unknonw stochastic strategy pair!\n')
         
-    def createTransitionMatrix(self):
+    def _create_transition_matrix(self):
         """
-        This funciton creates the Markov chain transition matrix for a set of iterated 
-        strategies (ALLD, ALLC, TFT, etc), one for each player, stored in 
-        self._iStrategies_curr, which is a dictionary created by createPayoff_iStrategies
-        with keys and values as follows: 
-          Keys: A tuple containing the player name and its strategy 
-        Values: An instance of the class stochasticStrategy extracted from 
-                self.iStrategies. The number of keys is equal to the number of players.
+        This funciton creates the Markov chain transition matrix for a pairs of stochastic 
+        strategies (ALLD, ALLC, TFT, etc) stored in self._stoch_strategies_pairs, which is a list created by 
+        funciton create_iteratedGame_payoffMatrix. The elements of this list are instances of the class stochastic_strategy 
+        and pairs are selected from self.stoch_strategies. 
+        The output of this function is a dictionary with the following keys and values:
+          Keys: A tuple in the form (gameState_prev,gameState_curr) containing the states of the game in the previous and current tiime point
+        Values: The probability of being in the current state of the game given a previous state for the game
         """
         # Transition matrix
         self.transitionMatrix = {}
 
-        for gameState_prev in self._gameStates: 
-            for gameState_curr in self._gameStates: 
+        # Loop over the game states in the previous time point
+        # Example: For (lysA, ilvE) E. coli mutants, we have:
+        # [(('lysA', 'EX_ile-L(e)'), ('ilvE', 'Defect')), (('lysA', 'EX_ile-L(e)'), ('ilvE', 'EX_lys-L(e)')), 
+        #  (('lysA', 'Defect'), ('ilvE', 'EX_lys-L(e)')), (('lysA', 'Defect'), ('ilvE', 'Defect'))]
+        # FOr Yeast we have: [(('yeast1','C'),('yeast2','C')),(('yeast1','C'),('yeast2','D')),
+        # (('yeast1','D'),('yeast2','C')),(('yeast1','D'),('yeast2','D'))]
+        # NOTE: Even if both players are of the same type (e.g., if both are yeast) different names should be given to each player. 
+        #       In such cases different names should be also assigned to stochastic_strategy.player as well. These names should be such
+        #       that they can be uniquely found in game.players_names. This is because, we need to find a way of what strategy this current
+        #       players took in the previous state of the game. 
+        for gameState_prev in self._game_states: 
+            # Loop over the game states in the current time point
+            for gameState_curr in self._game_states: 
                 counter = 0
                 for player in self.game.players_names: 
                     # Strategy taken by this player in gameState_curr
                     player_strategy = dict(list(gameState_curr))[player]
 
-                    # Find the name of iterated strategy this player has taken
-                    for k in self._iStrategies_curr.keys():
-                        if player.lower() == k[0].lower():
-                            player_iStrategy = k
+                    # Find the name of stochastic strategy this player has taken
+                    player_stoch_strategy = [stoch_strat for stoch_strat in self._stoch_strategies_pairs if stoch_strat.player.lower() == player.lower()]
+                    if len(player_stoch_strategy) == 1:
+                        player_stoch_strategy = player_stoch_strategy[0]
+                    else:
+                        raise userError('A unique stochastic strategy was not found for player {}. Stochastic strategies found are: {}'.format(player,[s.name for s in player_stoch_strategy]))
 
                     # The probability of taking this strategy by this player accordiing to the
-                    # definition of the stochastic strategies
-                    prob = self._iStrategies_curr[player_iStrategy].strategies_prob[gameState_prev][player_strategy]
+                    # definition of the stochastic strategy it takes
+                    prob = player_stoch_strategy.probabilities[gameState_prev][player_strategy]
                     if counter == 0:
                         self.transitionMatrix[(gameState_prev,gameState_curr)] = prob
                     else: 
@@ -155,60 +229,35 @@ class iteratedGame(object):
 
                     counter += 1
 
-        """
-        # Initial probability distribution vector
-        self.probDistrInit = {}
-        # If prob_distr_init has been provided
-        if len([iStrategy for iStrategy in self._iStrategies_curr.values() if iStrategy.prob_distr_init == None]) == 0:
-            for gameState in self._gameStates: 
-                counter = 0
-                for player in self.game.players_names: 
-                    counter += 1
-    
-                    # Strategy taken by this player in gameState
-                    player_strategy = dict(list(gameState))[player]
-    
-                    # Find the name of iterated strategy this player has taken
-                    for k in self._iStrategies_curr.keys():
-                        if player.lower() == k[0].lower():
-                            player_iStrategy = k
-    
-                    # The probability of taking this strategy by this player accordiing to the
-                    # definition of prob_distr_init of the stochastic strategies
-                    prob = self._iStrategies_curr[player_iStrategy].prob_distr_init[player_strategy]
-                    if counter == 1:
-                        self.probDistrInit[gameState] = prob
-                    else: 
-                        self.probDistrInit[gameState] = prob*self.probDistrInit[gameState]
-        """
-
-    def findStationaryProbs(self):
+    def _find_stationary_probs(self):
         """
         This function finds the stationary probabilities of being in each state of the
-        game using the Markov chain transition matrix. p = p*M. The output is a 
-        dictionary self._stationaryProbs with keys and values as follows:
-          keys: States of the game (elements of self._gameStates) 
+        game using the Markov chain transition matrix. p = p*M. The output is a list of 
+        dictionaries self._stationary_probs_list, where the keys and values of each dictionary
+        are as follow:
+          keys: States of the game (elements of self._game_states) 
         values: The stationay probability of being in each state when a particular
-                set of iterated strategies face each other
+                set of stochastic strategies face each other
         """
-        
         # Initialize the transition matrix in the form of a numpy array
-        M = np.zeros((len(self._gameStates),len(self._gameStates)))
+        M = np.zeros((len(self._game_states),len(self._game_states)))
 
         # Fill in the elements of transition matrix M 
-        for row in self._gameStates:
-            for col in self._gameStates: 
-                M[self._gameStates.index(row),self._gameStates.index(col)] = self.transitionMatrix[(row,col)]
+        # Note that self.transitionMatrix is in the form:
+        # self.transitionMatrix[(gameState_prev,gameState_curr)] = prob
+        for row in self._game_states:
+            for col in self._game_states: 
+                M[self._game_states.index(row),self._game_states.index(col)] = self.transitionMatrix[(row,col)]
 
         # Sum of all columns for each row should be equal to one
         sumM = M.sum(axis=1)
         for m in sumM:
             if abs(sumM[m] - 1) >= 1e-6:
-                raise userError('Sum of the columns for each row is not one for the transition matrix of  ' + srt(self._iStrategies_curr.keys()) + ': sum = ' + str(sumM))
+                raise userError('Sum of the columns for each row is not one for the transition matrix of  ' + srt(self._stoch_strategies_pairs.keys()) + ': sum = ' + str(sumM))
 
         # Now find the stationary probabilities (left eigenvectors asociated with an 
         # eigenvalue of one)
-        eigVals,eigVecs=eig(M,left=True,right=False)
+        eigVals,eigVecs = eig(M, left = True, right = False)
 
         # Find the indices of eigen valueis, which is one (closest to one)         
         oneInds = [k for k in range(len(eigVals)) if abs(eigVals[k] - 1) < 1e-6]
@@ -219,127 +268,68 @@ class iteratedGame(object):
         # There should be only one eigenvalue equal to one, if not issue a warning and use the
         # first index in oneEigValInds
         if len(oneInds) > 1:
-            print '**Warning! More than one eigenvalues are close to one for ',self._iStrategies_curr.keys()
-            print '\tM = \n',M,'\n'
-            print '\teigVals = \n\t',eigVals,'\n'
-            print '\teigVecs = '
-            for oneInd in oneInds:
-                print '\t',eigVecs[:,oneInd]/sum(eigVecs[:,oneInd])
-
-            """
-            # Check which one corresponds to the given initial probability distribution
-            if self.probDistrInit != {}:
-                # Initialize the initial probability distribution of a game in the form of a numpy array
-                p_init = np.zeros((1,len(self._gameStates)))
-
-                # Fill in the elements of p_init 
-                for row in self._gameStates:
-                    p_init[self._gameStates.index(row)] = self.ProbDistrInit[row]
-
-                # Check if the sum is equal to one
-                if abs(p_init.sum() - 1) >= 1e-6:
-                    raise userError('Sum of the initial probabilites in p_init is not one:' + str(p_init.sum()))
-
-                # Consider a large power of M
-                Mn = np.linalg.matrix_power(M,100)
-
-                # FInd p_init*(M^100) 
-                p_init_Mn = np.dot(p_init,Mn)
-            """
-
-            iStrategies = [s[1].lower() for s in self._iStrategies_curr.keys()]
-            # If one strategy is TFT and the other is sTFT choose the eigen value whose eigen vector entries
-            # are not just zero and one
-            if set(iStrategies) == set(['tft','stft']):
+            if self.warnings:
+                print 'WARNING! More than one eigenvalues are close to one for '.format([s.name for s in self._stoch_strategies_pairs])
+                print '\tM = \n{}\n'.format(M)
+                print '\teigVals = \n\t{}\n'.format(eigVals)
+                print '\teigVecs = '
                 for oneInd in oneInds:
-                    # Normalize the eigenvector corresponding to the eigen value of one
-                    # This gives the stationary probabilities 
-                    eigVecOne_norm = eigVecs[:,oneInd]/sum(eigVecs[:,oneInd])
+                    print '\t{}\n'.format(eigVecs[:,oneInd]/sum(eigVecs[:,oneInd]))
 
-                    isZeroOne = False
-                    continueLoop = True
-                    i = 0
-                    while not isZeroOne and continueLoop:
-                        # Check if any element is not equal to one
-                        if abs(eigVecOne_norm[i]) > 1e-6 and abs(1 - eigVecOne_norm[i]) > 1e-6:
-                            isZeroOne = True 
-                        i += 1
-                        if i == len(eigVecOne_norm) - 1:
-                            continueLoop = False 
-
-                    if isZeroOne:
-                        tft_oneInds.append(oneInd) 
-
-        if len(tft_oneInds) > 0:
-            oneInds = tft_oneInds
-
-        stationaryProbArrays = []
+        stationary_prob_arrays = []
         for oneInd in oneInds:
             # Normalize the eigenvector corresponding to the eigen value of one
             # This gives the stationary probabilities 
             eigVecOne_norm = eigVecs[:,oneInd]/sum(eigVecs[:,oneInd])
 
-            if len(tft_oneInds) > 0:
-                print '\tChosen eigen vector = ',eigVecOne_norm
-
             # Check if any elements are negative
             negElems = [eigVecOne_norm[k] for k in range(max(eigVecOne_norm.shape)) if eigVecOne_norm[k] < 0 and abs(eigVecOne_norm[k]) > 1e-6]
             if len(negElems) >= 1:
-                raise userError('Negative elements in Statioanry probability: ' + str(eigVecOne_norm))
+                raise userError('Negative elements in Statioanry probabilities: {}'.format(eigVecOne_norm)
             else:
-                stationaryProbArrays.append(eigVecOne_norm)
+                stationary_prob_arrays.append(eigVecOne_norm)
 
-        # Convert the numpy array to list of a python dictionary
-        self._stationaryProbs = [] 
-        for stationaryProbArray in stationaryProbArrays:
-            self._stationaryProbs.append(dict([(self._gameStates[k],stationaryProbArray[k]) for k in range(len(self._gameStates))]))
+        # Convert the numpy array to a list of python dictionaries
+        self._stationary_probs_list = [] 
+        for stationary_prob_array in stationary_prob_arrays:
+            self._stationary_probs_list.append(dict([(self._game_states[k],stationary_prob_array[k]) for k in range(len(self._game_states))]))
 
     def replicatorDynamics(self):
         """
-        This function implements the replicatory dynamics using the payoff 
-        matrix of the iterated strategies. The output is the frequencies of
+        This function implements the replicator dynamics using the payoff 
+        matrix of the stochastic strategies. The output is the frequencies of
         community members at time t + dt. This information is held in 
-        a dictionary self.x_tpdt, which is a dictionary with keys and values
-        as follows:
-          Keys: The same as keys of self.iStrategies
-        Values: The corresponding frequency
+        a dictionary self.x_tpdt, with the following keys and values:
+          Keys: The same as keys of self._stoch_strategies
+        Values: Another dictionary with keys and values being time and frequency, respectively.
         """
-
-        # A dictionary whose keys are the same as those of self.iStrategies and values are
-        # and values are their fitnesses
-        self.fitness = {}
-
-        # Compute the fitness of each player playing a certain strategy
-        # Loop over each player that plays a certain strategy
-        for player_strategy in self.x.keys():
-            player_name = player_strategy[0]
-            self.fitness[player_strategy] = sum([self.payoff_iStrategies[k][player_name]*self.x[k[1]][self.t] for k in self.payoff_iStrategies.keys() if k[0] == player_strategy ])             
+        # Compute the average fitness of each stochastic strategy (f_k = sum(j,a_kj*x_j) for j in {stochastic strategies} 
+        for stoch_strategy in self.stoch_strategies:
+            stoch_strategy.fitness[self._t] = sum([self.iteratedGame_payoffMatrix[stoch_strategy_pair][stoch_strategy]*stoch_strategy_pair[1].frequency[self._t] for stoch_strategy_pair in self.iteratedGame_payoffMatrix.keys() if stoch_strategy_pairs[0] == stoch_strategy])             
  
         # Compute the expected fitness of the population (phi(x))
-        self.phi = sum([self.fitness[k]*self.x[k][self.t] for k in self.x.keys()])
+        self.phi{self._t} = sum([self.stoch_strategy.fitness[self._t]*self.stoch_strategy.frequency[self._t] for stoch_strategy in self.stoch_strategies])
  
         # Update the abundances
-        for k in self.x.keys():
-            self.x[k][self.t + self.dt] = max(0,self.dt*self.x[k][self.t]*(self.fitness[k] - self.phi) + self.x[k][self.t])
+        # dx_k/dt = x_k*(f_x - phi) or (x_k(t + dt) - x_k(t))/dt = x_k*(f_k - phi)
+        for stoch_strategy in self.stoch_strategies:
+            stoch_strategy.frequency[self._t + self._dt] = max(0,self._dt*stoch_strategy.frequency[self._t]*(stoch_strategy.fitness[self._t] - self.phi[self._t]) + stoch_strategy.frequency[self._t])
 
     def run(self):
         """
         This function runs the entire iterated game. The output is 
         a dictionary self.x with keys and values as follows:
-          keys: The same as keys of self.x_t or self.iStrategies (a tuple where the first 
+          keys: The same as keys of self.x_t or self.stoch_strategies (a tuple where the first 
                 element is the name of the player and the second element is the name of 
                 iterated strategy it plays)
         Values: A dictionary with keys and values as follows:
                   Keys: Time points
                 Values: Frequency at that time point
         """
-
         # Create the payoff matrix of iterated strategies
-        self.createPayoff_iStrategies()
-
+        self.create_iteratedGame_payoffMatrix()
 
         #------ Implement in silico evolution --------
-
         # Current time 
         self.t = 0
 
@@ -366,7 +356,7 @@ if __name__ == "__main__":
     import cPickle as pk
     import matplotlib
     import matplotlib.pyplot as plt
-    from stochasticStrategy import *
+    from stochastic_strategy import *
     from game import *
 
     def plotResults(m):
@@ -381,26 +371,31 @@ if __name__ == "__main__":
         # Choose a specific game
         sgame = games[(m1,m2)]
     
-        print 'payoffMatrix = \n'
-        for k in sgame.payoffMatrix.keys():
-            print k,' = ',sgame.payoffMatrix[k]
+        print 'payoff_matrix = \n'
+        for k in sgame.payoff_matrix.keys():
+            print k,' = ',sgame.payoff_matrix[k]
         print '\n'
     
-        # Create the keys for strategies_prob in stochastic strtategy class 
-        prob_keys = sgame.payoffMatrix.keys() 
+        # Create the keys for probabilities in stochastic strtategy class 
+        # Example: [(('lysA', 'EX_ile-L(e)'), ('ilvE', 'Defect')), (('lysA', 'EX_ile-L(e)'), ('ilvE', 'EX_lys-L(e)'))
+        prob_keys = sgame.payoff_matrix.keys() 
     
-        # Initialize strategies_prob with z zero probability for all elements
-        strategies_prob_m1 = dict([(k1,dict([(k2,0) for k2 in sgame.players_strategies[m1]])) for k1 in prob_keys])
-        strategies_prob_m2 = dict([(k1,dict([(k2,0) for k2 in sgame.players_strategies[m2]])) for k1 in prob_keys])
+        # Initialize probabilities with z zero probability for all elements
+        # Example: {(('lysA', 'EX_ile-L(e)'), ('ilvE', 'Defect')): {'Defect': 0, 'EX_ile-L(e)': 0}, 
+        #           (('lysA', 'EX_ile-L(e)'), ('ilvE', 'EX_lys-L(e)')): {'Defect': 0, 'EX_ile-L(e)': 0}, 
+        #           (('lysA', 'Defect'), ('ilvE', 'EX_lys-L(e)')): {'Defect': 0, 'EX_ile-L(e)': 0}, 
+        #           (('lysA', 'Defect'), ('ilvE', 'Defect')): {'Defect': 0, 'EX_ile-L(e)': 0}} 
+        probabilities_m1 = dict([(k1,dict([(k2,0) for k2 in sgame.players_strategies[m1]])) for k1 in prob_keys])
+        probabilities_m2 = dict([(k1,dict([(k2,0) for k2 in sgame.players_strategies[m2]])) for k1 in prob_keys])
     
-        # Define iStrategies
-        iStrategies = {}
+        # Define stoch_strategies
+        stoch_strategies = {}
     
-        iStrategies[(m1,'ALLD')] = stochasticStrategy(player_name = m1, strategy_name = 'ALLD',strategies_prob = strategies_prob_m1)      
-        iStrategies[(m1,'TFT')] = stochasticStrategy(player_name = m1, strategy_name = 'TFT',strategies_prob = strategies_prob_m1)      
+        stoch_strategies[(m1,'ALLD')] = stochastic_strategy(player = m1, name = 'ALLD',probabilities = probabilities_m1)      
+        stoch_strategies[(m1,'TFT')] = stochastic_strategy(player = m1, name = 'TFT',probabilities = probabilities_m1)      
     
-        iStrategies[(m2,'ALLD')] = stochasticStrategy(player_name = m2, strategy_name = 'ALLD',strategies_prob = strategies_prob_m2)      
-        iStrategies[(m2,'sTFT')] = stochasticStrategy(player_name = m2, strategy_name = 'sTFT',strategies_prob = strategies_prob_m2)      
+        stoch_strategies[(m2,'ALLD')] = stochastic_strategy(player = m2, name = 'ALLD',probabilities = probabilities_m2)      
+        stoch_strategies[(m2,'sTFT')] = stochastic_strategy(player = m2, name = 'sTFT',probabilities = probabilities_m2)      
     
         # Initial concentrations
         strat_num = 2
@@ -415,7 +410,7 @@ if __name__ == "__main__":
         if abs(sum([x_init[k] for k in x_init.keys()]) - 1) >= 1e-5:
             raise userError('sum of the initial fractions does not add to one\n')
         
-        ig = iteratedGame(game = sgame, iStrategies = iStrategies, x_init = x_init , sim_time = 96, dt = 1)
+        ig = iteratedGame(game = sgame, stoch_strategies = stoch_strategies, x_init = x_init , sim_time = 96, dt = 1)
         x = ig.run()
     
         sim_time = 96

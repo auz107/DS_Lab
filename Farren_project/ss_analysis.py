@@ -12,15 +12,14 @@ from tools.core.reaction import reaction
 from tools.core.organism import organism
 from tools.core.model import model
 from tools.fba.fba import fba
-from tools.fba.DMMM import DMMM
 from tools.fba.set_specific_bounds import set_specific_bounds
+from tools.fba.create_model import create_model
 from multiprocessing import Process, Manager, Value, Array
 # Increse the recursion limit, otherwise deepcopy will complain
 sys.setrecursionlimit(10000)
 
 """
 Thsi module contains the following functions:
-             create_model: Creates the metabolic model from an SBML file
         add_nsAA_pathways: Adds the pathways for non-standard amino acids to the model
             findTradeOffs: Performs various FBA simulations to identify trade-off between biomass  and 
                            nsAA production
@@ -31,70 +30,33 @@ Thsi module contains the following functions:
 run_plot_tradeoff_results: Plots the mortality results
 
 Ali R. Zomorrodi - Segre's Lab @ BU
-Last updated: 02-26-2016
+Last updated: 03-16-2016
 """
 
-def create_model(media_type = 'minimal', aeration = 'aerobic', stdout_msgs = True, warnings = True):
-    """
-    Creates the metabolic model from an SBML file
-    """
-    #--- E. coli iJO1366 model ---
-    if stdout_msgs:
-        print '\n--- Original E.coli (iJO1366 model) ----'
-
-    # Model path
-    model_path = '/usr2/postdoc/alizom/work/models/Escherichia_coli/iJO1366/'
-
-    # Define the organism
-    model_organism = organism(id = 'Ecoli', name = 'Escherichia coli',domain = 'Bacteria', genus = 'Escherichia', species = 'coli', strain = 'MG1655',gDW_per_cell = 2.8e-13)
-
-    model = read_sbml_model(file_name = model_path + 'iJO1366_updated.xml', model_id = 'iJO1366',model_organism = model_organism,model_type = 'metabolic',import_params = False)
-
-    model.biomass_reaction = model.reactions_by_id['Ec_biomass_iJO1366_core_53p95M']
-    model.all_biomass_reactions = {'core':model.reactions_by_id['Ec_biomass_iJO1366_core_53p95M'],'model':model.reactions_by_id['Ec_biomass_iJO1366_WT_53p95M']}
-
-    # Assign the objective function coefficients
-    for rxn in model.reactions:
-        rxn.objective_coefficient = 0
-    model.biomass_reaction.objective_coefficient = 1
-
-    # Growth medium
-    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'minimal' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type,aeration))
-
-    # Perform FBA for the wild-type
-    model.fba(assign_wildType_max_biomass = True, stdout_msgs = stdout_msgs)
-
-    return model
-
-def add_nsAA_pathways(model, warnings = True, stdout_msgs = True):
+def add_nsAA_pathways(model, add_pyrrolysine = True, add_pAF = True, warnings = True, stdout_msgs = True):
     """
     Adds the pathways for non-standard amino acids to the model
+
+    INPUTS:
+    -------
+    add_pyrrolysine: If True, reactions and compounds related to pyrrolysine biosynthesis are 
+                     added to the model
+            add_pAF: If True, reactions and compounds related to p-amino-phenylalanine
+                     biosynthesis are added to the model
+                 
     """
+    if not isinstance(add_pyrrolysine,bool):
+        raise TypeError('add_pyrrolysine must be either True or False')
+    if not isinstance(add_pAF,bool):
+        raise TypeError('add_pAF must be either True or False')
+
+    model.id = model.id + '_nsAA_producing'
+
     cytosol = model.compartments_by_id['c']
     periplasm = model.compartments_by_id['p']
     extracellular = model.compartments_by_id['e']
     
-    #------ Pyrrolysine biosynthesis pathway -----
-    #-- New compounds --
-    metorn_c = compound(id = 'metorn_c', name = '(3R)-3-Methyl-D-ornithine', compartment = cytosol, ModelSEED_id = 'cpd24167', KEGG_id = 'C20277')
-    metornlys_c = compound(id = 'metornlys_c', name = '(3R)-3-Methyl-D-ornithyl-Nepsilon-L-lysine', compartment = cytosol, ModelSEED_id = 'cpd24174')
-    metglusaldlys_c = compound(id = 'metglusaldlys_c', name = '(3R)-3-methyl-D-glutamyl-semialdehyde-Nepsilon-L-Lysine', compartment = cytosol, ModelSEED_id = 'cpd24177')
-    pyrlys_L_c = compound(id = 'pyrlys_L_c', name = 'L-pyrrolysine', compartment = cytosol, ModelSEED_id = 'cpd14859')
-    pyrlys_L_p = compound(id = 'pyrlys_L_p', name = 'L-pyrrolysine', compartment = periplasm, ModelSEED_id = 'cpd14859')
-    pyrlys_L_e = compound(id = 'pyrlys_L_e', name = 'L-pyrrolysine', compartment = extracellular, ModelSEED_id = 'cpd14859')
-
-    model.add_compounds([metorn_c,metornlys_c,metglusaldlys_c,pyrlys_L_c,pyrlys_L_p,pyrlys_L_e])
-
-    #-- New reactions --
+    # Some required compounds
     atp_c = model.compounds_by_id['atp_c']
     adp_c = model.compounds_by_id['adp_c']
     h_c = model.compounds_by_id['h_c']
@@ -104,87 +66,105 @@ def add_nsAA_pathways(model, warnings = True, stdout_msgs = True):
     nh4_c = model.compounds_by_id['nh4_c']
     nad_c = model.compounds_by_id['nad_c']
     nadh_c = model.compounds_by_id['nadh_c']
-    lys_L_c = model.compounds_by_id['lys_L_c']
 
-    # PylB: L-lysine --> (3R)-3-methyl-D-ornithine
-    PylB = reaction(id = 'PylB', name = 'methylornithine synthase', ModelSEED_id = 'rxn19159', stoichiometry = {lys_L_c:-1, metorn_c:1}, type = 'irreversible',objective_coefficient = 0)
+    #------ Pyrrolysine biosynthesis pathway -----
+    if add_pyrrolysine:    
+        #-- New compounds --
+        metorn_c = compound(id = 'metorn_c', name = '(3R)-3-Methyl-D-ornithine', compartment = cytosol, ModelSEED_id = 'cpd24167', KEGG_id = 'C20277')
+        metornlys_c = compound(id = 'metornlys_c', name = '(3R)-3-Methyl-D-ornithyl-Nepsilon-L-lysine', compartment = cytosol, ModelSEED_id = 'cpd24174')
+        metglusaldlys_c = compound(id = 'metglusaldlys_c', name = '(3R)-3-methyl-D-glutamyl-semialdehyde-Nepsilon-L-Lysine', compartment = cytosol, ModelSEED_id = 'cpd24177')
+        pyrlys_L_c = compound(id = 'pyrlys_L_c', name = 'L-pyrrolysine', compartment = cytosol, ModelSEED_id = 'cpd14859')
+        pyrlys_L_p = compound(id = 'pyrlys_L_p', name = 'L-pyrrolysine', compartment = periplasm, ModelSEED_id = 'cpd14859')
+        pyrlys_L_e = compound(id = 'pyrlys_L_e', name = 'L-pyrrolysine', compartment = extracellular, ModelSEED_id = 'cpd14859')
+    
+        model.add_compounds([metorn_c,metornlys_c,metglusaldlys_c,pyrlys_L_c,pyrlys_L_p,pyrlys_L_e])
+    
+        #-- New reactions --
+        lys_L_c = model.compounds_by_id['lys_L_c']
+    
+        # PylB: L-lysine --> (3R)-3-methyl-D-ornithine
+        PylB = reaction(id = 'PylB', name = 'methylornithine synthase', ModelSEED_id = 'rxn19159', stoichiometry = {lys_L_c:-1, metorn_c:1}, reversibility =  'irreversible',objective_coefficient = 0)
+    
+        # PylC: L-lysine  + (3R)-3-methyl-D-ornithine + ATP --> (3R)-3-Methyl-D-ornithyl-Neps-L-lysine + ADP + Pi + H+
+        PylC = reaction(id = 'PylC', name = '(2R,3R)-3-methylornithyl-N6-lysine synthase', ModelSEED_id = 'rxn23366', stoichiometry = {lys_L_c:-1, metorn_c:-1, atp_c:-1, metornlys_c:1, adp_c:1, pi_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+    
+        # PylD1: (3R)-3-Methyl-D-ornithyl-Neps-L-lysine + NAD+ + H2O --> (3R)-3-methyl-D-glutamyl-semialdehyde-Neps-L-Lysine + NADH +  NH3 + 2 H+ 
+        # Given that ammonium in the model is in the form of NH4+, instead of NH3 + 2 H+, we write it as NH4+ + H+
+        PylD1 = reaction(id = 'PylD1', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23370', KEGG_id = 'R10012', stoichiometry = {metornlys_c:-1, nad_c:-1, h2o_c:-1, metglusaldlys_c:1, nadh_c:1, nh4_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+    
+        # PylD2: (3R)-3-methyl-D-glutamyl-semialdehyde-Neps-L-Lysine --> L-pyrrolysine + H2O + H+
+        PylD2 = reaction(id = 'PylD2', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23371', stoichiometry = {metglusaldlys_c:-1, pyrlys_L_c:1, h2o_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+    
+        # PyrLYSabcpp: atp_c + h2o_c + pyrlys_L_p --> adp_c + h_c + pyrlys_L_c + pi_c
+        PyrLYSabcpp = reaction(id = 'PyrLYSabcpp', name = 'L-pyrrolysine transport via ABC system (periplasm)', stoichiometry = {atp_c:-1, h2o_c:-1, pyrlys_L_p:-1, adp_c:1, h_c:1, pyrlys_L_c:1, pi_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+    
+        # PyrLYSt2pp: h_p + pyrlys_L_p --> h_c + pyrlys_L_c
+        PyrLYSt2pp = reaction(id = 'PyrLYSt2pp', name = 'L-pyrrolysine transport in via proton symport (periplasm)', stoichiometry = {h_p:-1, pyrlys_L_p:-1, h_c:1, pyrlys_L_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+     
+        # PyrLYSt3pp: h_p + pyrlys_L_c --> h_c + pyrlys_L_p
+        PyrLYSt3pp = reaction(id = 'PyrLYSt3pp', name = 'L-pyrrolysine transport out via proton antiport (cytoplasm to periplasm)', stoichiometry = {h_p:-1, pyrlys_L_c:-1, h_c:1, pyrlys_L_p:1}, reversibility =  'irreversible', objective_coefficient = 0)
+       
+        # PyrLYStex:  pyrlys_L_e <==> pyrlys_L_p
+        PyrLYStex = reaction(id = 'PyrLYStex', name = 'L-pyrrolysine transport via diffusion (extracellular to periplasm)', stoichiometry = {pyrlys_L_e:-1, pyrlys_L_p:1}, reversibility =  'reversible', objective_coefficient = 0)
+    
+        # EX_pyrlys_L_e: pyrlys_L_e <==>
+        EX_pyrlys_L_e = reaction(id = 'EX_pyrlys_L(e)', name = 'L-pyrrolysine exchange', stoichiometry = {pyrlys_L_e:-1}, reversibility =  'exchange', objective_coefficient = 0)
+    
+        model.add_reactions([PylB,PylC,PylD1,PylD2,PyrLYSabcpp,PyrLYSt2pp,PyrLYSt3pp,PyrLYStex,EX_pyrlys_L_e])
 
-    # PylC: L-lysine  + (3R)-3-methyl-D-ornithine + ATP --> (3R)-3-Methyl-D-ornithyl-Neps-L-lysine + ADP + Pi + H+
-    PylC = reaction(id = 'PylC', name = '(2R,3R)-3-methylornithyl-N6-lysine synthase', ModelSEED_id = 'rxn23366', stoichiometry = {lys_L_c:-1, metorn_c:-1, atp_c:-1, metornlys_c:1, adp_c:1, pi_c:1, h_c:1}, type = 'irreversible', objective_coefficient = 0)
-
-    # PylD1: (3R)-3-Methyl-D-ornithyl-Neps-L-lysine + NAD+ + H2O --> (3R)-3-methyl-D-glutamyl-semialdehyde-Neps-L-Lysine + NADH +  NH3 + 2 H+ 
-    # Given that ammonium in the model is in the form of NH4+, instead of NH3 + 2 H+, we write it as NH4+ + H+
-    PylD1 = reaction(id = 'PylD1', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23370', KEGG_id = 'R10012', stoichiometry = {metornlys_c:-1, nad_c:-1, h2o_c:-1, metglusaldlys_c:1, nadh_c:1, nh4_c:1, h_c:1}, type = 'irreversible', objective_coefficient = 0)
-
-    # PylD2: (3R)-3-methyl-D-glutamyl-semialdehyde-Neps-L-Lysine --> L-pyrrolysine + H2O + H+
-    PylD2 = reaction(id = 'PylD2', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23371', stoichiometry = {metglusaldlys_c:-1, pyrlys_L_c:1, h2o_c:1, h_c:1}, type = 'irreversible', objective_coefficient = 0)
-
-    # PyrLYSabcpp: atp_c + h2o_c + pyrlys_L_p --> adp_c + h_c + pyrlys_L_c + pi_c
-    PyrLYSabcpp = reaction(id = 'PyrLYSabcpp', name = 'L-pyrrolysine transport via ABC system (periplasm)', stoichiometry = {atp_c:-1, h2o_c:-1, pyrlys_L_p:-1, adp_c:1, h_c:1, pyrlys_L_c:1, pi_c:1}, type = 'irreversible', objective_coefficient = 0)
-
-    # PyrLYSt2pp: h_p + pyrlys_L_p --> h_c + pyrlys_L_c
-    PyrLYSt2pp = reaction(id = 'PyrLYSt2pp', name = 'L-pyrrolysine transport in via proton symport (periplasm)', stoichiometry = {h_p:-1, pyrlys_L_p:-1, h_c:1, pyrlys_L_c:1}, type = 'irreversible', objective_coefficient = 0)
- 
-    # PyrLYSt3pp: h_p + pyrlys_L_c --> h_c + pyrlys_L_p
-    PyrLYSt3pp = reaction(id = 'PyrLYSt3pp', name = 'L-pyrrolysine transport out via proton antiport (cytoplasm to periplasm)', stoichiometry = {h_p:-1, pyrlys_L_c:-1, h_c:1, pyrlys_L_p:1}, type = 'irreversible', objective_coefficient = 0)
-   
-    # PyrLYStex:  pyrlys_L_e <==> pyrlys_L_p
-    PyrLYStex = reaction(id = 'PyrLYStex', name = 'L-pyrrolysine transport via diffusion (extracellular to periplasm)', stoichiometry = {pyrlys_L_e:-1, pyrlys_L_p:1}, type = 'reversible', objective_coefficient = 0)
-
-    # EX_pyrlys_L_e: pyrlys_L_e <==>
-    EX_pyrlys_L_e = reaction(id = 'EX_pyrlys_L(e)', name = 'L-pyrrolysine exchange', stoichiometry = {pyrlys_L_e:-1}, type = 'exchange', objective_coefficient = 0)
-
-    model.add_reactions([PylB,PylC,PylD1,PylD2,PyrLYSabcpp,PyrLYSt2pp,PyrLYSt3pp,PyrLYStex,EX_pyrlys_L_e])
-
+        if stdout_msgs:
+            print '\n---- Pyrrolysine biosynthesis reactions ---\n'
+            for rxn in [PylB,PylC,PylD1,PylD2,PyrLYSabcpp,PyrLYSt2pp,PyrLYSt3pp,PyrLYStex,EX_pyrlys_L_e]:
+                print rxn.id,':\t',rxn.get_equation()   
+            print '\n'
+     
     #----- P-amino-phenylalanine (pAF) biosynthesis pathway -----
-    #-- New compounds --
-    adpphn_c = compound(id = 'adpphn_c', name = '4-amino-4-deoxyprephenate', compartment = cytosol)   
-    aphpyr_c = compound(id = 'aphpyr_c', name = 'p-aminophenylpyruvate', compartment = cytosol)
-    paphe_c = compound(id = 'paphe_c', name = 'p-amino-phenylalanine', compartment = cytosol)
-    paphe_p = compound(id = 'paphe_p', name = 'p-amino-phenylalanine', compartment = periplasm)
-    paphe_e = compound(id = 'paphe_e', name = 'p-amino-phenylalanine', compartment = extracellular)
+    if add_pAF:
+        #-- New compounds --
+        adpphn_c = compound(id = 'adpphn_c', name = '4-amino-4-deoxyprephenate', compartment = cytosol)   
+        aphpyr_c = compound(id = 'aphpyr_c', name = 'p-aminophenylpyruvate', compartment = cytosol)
+        paphe_c = compound(id = 'paphe_c', name = 'p-amino-phenylalanine', compartment = cytosol)
+        paphe_p = compound(id = 'paphe_p', name = 'p-amino-phenylalanine', compartment = periplasm)
+        paphe_e = compound(id = 'paphe_e', name = 'p-amino-phenylalanine', compartment = extracellular)
+    
+        model.add_compounds([adpphn_c,aphpyr_c,paphe_c,paphe_p,paphe_e])
+    
+        #-- New reactions --
+        co2_c = model.compounds_by_id['co2_c']   
+        # L-glutamine  
+        gln_L_c = model.compounds_by_id['gln_L_c']  
+        # 2-Oxoglutarate
+        akg_c = model.compounds_by_id['akg_c']       
+        # 4-amino-4-deoxychorismate 
+        cpd_4adcho_c = model.compounds_by_id['4adcho_c'] 
+    
+        # PapB: 4-amino-4-deoxychorismate --> 4-amino-4-deoxyprephenate
+        PapB = reaction(id = 'PapB', name = 'chorismate mutase', stoichiometry = {cpd_4adcho_c:-1, adpphn_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+    
+        # PapC: 4-amino-4-deoxyprephenate  + NAD+ --> p-aminophenylpyruvate + CO2 + NADH
+        PapC = reaction(id = 'PapC', name = 'prephenate dehydrogenase', stoichiometry = {adpphn_c:-1, nad_c:-1, aphpyr_c:1, nadh_c:1, co2_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+    
+        # PAPHES: p-aminophenylpyruvate + L-glutamine <==>  p-amino-phenylalanine + 2-Oxoglutarate
+        PAPHES = reaction(id = 'PAPHES', name = 'p-amino-phenylalanine synthase', stoichiometry = {aphpyr_c:-1, gln_L_c:-1, paphe_c:1, akg_c:1}, reversibility =  'reversible', objective_coefficient = 0)
+     
+        # PAPHEt2rpp: h_p + paphe_p <==> h_c + paphe_c 
+        PAPHEt2rpp = reaction(id = 'PAPHEt2rpp', name = 'p-amino-phenylalanine reversible transport via proton symport (periplasm)', stoichiometry = {h_p:-1, paphe_p:-1, h_c:1, paphe_c:1}, reversibility =  'reversible', objective_coefficient = 0)
+    
+        # PAPHEtex: paphe_e <==> paphe_p 
+        PAPHEtex = reaction(id = 'PAPHEtex', name = 'p-amino-phenylalanine transport via diffusion (extracellular to periplasm)', stoichiometry = {paphe_e:-1, paphe_p:1}, reversibility =  'reversible', objective_coefficient = 0)
+    
+        # EX_paphe(e): paphe_e <==>
+        EX_paphe_e = reaction(id = 'EX_paphe(e)', name = 'p-amino-phenylalanine exchange', stoichiometry = {paphe_e:-1}, reversibility =  'exchange', objective_coefficient = 0)
+    
+        model.add_reactions([PapB,PapC,PAPHES,PAPHEt2rpp,PAPHEtex,EX_paphe_e])
 
-    model.add_compounds([adpphn_c,aphpyr_c,paphe_c,paphe_p,paphe_e])
-
-    #-- New reactions --
-    co2_c = model.compounds_by_id['co2_c']   
-    # L-glutamine  
-    gln_L_c = model.compounds_by_id['gln_L_c']  
-    # 2-Oxoglutarate
-    akg_c = model.compounds_by_id['akg_c']       
-    # 4-amino-4-deoxychorismate 
-    cpd_4adcho_c = model.compounds_by_id['4adcho_c'] 
-
-    # PapB: 4-amino-4-deoxychorismate --> 4-amino-4-deoxyprephenate
-    PapB = reaction(id = 'PapB', name = 'chorismate mutase', stoichiometry = {cpd_4adcho_c:-1, adpphn_c:1}, type = 'irreversible', objective_coefficient = 0)
-
-    # PapC: 4-amino-4-deoxyprephenate  + NAD+ --> p-aminophenylpyruvate + CO2 + NADH
-    PapC = reaction(id = 'PapC', name = 'prephenate dehydrogenase', stoichiometry = {adpphn_c:-1, nad_c:-1, aphpyr_c:1, nadh_c:1, co2_c:1}, type = 'irreversible', objective_coefficient = 0)
-
-    # PAPHES: p-aminophenylpyruvate + L-glutamine <==>  p-amino-phenylalanine + 2-Oxoglutarate
-    PAPHES = reaction(id = 'PAPHES', name = 'p-amino-phenylalanine synthase', stoichiometry = {aphpyr_c:-1, gln_L_c:-1, paphe_c:1, akg_c:1}, type = 'reversible', objective_coefficient = 0)
- 
-    # PAPHEt2rpp: h_p + paphe_p <==> h_c + paphe_c 
-    PAPHEt2rpp = reaction(id = 'PAPHEt2rpp', name = 'p-amino-phenylalanine reversible transport via proton symport (periplasm)', stoichiometry = {h_p:-1, paphe_p:-1, h_c:1, paphe_c:1}, type = 'reversible', objective_coefficient = 0)
-
-    # PAPHEtex: paphe_e <==> paphe_p 
-    PAPHEtex = reaction(id = 'PAPHEtex', name = 'p-amino-phenylalanine transport via diffusion (extracellular to periplasm)', stoichiometry = {paphe_e:-1, paphe_p:1}, type = 'reversible', objective_coefficient = 0)
-
-    # EX_paphe(e): paphe_e <==>
-    EX_paphe_e = reaction(id = 'EX_paphe(e)', name = 'p-amino-phenylalanine exchange', stoichiometry = {paphe_e:-1}, type = 'exchange', objective_coefficient = 0)
-
-    model.add_reactions([PapB,PapC,PAPHES,PAPHEt2rpp,PAPHEtex,EX_paphe_e])
-
+        if stdout_msgs:
+            print '\n---- p-amino-phenylalanine biosynthesis reactions ---\n'
+            for rxn in [PapB,PapC,PAPHES,PAPHEt2rpp,PAPHEtex,EX_paphe_e]: 
+                print rxn.id,':\t',rxn.get_equation()   
+            print '\n'
+    
     model.validate()
-
-    if stdout_msgs:
-        print '\n---- Pyrrolysine biosynthesis reactions ---\n'
-        for rxn in [PylB,PylC,PylD1,PylD2,PyrLYSabcpp,PyrLYSt2pp,PyrLYSt3pp,PyrLYStex,EX_pyrlys_L_e]:
-            print rxn.id,':\t',rxn.get_equation()   
- 
-        print '\n---- p-amino-phenylalanine biosynthesis reactions ---\n'
-        for rxn in [PapB,PapC,PAPHES,PAPHEt2rpp,PAPHEtex,EX_paphe_e]: 
-            print rxn.id,':\t',rxn.get_equation()   
 
     return model
 
@@ -196,6 +176,8 @@ def findTradeOffs(input_data):
     model = input_data['model'] 
     media_type = input_data['media_type']
     aeration = input_data['aeration']
+    fluxBounds_dict = input_data['fluxBounds_dict'] 
+    fluxBounds_filename = input_data['fluxBounds_filename']
     max_biomass = input_data['max_biomass'] 
     max_biomass_percent = input_data['max_biomass_percent'] 
     max_pyrlys_percent = input_data['max_pyrlys_percent']
@@ -210,16 +192,9 @@ def findTradeOffs(input_data):
         rxn.objective_coefficient = 0
     model.reactions_by_id['EX_pyrlys_L(e)'].objective_coefficient = 1
 
-    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000],model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    elif media_type.lower() == 'minimal' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000],model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type,aeration))
+    set_specific_bounds(model = Ecoli_nsAA_producing, file_name = fluxBounds_filename, flux_bounds = fluxBounds_dict, reset_flux_bounds = True)
+    set_specific_bounds(model = Ecoli_nsAA_producing, flux_bounds = {biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]}, reset_flux_bounds = False)
+
     model.fba(stdout_msgs = stdout_msgs)
 
     if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
@@ -238,16 +213,9 @@ def findTradeOffs(input_data):
         rxn.objective_coefficient = 0
     model.reactions_by_id['EX_paphe(e)'].objective_coefficient = 1
 
-    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000],model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    elif media_type.lower() == 'minimal' and  aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000],model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    elif media_type.lower() == 'rich' and  aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type, aeration))
+    set_specific_bounds(model = Ecoli_nsAA_producing, file_name = fluxBounds_filename, flux_bounds = fluxBounds_dict, reset_flux_bounds = True)
+    set_specific_bounds(model = Ecoli_nsAA_producing, flux_bounds = {biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000]} , reset_flux_bounds = False)
+
     model.fba(stdout_msgs = stdout_msgs)
 
     if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
@@ -262,16 +230,9 @@ def findTradeOffs(input_data):
     # Find the max p-amino-phenylalanine exchange reaction flux at fixed max_biomass_percent and max_pyrlys_percent 
     if stdout_msgs:
         print '\n--- FBA to find max p-amino-phenylalanine exchange reaction flux at fixed max_biomass_percent and max_pyrlys_percent---\n'
-    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000],model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000], 'EX_pyrlys_L(e)':[(max_pyrlys_percent/100)*max_EX_pyrlys,1000]})
-    elif media_type.lower() == 'minimal' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000], 'EX_pyrlys_L(e)':[(max_pyrlys_percent/100)*max_EX_pyrlys,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000],model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000], 'EX_pyrlys_L(e)':[(max_pyrlys_percent/100)*max_EX_pyrlys,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = model, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], model.biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000], 'EX_pyrlys_L(e)':[(max_pyrlys_percent/100)*max_EX_pyrlys,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type, aeration))
+
+    set_specific_bounds(model = Ecoli_nsAA_producing, file_name = fluxBounds_filename, flux_bounds = fluxBounds_dict, reset_flux_bounds = True)
+    set_specific_bounds(model = Ecoli_nsAA_producing, flux_bounds = {biomass_reaction.id:[(max_biomass_percent/100)*max_biomass,1000], 'EX_pyrlys_L(e)':[(max_pyrlys_percent/100)*max_EX_pyrlys,1000]} , reset_flux_bounds = False)
 
     model.fba(stdout_msgs = stdout_msgs)
     if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
@@ -319,28 +280,36 @@ def master_func(start_pos = None, end_pos = None, max_biomass_percentages = rang
     # Model path
     model_path = '/usr2/postdoc/alizom/work/models/Escherichia_coli/iJO1366/'
 
+    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
+        fluxBounds_dict = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]}
+        fluxBounds_filename = model_path + 'iJO1366_minimal_glucose_aerobic.py'
+    elif media_type.lower() == 'minimal' and aeration.lower() == 'anaerobic':
+        fluxBounds_dict = {'EX_glc(e)':[-10,1000]} 
+        fluxBounds_filename = model_path + 'iJO1366_minimal_glucose_anaerobic.py'
+    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
+        fluxBounds_dict = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]} 
+        fluxBounds_filename = model_path + 'iJO1366_rich_glucose_aerobic.py' 
+    elif media_type.lower() == 'rich' and aeration.lower() == 'anaerobic':
+        fluxBounds_dict = {'EX_glc(e)':[-10,1000]} 
+        fluxBounds_filename = model_path + 'iJO1366_rich_glucose_anaerobic.py' 
+    else:
+        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type,aeration))
+
+    model_organism = organism(id = 'Ecoli', name = 'Escherichia coli',domain = 'Bacteria', genus = 'Escherichia', species = 'coli', strain = 'MG1655')
+
     # Orignal iJo1266 model
-    model = create_model(media_type = media_type, aeration = aeration, stdout_msgs = stdout_msgs, warnings = warnings)
+    model = create_model(model_organism = model_organism, model_info = {'id':'iJO1366', 'sbml_filename':model_path + 'iJO1366_updated.xml', 'biomassrxn_id':'Ec_biomass_iJO1366_core_53p95M'}, growthMedium_fluxBounds = {'fluxBounds_filename':model_path + fluxBounds_filename, 'fluxBounds_dict': fluxBounds_dict}, stdout_msgs = True, warnings = True)
 
     # Add the nsAA biosynthesis pathways to the model
     Ecoli_nsAA_producing = add_nsAA_pathways(model = deepcopy(model), stdout_msgs = stdout_msgs, warnings = warnings) 
 
     # Find the max biomass flux for Ecoli_nsAA_producing 
     print '\n--- FBA after adding new pathways ---\n'
-    if media_type.lower() == 'minimal' and  aeration.lower() == 'aerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'minimal' and  aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000]})
-    elif media_type.lower() == 'rich' and  aeration.lower() == 'aerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'rich' and  aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type, aeration))
+    set_specific_bounds(model = Ecoli_nsAA_producing, file_name = fluxBounds_filename, flux_bounds = fluxBounds_dict)
 
     Ecoli_nsAA_producing.fba(stdout_msgs = stdout_msgs)
     if Ecoli_nsAA_producing.fba_model.solution['exit_flag'] == 'globallyOptimal':
-        max_biomass =  Ecoli_nsAA_producing.fba_model.solution['objective_value']
+        max_biomass = Ecoli_nsAA_producing.fba_model.solution['objective_value']
         print 'max biomass = {} , Pyrrolysine exch flux = {}  , p-amino-phenylalanine exch. flux = {}'.format(max_biomass,Ecoli_nsAA_producing.fba_model.solution['opt_rxnFluxes']['EX_pyrlys_L(e)'],Ecoli_nsAA_producing.fba_model.solution['opt_rxnFluxes']['EX_paphe(e)'])
     else:
         raise userError('FBA to find max biomass flux for Ecoli_nsAA_producing was not solved to optimality')
@@ -350,16 +319,7 @@ def master_func(start_pos = None, end_pos = None, max_biomass_percentages = rang
     for rxn in Ecoli_nsAA_producing.reactions:
         rxn.objective_coefficient = 0
     Ecoli_nsAA_producing.reactions_by_id['EX_pyrlys_L(e)'].objective_coefficient = 1
-    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'minimal' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type, aeration))
+    set_specific_bounds(model = Ecoli_nsAA_producing, file_name = fluxBounds_filename, flux_bounds = fluxBounds_dict)
 
     Ecoli_nsAA_producing.fba(stdout_msgs = stdout_msgs)
     if Ecoli_nsAA_producing.fba_model.solution['exit_flag'] == 'globallyOptimal':
@@ -373,16 +333,7 @@ def master_func(start_pos = None, end_pos = None, max_biomass_percentages = rang
     for rxn in Ecoli_nsAA_producing.reactions:
         rxn.objective_coefficient = 0
     Ecoli_nsAA_producing.reactions_by_id['EX_paphe(e)'].objective_coefficient = 1
-    if media_type.lower() == 'minimal' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_minimal_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'minimal' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_minimal_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'aerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_rich_aerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000], 'EX_o2(e)':[-20,1000]})
-    elif media_type.lower() == 'rich' and aeration.lower() == 'anaerobic':
-        set_specific_bounds(model = Ecoli_nsAA_producing, file_name = model_path + 'iJO1366_rich_anaerobic_glucose.py',flux_bounds = {'EX_glc(e)':[-10,1000]})
-    else:
-        raise ValueError('Unknown media_type and/or aeraiton type: {}, {}'.format(media_type, aeration))
+    set_specific_bounds(model = Ecoli_nsAA_producing, file_name = fluxBounds_filename, flux_bounds = fluxBounds_dict)
 
     Ecoli_nsAA_producing.fba(stdout_msgs = stdout_msgs)
     if Ecoli_nsAA_producing.fba_model.solution['exit_flag'] == 'globallyOptimal':
@@ -427,6 +378,8 @@ def master_func(start_pos = None, end_pos = None, max_biomass_percentages = rang
         input_data['max_pyrlys_percent'] = max_pyrlys_percent
         input_data['media_type'] = media_type
         input_data['aeration'] = aeration
+        input_data['fluxBounds_dict'] = fluxBounds_dict
+        input_data['fluxBounds_filename'] = fluxBounds_filename
         input_data['results_filename'] = results_filename
         input_data['stdout_msgs'] = stdout_msgs
         input_data['warnings'] = warnings
