@@ -1,4 +1,4 @@
-__all__ = ["core","fba","gap_filling","COMETSpy","GAMETES","ancillary","customError","customWarning","pyomoSolverCreator","importData","strain_design"]
+__all__ = ["core","fba","gap_filling","COMETSpy","GAMETES","ancillary","customError","customWarning","pyomoSolverCreator","importData","strain_design", "globalVariables"]
 
 # Add Directories to PYTHONPATH
 import sys, os
