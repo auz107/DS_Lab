@@ -1,4 +1,4 @@
-__all__ = ["OptForce"]
+__all__ = ["OptForce","MUST_doubles","FORCE","shared_data_holder"]
 
 # Add Directories to PYTHONPATH
 import sys, os
