@@ -1,6 +1,7 @@
 from __future__ import division
 import sys, time
 sys.path.append('../../')
+from datetime import timedelta  # To convert elapsed time to hh:mm:ss format
 from tools.userError import userError 
 from tools.core.compound import compound
 from tools.core.reaction import reaction
@@ -721,7 +722,7 @@ class DMMM(object):
         self.mu_uptake_export_calc()
 
         # Elapsed time to run DMMM
-        elapsed_DMMM = time.clock() - start_DMMM
+        elapsed_DMMM = str(timedelta(seconds = time.clock() - start_DMMM))
 
         if self.stdout_msgs:
            print '\nelapsed time (sec) for DMMM = ',elapsed_DMMM,'\n'

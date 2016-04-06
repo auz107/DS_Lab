@@ -25,7 +25,7 @@ class reaction(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: 03-11-2016
     """
-    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = None, pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
+    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = '', pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
 
         # Warnings and messages in the standard output
         self.warnings = warnings

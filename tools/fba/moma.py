@@ -1,6 +1,7 @@
 from __future__ import division
 import sys, time
 sys.path.append('../../')
+from tool.globalVariables import *
 from tools.fba.fbaTools import fbaTools
 
 class moma(fbaTools):
@@ -14,7 +15,7 @@ class moma(fbaTools):
     # Class attributes that are set by __init__
     class_attr__init__ = ['penalties','distance_type','optimization_solver','create_optModel','flux_key','store_opt_fluxes','stdout_msgs','warnings']
 
-    def __init__(self,model, distance_type = '2-norm',optimization_solver = 'gurobi', create_optModel = True, flux_key = None, store_opt_fluxes = True, warnings = True, stdout_msgs = True): 
+    def __init__(self,model, distance_type = '2-norm',optimization_solver = default_optim_solver, create_optModel = True, flux_key = None, store_opt_fluxes = True, warnings = True, stdout_msgs = True): 
 
         """
         INPUTS:

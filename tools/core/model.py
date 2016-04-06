@@ -2,6 +2,7 @@ from __future__ import division
 import sys
 from collections import Counter
 sys.path.append('../../')
+from tools.globalVariables import *
 from tools.userError import userError
 from organism import organism
 from compound import compound
@@ -844,7 +845,7 @@ class model(object):
             for rxn in [r for r in self.reactions if cmp in r.reactants and (cmp not in r.stoichiometry.keys() or r.stoichiometry[cmp] == 0 or r.stoichiometry[cmp] > 0)]:
                 del rxn.reactants[rxn.reactants.index(cmp)] 
             if set([r for r in self.reactions if cmp in r.reactants]) != set([r for r in self.reactions if cmp  in r.stoichiometry.keys() and r.stoichiometry[cmp] < 0]):
-                raise userError('The set of reactant_reactions in the model in which compound ' + cmp.id + ' appears in their "reactants" field does not match the set of reactions in which this compounds appears with a negative stoichiometry')
+                raise userError('The set of reactions in the model in which compound ' + cmp.id + ' appears in their "reactants" field does not match the set of reactions in which this compounds appears with a negative stoichiometry')
             for rxn in [r for r in self.reactions if cmp in r.reactants and r not in cmp.reactant_reactions]:
                 cmp.reactant_reactions.append(rxn)
                 cmp_counter += 1
@@ -1176,7 +1177,7 @@ class model(object):
         elif output_format.lower() == 'pickle':
             pass
    
-    def fba(self,optimization_solver = 'gurobi', build_new_optModel = True, reset_fluxes = True, store_opt_fluxes = True, store_all_rxn_fluxes = False, flux_key = None, run = True, assign_wildType_max_biomass = False, simulation_conditions = '', stdout_msgs = True, warnings = True):
+    def fba(self,optimization_solver = default_optim_solver, build_new_optModel = True, maximize = True, reset_fluxes = True, store_opt_fluxes = True, store_all_rxn_fluxes = False, flux_key = None, run = True, assign_wildType_max_biomass = False, simulation_conditions = '', stdout_msgs = True, warnings = True):
         """
         Creates a fba model for this model and runs fba 
 

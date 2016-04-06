@@ -2,24 +2,26 @@ from coopr.pyomo import *
 from coopr.opt import *
 from coopr.environ import *
 from userError import userError
+from globalVariables import *
 
-def pyomoSolverCreator(optSolverName):
+def pyomoSolverCreator(optSolverName, **solver_options):
     """
     Creates a pyomo solver object and assigns the solver options
 
     INPUTS:
     ------
-       optSolverName: A string containing the solver name
+     optSolverName: A string containing the solver name
+    solver_options: Additional solver options. These are to a dictionary whose keys are 
+                    are the names of the arguments and values are the values 
 
     OUTPUTS:
     -------
     pymoSolverObject: Pyomo solver object with solver options assigned
     """    
-
     # Pyomo solver object
     pymoSolverObject = SolverFactory(optSolverName)
 
-    # - Set the solver options -        
+    # - Set some default solver options -        
     if optSolverName.lower() == 'cplex':
         # Memory
         pymoSolverObject.options["workmem"]=2500
@@ -31,7 +33,7 @@ def pyomoSolverCreator(optSolverName):
         pymoSolverObject.options["simplex_tolerances_optimality"]=1e-9
 
         # Integrality tolerance (epint). Default = 1e-5
-        pymoSolverObject.options["mip_tolerances_integrality"]=1e-9
+        pymoSolverObject.options["mip_tolerances_integrality"] = mip_integrality_tol
 
         # MIP strategy variable select (varsel). Default = 0
         pymoSolverObject.options["mip_strategy_variableselect"]=3
@@ -39,7 +41,7 @@ def pyomoSolverCreator(optSolverName):
         # Bound strengthening indicator (bndstrenind). Default = 0   
         pymoSolverObject.options["preprocessing_boundstrength"]=1
 
-    elif optSolverName.lower() == 'gurobi':
+    elif optSolverName.lower() in 'gurobi':
         # Memory (in Gb). Default: Infinity
         pymoSolverObject.options["NodefileStart"]=1
 
@@ -50,12 +52,37 @@ def pyomoSolverCreator(optSolverName):
         pymoSolverObject.options["OptimalityTol"]=1e-9
 
         # Integrality tolerance (epint). Default = 1e-5
-        pymoSolverObject.options["IntFeasTol"]=1e-8
+        pymoSolverObject.options["IntFeasTol"]= mip_integrality_tol
+
+        # Branch variable selection strategy . Default = -1 (automatic)
+        pymoSolverObject.options["VarBranch"]=3
+
+        # Number of cores to use for parallel computations (defaul 0 = all cores) 
+        pymoSolverObject.options["Threads"] = 4
+
+    elif optSolverName.lower() in 'gurobi_ampl':
+        # Memory (in Gb). Default: Infinity
+        pymoSolverObject.options["NodefileStart"]=1
+
+        # Feasbility tolerance. Defaul = 1e-6
+        pymoSolverObject.options["feastol"]=1e-9
+
+        # Optimality tolerance. Defaul = 1e-6
+        pymoSolverObject.options["opttol"]=1e-9
+
+        # Integrality tolerance (epint). Default = 1e-5
+        pymoSolverObject.options["IntFeasTol"]= mip_integrality_tol
 
         # Branch variable selection strategy . Default = -1 (automatic)
         pymoSolverObject.options["VarBranch"]=3
 
     else:
-        raise customError('**Error! Invalid optimization solver name ...')
+        raise userError('**Error! Invalid optimization solver name ...')
+
+
+    #--- Set provided solver options by the user (these overwrfite tho defaults)
+    for option_name in solver_options.keys():
+        exec 'pymoSolverObject.options["' + option_name+ '"] = ' + str(solver_options[option_name])
+
 
     return pymoSolverObject 

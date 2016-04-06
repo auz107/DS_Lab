@@ -164,7 +164,7 @@ def add_nsAA_pathways(model, add_pyrrolysine = True, add_pAF = True, warnings = 
                 print rxn.id,':\t',rxn.get_equation()   
             print '\n'
     
-    model.validate()
+    #model.validate()
 
     return model
 
