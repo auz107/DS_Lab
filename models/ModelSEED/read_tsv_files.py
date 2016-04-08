@@ -462,9 +462,11 @@ def read_name_aliases(aliases_tsv_file, cpds_results_file,rxns_results_file):
     with open(cpds_results_file,'w') as f:
         f.write('cpds_by_name = {}\n')
         f.write('cpds_by_clean_name = {}\n')
+        f.write('cpds_by_clean_name_underline = {}\n')
     with open(rxns_results_file,'w') as f:
         f.write('rxns_by_name = {}\n')
         f.write('rxns_by_clean_name = {}\n')
+        f.write('rxns_by_clean_name_underline = {}\n')
    
     # Dictionaries with kesy being Kegg ids and values being ModelSEED ids  
     cpds_by_name = {}
@@ -885,19 +887,19 @@ def read_cpds_master(cpds_master_file, cpds_results_file):
                 if ModelSEED_id in cpds_name_aliases.keys():
                     cpd_info['name_aliases'] = cpds_name_aliases[ModelSEED_id]
                 else:
-                    cpd_info['name_aliases'] = None 
+                    cpd_info['name_aliases'] = [] 
 
                 # KEEG id(s)
                 if ModelSEED_id in cpds_KEGG_ids.keys():
                     cpd_info['KEGG_id'] = cpds_KEGG_ids[ModelSEED_id]
                 else:
-                    cpd_info['KEGG_id'] = None
+                    cpd_info['KEGG_id'] = []
 
                 # BiGG name
                 if ModelSEED_id in cpds_BiGG_ids.keys():
-                    cpd_info['BiGG_name'] = cpds_BiGG_ids[ModelSEED_id]
+                    cpd_info['BiGG_id'] = cpds_BiGG_ids[ModelSEED_id]
                 else:
-                    cpd_info['BiGG_name'] = None
+                    cpd_info['BiGG_id'] = []
 
                 # structure
                 cpd_info['structure'] = line[headers.index('structure')]
@@ -1170,19 +1172,19 @@ def read_rxns_master(rxns_master_file, rxns_default_file, rxns_results_file):
                 if ModelSEED_id in rxns_name_aliases.keys():
                     rxn_info['name_aliases'] = rxns_name_aliases[ModelSEED_id]
                 else:
-                    rxn_info['name_aliases'] = None
+                    rxn_info['name_aliases'] = []
     
                 # KEEG id(s)
                 if ModelSEED_id in rxns_KEGG_ids.keys():
                     rxn_info['KEGG_id'] = rxns_KEGG_ids[ModelSEED_id]
                 else:
-                    rxn_info['KEGG_id'] = None
+                    rxn_info['KEGG_id'] = []
     
                 # BiGG name
                 if ModelSEED_id in rxns_BiGG_ids.keys():
-                    rxn_info['BiGG_name'] = rxns_BiGG_ids[ModelSEED_id]
+                    rxn_info['BiGG_id'] = rxns_BiGG_ids[ModelSEED_id]
                 else:
-                    rxn_info['BiGG_name'] = None
+                    rxn_info['BiGG_id'] = []
 
                 # deltaG
                 deltaG_ModelSEED_str = line[headers.index('deltag')]
@@ -1345,7 +1347,7 @@ def read_template_rxns(rxns_tsv_file, rxns_results_file, results_var_name):
     rxns_results_file: File name containing the formatted results for reactions
      results_var_name: Name of the variable containing the results
     """
-    from ModelSEED_rxns_master import ModelSEED_rxns_master
+    from ModelSEED_rxns_master import rxns_master as ModelSEED_rxns_master
 
     print '\nParsing template reactions file {} ...'.format(rxns_tsv_file)
     with open(rxns_results_file,'w') as f:
@@ -1371,8 +1373,6 @@ def read_template_rxns(rxns_tsv_file, rxns_results_file, results_var_name):
                 # ModelSeed id
                 ModelSEED_id = line[headers.index('id')]
 
-                rxn_info = ModelSEED_rxns_master[ModelSEED_id]
-
                 # Direction
                 direction_str = line[headers.index('direction')]
                 if direction_str == '>':
@@ -1387,8 +1387,8 @@ def read_template_rxns(rxns_tsv_file, rxns_results_file, results_var_name):
                     raise ValueError('Unknown direction for reaction ' + ModelSEED_id + ' (direction: ' + direction_str + ')\n')
 
                 # Reaction type 
-                rxn_info['template_type'] = line[headers.index('type')] 
-                if rxn_info['template_type'] not in ['conditional','gapfilling','spontaneous','universal']:
+                rxn_info['template_rxn_type'] = line[headers.index('type')] 
+                if rxn_info['template_rxn_type'] not in ['conditional','gapfilling','spontaneous','universal']:
                     raise ValueError('Invalid "type" for reaction ' + ModelSEED_id + ': type = ' + rxn_info['template_type'])
 
                 # Base cost of adding this reaction to a model
@@ -1547,9 +1547,17 @@ def write_cpds_formula_aliases(cpds_results_file):
     # Dictionaries with kesy being Kegg ids and values being ModelSEED ids  
     cpds_by_formula = {}
 
+    for ModelSEED_id in [mid for mid in cpds_master.keys() if cpds_master[mid]['formula'] != None ]:
+        formula = cpds_master[ModelSEED_id]['formula']
+        if formula in cpds_by_formula.keys():
+            cpds_by_formula[formula] += [ModelSEED_id]
+        else:
+            cpds_by_formula[formula] = [ModelSEED_id]
+
+
     with open(cpds_results_file,'a') as f:
-            for ModelSEED_id in [mid for mid in cpds_master.keys() if cpds_master[mid]['formula'] != None ]:
-                f.write("cpds_by_formula['" + cpds_master[ModelSEED_id]['formula'] + "'] = '" + str(ModelSEED_id) + "'\n")
+        for formula in cpds_by_formula.keys(): 
+            f.write("cpds_by_formula['" + formula + "'] = " + str(cpds_by_formula[formula]) + "\n")
 
 #-------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -1561,7 +1569,7 @@ if __name__ == '__main__':
 
     #read_ECnumber_aliases(aliases_tsv_file = 'github/Aliases/Enzyme_Class.aliases', rxns_results_file = 'ModelSEED_rxns_EC_number_aliases.py')
 
-    read_BiGG_aliases(aliases_tsv_file = 'github/Aliases/BiGG.aliases', cpds_results_file = 'ModelSEED_cpds_BiGG_aliases.py',rxns_results_file = 'ModelSEED_rxns_BiGG_aliases.py')
+    #read_BiGG_aliases(aliases_tsv_file = 'github/Aliases/BiGG.aliases', cpds_results_file = 'ModelSEED_cpds_BiGG_aliases.py',rxns_results_file = 'ModelSEED_rxns_BiGG_aliases.py')
 
     #read_cpds_master(cpds_master_file = 'github/Biochemistry/compounds.master.tsv', cpds_results_file = 'ModelSEED_cpds_master.py')
 
@@ -1572,18 +1580,18 @@ if __name__ == '__main__':
     #read_rxns_master(rxns_master_file = 'github/Biochemistry/reactions.master.tsv', rxns_default_file = 'github/Biochemistry/reactions.default.tsv', rxns_results_file = 'ModelSEED_rxns_master.py')
 
     # Template rxns
-    #read_template_rxns(rxns_tsv_file = 'github/Templates/GramPositive/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_GramPositive.py', results_var_name = 'ModelSEED_rxns_GramPositive')
+    read_template_rxns(rxns_tsv_file = 'github/Templates/GramPositive/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_GramPositive.py', results_var_name = 'rxns_GramPositive')
 
-    #read_template_rxns(rxns_tsv_file = 'github/Templates/GramNegative/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_GramNegative.py', results_var_name = 'ModelSEED_rxns_GramNegative')
+    read_template_rxns(rxns_tsv_file = 'github/Templates/GramNegative/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_GramNegative.py', results_var_name = 'rxns_GramNegative')
 
-    #read_template_rxns(rxns_tsv_file = 'github/Templates/Human/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_Human.py', results_var_name = 'ModelSEED_rxns_Human')
+    read_template_rxns(rxns_tsv_file = 'github/Templates/Human/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_Human.py', results_var_name = 'rxns_Human')
 
     # Biomass
-    #read_template_biomass(biomasses_tsv_file = 'github/Templates/GramPositive/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramPositive/BiomassCompounds.tsv',biomass_results_file = 'ModelSEED_rxns_GramPositive.py', results_var_name = 'ModelSEED_rxns_GramPositive')
+    read_template_biomass(biomasses_tsv_file = 'github/Templates/GramPositive/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramPositive/BiomassCompounds.tsv',biomass_results_file = 'ModelSEED_rxns_GramPositive_Biomass.py', results_var_name = 'biomass_rxn_GramPositive')
 
-    #read_template_biomass(biomasses_tsv_file = 'github/Templates/GramNegative/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramNegative/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_GramNegative.py', results_var_name = 'ModelSEED_rxns_GramNegative')
+    read_template_biomass(biomasses_tsv_file = 'github/Templates/GramNegative/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramNegative/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_GramNegative_Biomass.py', results_var_name = 'biomass_rxn_GramNegative')
 
-    #read_template_biomass(biomasses_tsv_file = 'github/Templates/Human/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/Human/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_Human.py',results_var_name = 'ModelSEED_rxns_Human')
+    read_template_biomass(biomasses_tsv_file = 'github/Templates/Human/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/Human/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_Human_Biomass.py',results_var_name = 'biomass_rxn_Human')
 
     #write_cpds_formula_aliases(cpds_results_file = 'ModelSEED_cpds_formula_aliases.py')
 
