@@ -27,9 +27,9 @@ class MUST_doubles(object):
     of reactions, i.e., MUST_LU (or MUST_UL), MUST_LL and MUST_UU
 
     Ali R. Zomorrodi - Segre Lab @ BU
-    Last updated: March 23, 2016
+    Last updated: April 08, 2016
     """
-    def __init__(self,model, product_exchrxn_id, MUST_double_type, flux_bounds_ref, flux_bounds_overprod, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, product_targetYield_percent = 80, min_biomass_percent = 10, blocked_rxns = [], MUST_X = [], MUST_L = [], MUST_U = [], build_new_optModel = True, objective_thr = 5, validate_results = False, results_filename = '', create_new_results_file = True, optimization_solver = default_optim_solver, warnings = True, stdout_msgs = True): 
+    def __init__(self,model, product_exchrxn_id, MUST_double_type, flux_bounds_ref, flux_bounds_overprod, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, product_targetYield_percent = 80, min_biomass_percent = 10, blocked_rxns = [], MUST_X = [], MUST_L = [], MUST_U = [], build_new_optModel = True, objective_thr = 5, validate_results = False, results_filename = '', create_new_results_file = True, optimization_solver = default_optim_solver, warnings = True, stdout_msgs = True, stdout_msgs_details = False): 
         """
         All inputs are a subset of those for OptForce
 
@@ -126,6 +126,7 @@ class MUST_doubles(object):
 
         # stdout_msgs
         self.stdout_msgs = stdout_msgs
+        self.stdout_msgs_details = stdout_msgs_details
 
     def __setattr__(self,attr_name,attr_value):
         """
@@ -188,11 +189,8 @@ class MUST_doubles(object):
         if attr_name == 'optimization_solver' and attr_value.lower() not in ['cplex','gurobi','gurobi_ampl','cplexamp']:
             raise userError('Invalid solver name (eligible choices are cplex and gurobi)\n')
 
-        if attr_name == 'warnings' and not isinstance(attr_value,bool):
-            raise TypeError('warnings must be eiher True or False')
-
-        if attr_name == 'stoud_msgs' and not isinstance(attr_value,bool):
-            raise TypeError('stdout_msgs must be eiher True or False')
+        if attr_name in ['warnings','stdout_msgs','stdout_msgs_details'] and not isinstance(attr_value,bool):
+            raise TypeError('{} must be eiher True or False'.format(attr_name))
 
         self.__dict__[attr_name] = attr_value
 
@@ -241,14 +239,15 @@ class MUST_doubles(object):
         This functions needs to be caleed before creating an optModel
         """
         # Find the maximum biomass flux and  maximum theoretical yield of the product
-        self.find_maxBiomass_flux()
-        self.find_prod_max_theor_yield()
+        if not hasattr(self,'max_biomass_flux'):
+            self.find_maxBiomass_flux()
+        if not hasattr(self,'product_max_theor_yield'):
+            self.find_prod_max_theor_yield()
 
         # Set the flux bounds for the model
         set_specific_bounds(model = self.model, file_name = self.growthMedium_flux_bounds['flux_bounds_filename'], flux_bounds = self.growthMedium_flux_bounds['flux_bounds_dict'], reset_flux_bounds = True)
         # Impost constraints on product yield and min biomass formation flux
         set_specific_bounds(model = self.model, flux_bounds = {self.biomass_rxn_id:[(self.min_biomass_percent/100)*self.max_biomass_flux,None], self.product_exchrxn_id:[(self.product_targetYield_percent/100)*self.product_max_theor_yield,None]}, reset_flux_bounds = False)
-
 
     def define_optModel_params(self):
         """
@@ -1175,7 +1174,7 @@ class MUST_doubles(object):
             self._curr_soln = {'exit_flag':exit_flag,'objective_value':opt_objValue,'L1':one_y1Lopt_rxns,'L2':one_y2Lopt_rxns}
 
         # Print the results on the screen 
-        if self.stdout_msgs:
+        if self.stdout_msgs_details:
             print '\nObjective value = {}, Optimality status = {}, Solution status = {}, Solver run status = {}'.format(opt_objValue, optSoln.solver.termination_condition, optSoln.Solution.status, solver_flag)
             print 'Took (hh:mm:ss) {}/{} of processing/walltime to create a pyomo model, {}/{} to  preprcoess the model and {}/{} to solve the model\n'.format(self._elapsed_create_pyomo_pt, self._elapsed_create_pyomo_wt, elapsed_preproc_pyomo_pt,elapsed_preproc_pyomo_wt, elapsed_solver_pt,elapsed_solver_wt)
 
@@ -1258,7 +1257,7 @@ class MUST_doubles(object):
                 if (L2_rxn in self.MUST_X) or (L2_rxn in self.MUST_L) or (L2_rxn in self.MUST_U):
                     raise userError('L2_rxn {} appears in MUST_L or MUST_U or MUST_X'.format(L2_rxn)) 
 
-            if (self.flux_bounds_ref[L1_rxn][0] + self.flux_bounds_ref[L1_rxn][0]) - (self.optModel.v_y1L[L1_rxn].value + self.optModel.v_y2U[L2_rxn].value) < self.objective_thr:
+            if (self.flux_bounds_ref[L1_rxn][0] + self.flux_bounds_ref[L2_rxn][0]) - (self.optModel.v_y1L[L1_rxn].value + self.optModel.v_y2L[L2_rxn].value) < self.objective_thr:
                 raise userError('Min_WT(v1 + v2) - Max_OP(v1 + v2) = ({}) - ({}) = {} is not less than objective_thr = {} for L1_rxn = {} , L2_rxn = {}'.format(self.flux_bounds_ref[L1_rxn][0] + self.flux_bounds_ref[L2_rxn][0], self.optModel.v_y1L[L1_rxn].value + self.optModel.v_y2L[L2_rxn].value), (self.flux_bounds_ref[L1_rxn][0] + self.flux_bounds_ref[L2_rxn][0]) - (self.optModel.v_y1L[L1_rxn].value + self.optModel.v_y2L[L2_rxn]).value, self.objective_thr, L1_rxn, L2_rxn)     
 
     def run(self, optModel_name = 'bilevel', max_solution_num = 100):
@@ -1366,13 +1365,10 @@ class MUST_doubles(object):
                         self.optModel.integer_cuts2.add(sum([self.optModel.y2U[j] for j in self.optModel.J if self._y1Uopt_curr[j] == 1]) + sum([self.optModel.y1U[j] for j in self.optModel.J if self._y2Uopt_curr[j] == 1]) <= 1) 
                     elif self.MUST_double_type.lower() == 'must_ll':
                         # Here, (y1L(j) , y2L(j2) and (y1L(j2) , y2L(j1) are equivalent solutions
-                        self.self.optModel.integer_cuts1.add(sum([self.optModel.y1L[j] for j in self.optModel.J if self._y1Lopt_curr[j] == 1]) + sum([self.optModel.y2U[j] for j in self.optModel.J if self._y2Uopt_curr[j] == 1]) <= 1)
-                        self.self.optModel.integer_cuts2.add(const = sum([self.optModel.y2L[j] for j in self.optModel.J if self._y1Lopt_curr[j] == 1]) + sum([self.optModel.y1U[j] for j in self.optModel.J if self._y2Uopt_curr[j] == 1]) <= 1)
+                        self.optModel.integer_cuts1.add(sum([self.optModel.y1L[j] for j in self.optModel.J if self._y1Lopt_curr[j] == 1]) + sum([self.optModel.y2L[j] for j in self.optModel.J if self._y2Lopt_curr[j] == 1]) <= 1)
+                        self.optModel.integer_cuts2.add(sum([self.optModel.y2L[j] for j in self.optModel.J if self._y1Lopt_curr[j] == 1]) + sum([self.optModel.y1L[j] for j in self.optModel.J if self._y2Lopt_curr[j] == 1]) <= 1)
 
                     found_solutions_num += 1
-
-                    if self.stdout_msgs:
-                       print '{} solutions found'.format(found_solutions_num)
 
                     # Write results into the file
                     if self.results_filename != '':
@@ -1399,7 +1395,7 @@ class MUST_doubles(object):
                             elif self.MUST_double_type.lower() in 'must_ll':
                                 L1_rxn = self._curr_soln['L1'] 
                                 L2_rxn = self._curr_soln['L2']  
-                                f.write("{{'L1':'{}', 'L2':'{}', 'Min_WT(v1 - v2)':{}, 'Max_OP(v1 - v2)':{}}},\n".format(L1_rxn,L2_rxn, self.flux_bounds_ref[L_rxn][0] + self.flux_bounds_ref[U_rxn][0], self.optModel.v_y1L[L1_rxn].value + self.optModel.v_y2U[L2_rxn].value))     
+                                f.write("{{'L1':'{}', 'L2':'{}', 'Min_WT(v1 - v2)':{}, 'Max_OP(v1 - v2)':{}}},\n".format(L1_rxn,L2_rxn, self.flux_bounds_ref[L1_rxn][0] + self.flux_bounds_ref[L2_rxn][0], self.optModel.v_y1L[L1_rxn].value + self.optModel.v_y2L[L2_rxn].value))     
 
                     if found_solutions_num >= max_solution_num:
                         done = True

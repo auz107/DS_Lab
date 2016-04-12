@@ -25,7 +25,7 @@ class OptForce(object):
     """
     Checks whether a given flux data leads to a feasible FBA for a given metabolic model
     """
-    def __init__(self, model, product_exchrxn_id, product_targetYield_percent = 80, min_biomass_percent = 10, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, read_exp_flux_bounds_ref_fromThisFile = '',  read_blocked_rxns_fromThisFile = '', read_inSilico_essential_rxns_fromThisFile = '', read_inVivo_essential_rxns_fromThisFile = '', save_flux_bounds_ref_toThisFile = '', read_flux_bounds_ref_fromThisFile = '', save_flux_bounds_overprod_toThisFile = '', read_flux_bounds_overprod_fromThisFile = '', save_MUST_singles_toThisFile = '', read_MUST_singles_fromThisFile = '', read_MUST_doubles_fromThisFile = '', MUST_doubles_params = {}, FORCE_params = {}, optimization_solver = default_optim_solver, simulation_condition = '', stdout_msgs = True, warnings = True):
+    def __init__(self, model, product_exchrxn_id, product_targetYield_percent = 80, min_biomass_percent = 10, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, read_exp_flux_bounds_ref_fromThisFile = '',  read_blocked_rxns_fromThisFile = '', read_inSilico_essential_rxns_fromThisFile = '', read_inVivo_essential_rxns_fromThisFile = '', save_flux_bounds_ref_toThisFile = '', read_flux_bounds_ref_fromThisFile = '', save_flux_bounds_overprod_toThisFile = '', read_flux_bounds_overprod_fromThisFile = '', save_MUST_singles_toThisFile = '', read_MUST_singles_fromThisFile = '', read_MUST_doubles_fromThisFile = '', MUST_singles_diff_thr = 1, MUST_doubles_params = {}, FORCE_params = {}, optimization_solver = default_optim_solver, simulation_condition = '', stdout_msgs = True, warnings = True):
         """
         INPUTS:
         ------
@@ -65,6 +65,10 @@ class OptForce(object):
                                  for details of how the results shoud be stored in files.
             : A dictionary containing the specific input parameters for the MUST_doubles class
                    FORCE_params: A dictionary containing the specific input parameters for the FORCE class
+               MUST_singles_diff_thr: The minimum value above which between the difference between LB/UB in
+                                 the reference and overproducing strains are considered to be 
+                                 signficant for declating a MUST single. For example, if 
+                                 LB_overprod(j) - UB_ref(j) >= MUST_singles_diff_thr, then j is a MUST_U
             optimization_solver: A string containing showing which optimization solver to use
                                  Allowed choices are 'gurobi' and 'cplex'
            simulation_condition: A string representing the simulation conditon 
@@ -90,7 +94,8 @@ class OptForce(object):
         self.product_targetYield_percent = product_targetYield_percent
         self.min_biomass_percent = min_biomass_percent
 
-        # Parameters for MUST_doubles and FORCE classes
+        # Parameters for MUST_singles, MUST_doubles and FORCE classes
+        self.MUST_singles_diff_thr = MUST_singles_diff_thr
         self.MUST_doubles_params = MUST_doubles_params
         self.FORCE_params = FORCE_params
 
@@ -188,6 +193,12 @@ class OptForce(object):
         # Solver name
         if attr_name == 'optimization_solver' and attr_value.lower() not in ['cplex','gurobi','gurobi_ampl','cplexamp']:
             raise userError('Invalid solver name (eligible choices are cplex and gurobi)\n')
+
+        # MUST_singles_diff_thr
+        if attr_name == 'MUST_singles_diff_thr' and not isinstance(attr_value,float) and not isinstance(attr_value,int):
+            raise TypeError('MUST_singles_diff_thr must be a non-negative integer or float')
+        elif attr_name == 'MUST_singles_diff_thr' and attr_value < 0: 
+            raise ValueError('MUST_singles_diff_thr must be a non-negative integer or float')
 
         # MUST_doubles params
         if attr_name == 'MUST_doubles_params' and not isinstance(attr_value,dict):
@@ -395,15 +406,12 @@ class OptForce(object):
         # Impost constraints on product yield and min biomass formation flux
         set_specific_bounds(model = self.model, flux_bounds = {self.biomass_rxn_id:[(self.min_biomass_percent/100)*self.max_biomass_flux,None], self.product_exchrxn_id:[(self.product_targetYield_percent/100)*self.product_max_theor_yield,None]}, reset_flux_bounds = False)
     
-        self.flux_bounds_overprod = fva(model = self.model, save_to_model = False, warmstart = True, optimization_solver = 'gurobi_ampl', stdout_msgs = False) 
+        self.flux_bounds_overprod = fva(model = self.model, save_to_model = False, results_filename = self.save_flux_bounds_overprod_toThisFile, warmstart = True, optimization_solver = 'gurobi_ampl', stdout_msgs = False) 
 
         if self.stdout_msgs:
             elapsed_opsBnd_pt = str(timedelta(seconds = time.clock() - start_opsBnd_pt))
             elapsed_opsBnd_wt = str(timedelta(seconds = time.time() - start_opsBnd_wt))
             print ' took {} of processing time and {} of wall time'.format(elapsed_opsBnd_pt, elapsed_opsBnd_wt)
-
-        if self.stdout_msgs:
-            print '\tFlux bounds for the reference and overproducing strains were written into {}'.format(self.save_flux_bounds_ref_toThisFile)
 
     def find_MUST_singles(self):
         """
@@ -424,17 +432,17 @@ class OptForce(object):
                 self.MUST_X.append(rxn.id)
 
             # MUST_U: UB_ref < LB_oveprod
-            elif self.flux_bounds_ref[rxn.id][1] != None and self.flux_bounds_overprod[rxn.id][0] != None and self.flux_bounds_ref[rxn.id][1] < self.flux_bounds_overprod[rxn.id][0]:
+            elif self.flux_bounds_ref[rxn.id][1] != None and self.flux_bounds_overprod[rxn.id][0] != None and (self.flux_bounds_overprod[rxn.id][0] - self.flux_bounds_ref[rxn.id][1]) >= self.MUST_singles_diff_thr:
                 self.MUST_U.append(rxn.id)
 
             # MUST_L: UB_overprod < LB_ref
-            elif self.flux_bounds_overprod[rxn.id][1] != None and self.flux_bounds_ref[rxn.id][0] != None and self.flux_bounds_overprod[rxn.id][1] < self.flux_bounds_ref[rxn.id][0]:
+            elif self.flux_bounds_overprod[rxn.id][1] != None and self.flux_bounds_ref[rxn.id][0] != None and (self.flux_bounds_ref[rxn.id][0] - self.flux_bounds_overprod[rxn.id][1]) >= self.MUST_singles_diff_thr:
                 self.MUST_L.append(rxn.id)
 
         if self.stdout_msgs:
             elapsed_mustSingl_pt = str(timedelta(seconds = time.clock() - start_mustSingl_pt))
             elapsed_mustSingl_wt = str(timedelta(seconds = time.time() - start_mustSingl_wt))
-            print ' took {} of processing time and {} of wall time'.format(elapsed_mustSingl_pt, elapsed_mustSingl_wt)
+            print ' found {} MUST_Ls, {} MUST_Us and {} MUST_Xs, took {} of processing time and {} of wall time'.format(len(self.MUST_L), len(self.MUST_U), len(self.MUST_X), elapsed_mustSingl_pt, elapsed_mustSingl_wt)
 
         #-- Save the MUST single results into a file --
         if self.save_MUST_singles_toThisFile != '':
@@ -466,9 +474,6 @@ class OptForce(object):
                         f.write("'{}':{{'name':\"{}\", 'gpr':'{}', 'ref_bounds':{}, 'overprod_bounds':{}}},\n".format(rxn.id,rxn.name, rxn.gene_reaction_rule, self.flux_bounds_ref[rxn.id],self.flux_bounds_overprod[rxn.id]))               
                 f.write('}\n')
 
-        if self.stdout_msgs:
-            print '\tMUST single reactions were written into {}'.format(self.save_MUST_singles_toThisFile)
-
     def find_MUST_doubles(self):
         """
         Finds MUST double sets (MUST_LU, MUST_UU and MUST_LL) 
@@ -490,7 +495,7 @@ class OptForce(object):
         if self.stdout_msgs:
             elapsed_mustlu_pt = str(timedelta(seconds = time.clock() - start_mustlu_pt))
             elapsed_mustlu_wt = str(timedelta(seconds = time.time() - start_mustlu_wt))
-            print ' {} MUST_LUs found, ended with "{}" and took {} of processing time and {} of wall time'.format(len(solutions), termination_condition, elapsed_mustlu_pt, elapsed_mustlu_wt)
+            print '\t{} MUST_LUs found, ended with "{}" and took {} of processing time and {} of wall time'.format(len(solutions), termination_condition, elapsed_mustlu_pt, elapsed_mustlu_wt)
 
         # MUST_UU
         if self.stdout_msgs:
@@ -509,7 +514,7 @@ class OptForce(object):
         if self.stdout_msgs:
             elapsed_mustuu_pt = str(timedelta(seconds = time.clock() - start_mustuu_pt))
             elapsed_mustuu_wt = str(timedelta(seconds = time.time() - start_mustuu_wt))
-            print ' {} MUST_UUs found, ended with "{}" and took {} of processing time and {} of wall time'.format(len(solutions), termination_condition, elapsed_mustuu_pt, elapsed_mustuu_wt)
+            print '\t{} MUST_UUs found, ended with "{}" and took {} of processing time and {} of wall time'.format(len(solutions), termination_condition, elapsed_mustuu_pt, elapsed_mustuu_wt)
 
         # MUST_LL
         if self.stdout_msgs:
@@ -528,7 +533,7 @@ class OptForce(object):
         if self.stdout_msgs:
             elapsed_mustll_pt = str(timedelta(seconds = time.clock() - start_mustll_pt))
             elapsed_mustll_wt = str(timedelta(seconds = time.time() - start_mustll_wt))
-            print ' {} MUST_LLs found, ended with "{}" and took {} of processing time and {} of wall time'.format(len(solutions), termination_condition, elapsed_mustll_pt, elapsed_mustll_wt)
+            print '\t{} MUST_LLs found, ended with "{}" and took {} of processing time and {} of wall time'.format(len(solutions), termination_condition, elapsed_mustll_pt, elapsed_mustll_wt)
 
     def run(self):
         """
@@ -568,6 +573,8 @@ class OptForce(object):
             self.MUST_X = dataFile.MUST_X_details.keys()
             self.MUST_L = dataFile.MUST_L_details.keys()
             self.MUST_U = dataFile.MUST_U_details.keys()
+            if self.stdout_msgs:
+                print 'OptForce: {} MUST_Ls, {} MUST_Us and {} MUST_Xs were read from the input file'.format(len(self.MUST_L), len(self.MUST_U), len(self.MUST_X))
 
         # Find MUST doubles (MUST_LU, MUST_UU and MUST_LU)
         if self.read_MUST_doubles_fromThisFile == '':
@@ -599,7 +606,13 @@ class OptForce(object):
                 self.MUST_LL_L1.append(MUST_LL['L1'])
                 self.MUST_LL_L2.append(MUST_LL['L2'])
 
+            if self.stdout_msgs:
+                print 'OptForce: {} MUST_LUs, {} MUST_UUs and {} MUST_LLs were read from the input file'.format(len(MUST_LU_details), len(MUST_UU_details), len(MUST_LL_details))
+
+
         # Find FORCE sets
+        if self.stdout_msgs:
+            print '\nOptForce: Finding FORCE sets ...'
         force_inst = FORCE(model = self.model, product_exchrxn_id = self.product_exchrxn_id, flux_bounds_ref = self.flux_bounds_ref, 
                            flux_bounds_overprod = self.flux_bounds_overprod, growthMedium_flux_bounds = self.growthMedium_flux_bounds, min_biomass_percent = self.min_biomass_percent, stopWith_product_yield_percent = self.FORCE_params['stopWith_product_yield_percent'], 
                            MUST_X = self.MUST_X, MUST_L = self.MUST_L, MUST_U = self.MUST_U, MUST_LU_L = self.MUST_LU_L, MUST_LU_U = self.MUST_LU_U, MUST_LL_L1 = self.MUST_LL_L1, MUST_LL_L2 = self.MUST_LL_L2, MUST_UU_U1 = self.MUST_UU_U1, MUST_UU_U2 = self.MUST_UU_U2, 

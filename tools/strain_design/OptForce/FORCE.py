@@ -30,7 +30,7 @@ class FORCE(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: March 28, 2016
     """
-    def __init__(self,model, product_exchrxn_id, flux_bounds_ref, flux_bounds_overprod, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, min_biomass_percent = 10, stopWith_product_yield_percent = 80, MUST_X = [], MUST_L = [], MUST_U = [], MUST_LU_L = [], MUST_LU_U = [], MUST_LL_L1 = [], MUST_LL_L2 = [], MUST_UU_U1 = [], MUST_UU_U2 = [], total_interven_num = 10, notMUST_total_interven_num = 0, notXrxns_interven_num = 0, notLrxns_interven_num = 0, notUrxns_interven_num = 0, fixed_X_rxns = [], fixed_L_rxns = [], fixed_U_rxns = {}, inSilico_essential_rxns = [], inVivo_essential_rxns= [], blocked_rxns = [], build_new_optModel = True, dual_formulation_type = 'simplified', validate_results = True, results_filename = '', optimization_solver = default_optim_solver, warnings = True, stdout_msgs = True): 
+    def __init__(self,model, product_exchrxn_id, flux_bounds_ref, flux_bounds_overprod, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, min_biomass_percent = 10, stopWith_product_yield_percent = 80, MUST_X = [], MUST_L = [], MUST_U = [], MUST_LU_L = [], MUST_LU_U = [], MUST_LL_L1 = [], MUST_LL_L2 = [], MUST_UU_U1 = [], MUST_UU_U2 = [], total_interven_num = 10, notMUST_total_interven_num = 0, notXrxns_interven_num = 0, notLrxns_interven_num = 0, notUrxns_interven_num = 0, fixed_X_rxns = [], fixed_L_rxns = [], fixed_U_rxns = {}, inSilico_essential_rxns = [], inVivo_essential_rxns= [], blocked_rxns = [], build_new_optModel = True, dual_formulation_type = 'simplified', validate_results = True, results_filename = '', optimization_solver = default_optim_solver, warnings = True, stdout_msgs = True, stdout_msgs_details = False): 
         """
         All inputs are a subset of those for OptForce
 
@@ -133,6 +133,7 @@ class FORCE(object):
 
         # stdout_msgs
         self.stdout_msgs = stdout_msgs
+        self.stdout_msgs_details = stdout_msgs_details
 
         # - Perform some preprocessing --
         # Reactions that must be up- or down-regulated according to MUST sets
@@ -232,11 +233,8 @@ class FORCE(object):
         if attr_name == 'results_filename' and not isinstance(attr_value,str):
             raise TypeError('results_filename must be a string')
 
-        if attr_name == 'warnings' and not isinstance(attr_value,bool):
-            raise TypeError('warnings must be eiher True or False')
-
-        if attr_name == 'stoud_msgs' and not isinstance(attr_value,bool):
-            raise TypeError('stdout_msgs must be eiher True or False')
+        if attr_name in ['warnings','stoud_msgs','stdout_msgs_details'] and not isinstance(attr_value,bool):
+            raise TypeError('{} must be eiher True or False'.format(attr_name))
 
         self.__dict__[attr_name] = attr_value 
 
@@ -800,8 +798,7 @@ class FORCE(object):
         self._curr_soln = {'exit_flag':exit_flag,'objective_value':opt_objValue,'interven_num': len(yX_one_rxns) + len(yL_one_rxns) + len(yU_one_rxns),'X_rxns':yX_one_rxns,'L_rxns':yL_one_rxns,'U_rxns':yU_one_rxns}
 
         # Print the results on the screen 
-        if self.stdout_msgs:
-        #if False:
+        if self.stdout_msgs_details:
             print '\nObjective value = {}, Optimality status = {}, Solution status = {}, Solver run status = {}'.format(opt_objValue, optSoln.solver.termination_condition, optSoln.Solution.status, solver_flag)
             print 'Took (hh:mm:ss) {}/{} of processing/walltime to create a pyomo model, {}/{} to  preprcoess the model and {}/{} to solve the model\n'.format(self._elapsed_create_optModel_pt, self._elapsed_create_optModel_wt, elapsed_preproc_pyomo_pt,elapsed_preproc_pyomo_wt, elapsed_solver_pt,elapsed_solver_wt)
 
@@ -907,27 +904,29 @@ class FORCE(object):
                 # If the product yield for the current number of iterations is zero, move on  
                 # by increasing the number of interventions
                 if self._curr_soln['objective_value'] < 1e-6:
+                    if self.stdout_msgs:
+                        print '\n** Iterations with {} interventions stopped with the following solution, which results in an objective function of almost zero'.format(self._interven_num_curr)
+                        self.print_results_summary()
+
                     self._interven_num_curr += 1
                     if self.stdout_msgs and self._interven_num_curr <= self.total_interven_num:
                         print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
                     best_product_yield_soFar = 0 
                     self._best_product_yield_soFar = 0 
-                    # Re-define integer cuts
-                    self.optModel.del_component('integer_cuts')
-                    self.optModel.del_component('integer_cuts_index')
-                    self.optModel.integer_cuts = ConstraintList(noruleinit=True)
          
                 # If the product yield with the current number of iterations is less than best_product_yield_soFar
                 # then move on by increasing the number of iterations  
-                elif self._curr_soln['objective_value'] < best_product_yield_soFar:
+                elif best_product_yield_soFar - self._curr_soln['objective_value'] > 1e-3:
                     # print a summary of results in the output
                     if self.stdout_msgs:
-                        print '\n** Iterations with {} iterations stopped with the following solution, which is worse than the best solution achieved so far with this number of interventions ({})'.format(self._interven_num_curr, best_product_yield_soFar)
+                        print '\n** Iterations with {} interventions stopped with the following solution, which is worse than the best solution achieved so far with this number of interventions ({})'.format(self._interven_num_curr, best_product_yield_soFar)
                         self.print_results_summary()
 
                     # Stop if the target yield has already been achieved
                     if best_product_yield_soFar >= (self.stopWith_product_yield_percent/100)*self.product_max_theor_yield:
                         done = True
+                        if stdout_msgs:
+                            print 'Iterations stopped because the best product yield achieved so far ({}) is satisfies the target product yield ({})'.format(best_product_yield_soFar, (self.stopWith_product_yield_percent/100)*self.product_max_theor_yield)
                     else:
                         self._interven_num_curr += 1
                         if self._interven_num_curr <= self.total_interven_num:
@@ -935,10 +934,6 @@ class FORCE(object):
                                 print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
                             self._best_product_yield_soFar = best_product_yield_soFar
                             best_product_yield_soFar = 0  # reset to zero before moving to higher order interventions 
-                            # Re-define integer cuts
-                            self.optModel.del_component('integer_cuts')
-                            self.optModel.del_component('integer_cuts_index')
-                            self.optModel.integer_cuts = ConstraintList(noruleinit=True)
    
                 # Otherwise store the results
                 else:
@@ -956,16 +951,24 @@ class FORCE(object):
 
                     self.solutions.append(self._curr_soln)
 
-                    # Add an integer cut excluding the current solution. Instead of checking if binary variables are equal to one,
+                    # Add an integer cut excluding the current solution. 
                     # we check if their distance from one is less than mip_integrality_tol
-                    self.optModel.integer_cuts.add(sum([1 - self.optModel.yX[j] for j in self._curr_soln['X_rxns']]) + sum([1 - self.optModel.yL[j] for j in self._curr_soln['L_rxns']]) + sum([1 - self.optModel.yU[j] for j in self._curr_soln['U_rxns']]) >= 1)
+                    # Total number of yX, yL and yU variables is 3*len(self.optModel.J)
+                    self.optModel.integer_cuts.add(
+                         sum([self.optModel.yX[j] for j in self._curr_soln['X_rxns']]) + \
+                         sum([self.optModel.yL[j] for j in self._curr_soln['L_rxns']]) + \
+                         sum([self.optModel.yU[j] for j in self._curr_soln['U_rxns']]) + \
+                         sum([1 - self.optModel.yX[j] for j in self.optModel.J if j not in self._curr_soln['X_rxns']]) + \
+                         sum([1 - self.optModel.yL[j] for j in self.optModel.J if j not in self._curr_soln['L_rxns']]) + \
+                         sum([1 - self.optModel.yU[j] for j in self.optModel.J if j not in self._curr_soln['U_rxns']]) <= \
+                         3*len(self.optModel.J) - 1)
 
                     # print a summary of results in the output
                     if self.stdout_msgs:
                         print '\n{})'.format(found_solutions_num)
                         self.print_results_summary()
-                        print '\nAdded integer cut: {}'.format(sum([1 - self.optModel.yX[j] for j in self._curr_soln['X_rxns']]) + sum([1 - self.optModel.yL[j] for j in self._curr_soln['L_rxns']]) + sum([1 - self.optModel.yU[j] for j in self._curr_soln['U_rxns']]) >= 1)
-                        print '\nmax_product_prev: {}'.format(self.optModel.v[self.product_exchrxn_id] >= 1.005*self._best_product_yield_soFar)
+                        print '\nAdded integer cut (not including the ones that were zero): {}'.format(sum([self.optModel.yX[j] for j in self._curr_soln['X_rxns']]) + sum([self.optModel.yL[j] for j in self._curr_soln['L_rxns']]) + sum([self.optModel.yU[j] for j in self._curr_soln['U_rxns']]) <= len(self.optModel.J) - 1)
+                        print 'max_product_prev const: {}'.format(self.optModel.v[self.product_exchrxn_id] >= 1.005*self._best_product_yield_soFar)
 
                     # Write results into the file
                     if self.results_filename != '':
@@ -991,27 +994,26 @@ class FORCE(object):
             # If the optimization problem was not solved to optimality 
             else:
                 if self.stdout_msgs:
-                    print 'The optimization problem with {} interventions was not solved to optimality'.format(self._interven_num_curr)
+                    print '**Iterations with {} interventions stopped because the optimization problem was not solved to optimality'.format(self._interven_num_curr)
 
                 # Stop if the target yield has already been achieved
                 if best_product_yield_soFar >= (self.stopWith_product_yield_percent/100)*self.product_max_theor_yield:
                     done = True
+                    if stdout_msgs:
+                        print 'Iterations stopped because the best product yield achieved so far ({}) is satisfies the target product yield ({})'.format(best_product_yield_soFar, (self.stopWith_product_yield_percent/100)*self.product_max_theor_yield)
                 else: 
                     self._interven_num_curr += 1
                     if self._interven_num_curr <= self.total_interven_num:
                         if self.stdout_msgs:
                             print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
                         best_product_yield_soFar = 0 
-                        # Re-define integer cuts
-                        self.optModel.del_component('integer_cuts')
-                        self.optModel.del_component('integer_cuts_index')
-                        self.optModel.integer_cuts = ConstraintList(noruleinit=True)
 
             # Stop if the maximum number of iterations has exceeded
+            print '\nself._interven_num_curr = {}'.format(self._interven_num_curr)
             if self._interven_num_curr > self.total_interven_num:
-                done = True
-                if self.stdout_msgs:
+                if self.stdout_msgs and not done:
                     print '\n**Iterations stopped because the maximum number of interventions = {} has been reached\n'.format(self.total_interven_num)
+                done = True
 
         elapsed_total_pt = str(timedelta(seconds = time.clock() - start_total_pt))
         elapsed_total_wt = str(timedelta(seconds = time.time() - start_total_wt))
@@ -1024,7 +1026,7 @@ class FORCE(object):
         """
         prints a summary of the current results in the output
         """
-        print 'Maxmin product yield = {:0.4} ({:0.3}% of theoretical maximum = {:0.4})  , biomass flux = {} ({:0.3%}) of max biomass = {:0.4})'.format(self.optModel.v[self.product_exchrxn_id].value, 100*self.optModel.v[self.product_exchrxn_id].value/self.product_max_theor_yield, self.product_max_theor_yield, self.optModel.v[self.biomass_rxns_id].value, 100*self.optModel.v[self.biomass_rxn_id].value/self.max_biomass_flux, self.max_biomass_flux)
+        print '\nMaxmin product yield = {:0.4} ({:0.3}% of theoretical maximum = {:0.4})  , biomass flux = {} ({:0.3}%) of max biomass = {:0.4})'.format(self.optModel.v[self.product_exchrxn_id].value, 100*self.optModel.v[self.product_exchrxn_id].value/self.product_max_theor_yield, self.product_max_theor_yield, self.optModel.v[self.biomass_rxn_id].value, 100*self.optModel.v[self.biomass_rxn_id].value/self.max_biomass_flux, self.max_biomass_flux)
 
         if len(self._curr_soln['X_rxns']) > 0:
              print 'Knockouts = \n{}'.format(self._curr_soln['X_rxns'])
