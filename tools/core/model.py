@@ -1,9 +1,11 @@
 from __future__ import division
-import sys
+import sys, time
+from datetime import timedelta  # To convert elapsed time to hh:mm:ss format
 from collections import Counter
 sys.path.append('../../')
 from tools.globalVariables import *
 from tools.userError import userError
+from tools.custom_objects import customList, customDict
 from organism import organism
 from compound import compound
 from compartment import compartment
@@ -23,11 +25,11 @@ class model(object):
            get_reactions: Returns a dictionary of the selected reaction objects
            add_compounds: Add new compound to the model
            add_reactions: Add new reactions to the model
-        remove_compounds: Remove compound from the model
-        remove_reactions: Add reactions to the model
+           del_compounds: Remove compound from the model
+           del_reactions: Add reactions to the model
                 validate: Check for probable issues in the model and either fixes them
                           or issues a warning in the output 
-     reset_flux_bounds: Restores the original bounds (bounds based on reaction types) for
+       reset_flux_bounds: Restores the original bounds (bounds based on reaction types) for
                           all reactions in the model
          print_compounds: Prints in the output the list of all compounds in the model
                           with a desired format 
@@ -39,10 +41,9 @@ class model(object):
 
 
     Ali R. Zomorrodi, Segre Lab @ BU
-    Last updated: 12-17-2015
+    Last updated: 04-25-2016
     """
-
-    def __init__(self, id, type, organism = None, reactions = [], compounds = [], genes = [], compartments = [], name = None, biomass_reaction = None, atpm_reaction = None, notes = None,stdout_msgs = True, warnings = True):
+    def __init__(self, id, type, organism = None, reactions = [], compounds = [], genes = [], compartments = [], name = None, biomass_reaction = None, atpm_reaction = None, notes = None, validate = True, stdout_msgs = True, warnings = True):
 
         # Warnings and messages in the standard output
         self.stdout_msgs = stdout_msgs
@@ -92,7 +93,8 @@ class model(object):
         self.assign_props()
 
         # Check for probable issues in the model
-        self.validate(reassign_props = False)
+        if validate:
+            self.validate(reassign_props = False)
 
     def __setattr__(self,attr_name,attr_value):
         """
@@ -103,11 +105,8 @@ class model(object):
         attr_value: Attribute value
         """
         # Output messages and warnings 
-        if attr_name == 'stdout_msgs' and not isinstance(attr_value,bool):
-            raise TypeError("stdout_msgs must be True or False")
-
-        if attr_name == 'warnings' and not isinstance(attr_value,bool):
-            raise TypeError("warnings must be True or False")
+        if attr_name in ['warnings','stdout_msgs'] and not isinstance(attr_value,bool):
+            raise TypeError("{} must be True or False".format(attr_name))
 
         # id 
         if attr_name == 'id' and not isinstance(attr_value,str):
@@ -121,23 +120,15 @@ class model(object):
         if attr_name == 'organism' and (attr_value is not None and not isinstance(attr_value,organism)):
             raise TypeError("Invalid 'organism' for model " + self.id + "! 'organism' must be an object of type organism. A " + str(attr_value) + " type object was entered instead. A " + str(attr_value) + " type object was entered instead")
 
-        # Reactions 
-        if attr_name == 'reactions' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'reactions' for model " + self.id + "! 'reactions' must be a list of objects of type reaction. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'reactions' and len([r for r in attr_value if not isinstance(r,reaction)]) > 0: 
-            raise TypeError("Invalid 'reactions' for model " + self.id + "! 'reactions' must be a list of objects of type reaction. Objects that are not of type reaction found in the list:" + str([r for r in attr_value if not isinstance(r,reaction)]))
-
-        # Compounds
-        if attr_name == 'compounds' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'compounds' for model " + self.id + "! 'compounds' for a model must be a list of objects of type compound. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'compounds' and len([r for r in attr_value if not isinstance(r,compound)]) > 0: 
-            raise TypeError("Invalid 'compounds' for model " + self.id + "! 'compounds' for a model must be a list of objects of type compound. Objects that are not of type compound found in the list: " + str([r for r in attr_value if not isinstance(r,compound)]))
-
-        # Genes 
-        if attr_name == 'genes' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'genes' for model " + self.id + "! 'genes' for a model must be a list of objects of type gene. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'genes' and len([r for r in attr_value if not isinstance(r,gene)]) > 0: 
-            raise TypeError("Invalid 'compounds' for model " + self.id + "! 'genes' for a model must be a list of objects of type gene. Objects that are not of type gene found in the list: " + str([r for r in attr_value if not isinstance(r,gene)]))
+        # Reactions by id
+        if attr_name == 'reactions_by_id' and not isinstance(attr_value,dict):
+            raise TypeError('A dictionary expected for reactions_by_id a {} provided instead'.format(type(attr_value)))
+        elif attr_name == 'reactions_by_id' and len([r for r in attr_value.values() if not isinstance(r,reaction)]) > 0:
+            invalid_rxn_objs = [(rid,attr_value[rid],type(attr_value[rid])) for rid in attr_value.keys() if not isinstance(attr_value[rid],reaction)]
+            if len(invalid_rxn_objs) <= 10:
+                raise TypeError("Invalid value for 'reactions_by_id' for model {}! Values of 'reactions_by_id' must be a list of objects of type 'reaction'. Objects of other types found instead in the following ten reactions: {}".format(self.id, invalid_rxn_objs))
+            else:
+                raise TypeError("Invalid value for 'reactions_by_id' for model {}! Values of 'reactions_by_id' must be a list of objects of type 'reaction'. Objects of other types found instead in the following ten reactions: {} and {} more".format(self.id, invalid_rxn_objs, len(invalid_rxn_objs) - 10))
 
         # Compartments 
         if attr_name == 'compartments' and not isinstance(attr_value,list):
@@ -158,21 +149,14 @@ class model(object):
             raise TypeError("Invalid 'atpm_reactions' for model " + self.id + "! 'atpm_reaction' must be of type reaction. A " + str(attr_value) + " type object was entered instead")
 
 
-        self.__dict__[attr_name] = attr_value
-           
-    def _create_compounds_list(self):
-        """
-        Creates a list of compound objects for all compounds present in the model 
-        """
-        if self.reactions != None and len([r for r in self.reactions if r.compounds != None]):
-            self.compounds = []
-
-        for reaction in self.reactions:
-            self.compounds += reaction.compounds
-
-        self.compounds = sorted(list(set(self.compounds)),key=lambda x:x.id) 
-        for m in self.compounds:
-            m.model = self
+        if attr_name == 'compounds':
+            self.set_compounds(compounds = attr_value)
+        elif attr_name == 'reactions':
+            self.set_reactions(reactions = attr_value)
+        elif attr_name == 'genes':
+            self.set_genes(genes = attr_value)
+        else: 
+            self.__dict__[attr_name] = attr_value
 
     def assign_props(self):
         """
@@ -182,92 +166,111 @@ class model(object):
         if self.name == None:
             self.name = self.id
 
-        # Reactions
-        if self.reactions != []:
-            for r in self.reactions:
-                r.model = self
-            self.reactions = sorted(self.reactions,key=lambda x:x.id)
+        #-- organism --
+        self.organism.model = self
 
-        # Compounds
-        if self.compounds == []:
-            self._create_compounds_list()
-        else:
-            for m in self.compounds:
-                m.model = self
-            self.compounds = sorted(self.compounds,key=lambda x:x.id)
-
-        # Genes
-        if self.genes == []:
-            self._create_genes_list()
-        else:
-            for gn in self.genes:
-                gn.model = self
-
-        # Compartments
+        #-- Compartments --
         if self.compartments == []:
-            self._create_compartments_list()
-        else:
-            for cm in self.compartments:
-                cm.model = self
-        self.compartments_by_id = dict([(cmpart.id,cmpart) for cmpart in self.compartments])    
+            self.compartments = sorted(list(set([c.compartment for c in self.compounds if c.compartment != None])), key = lambda x: x.id)
+        for cpt in self.compartments:
+            cpt.model = self
+        self.compartments_by_id = dict([(cpt.id,cpt) for cpt in self.compartments])    
 
-        # Create the stoichiometric matrix
-        self._create_stoic_matrix()
+        #-- Compounds --
+        if self.compounds == []:
+            self.compounds = sorted(list(set([c for r in self.reactions for c in r.stoichiometry.keys()], key = lambda x: x.id)))
+        # A dictionary whose keys are compound ids and values are compound objects
+        self.compounds_by_id = dict([(cpd.id,cpd) for cpd in self.compounds])    
+        self.compounds_by_clean_id = dict([(remove_non_alphanumeric(cpd.id).lower(),cpd) for cpd in self.compounds])    
 
+        #-- Reactions --
+        if self.reactions == []:
+            self.reactions = sorted(list(set([r for c in self.compounds for r in c.reactions])), key = lambda x: x.id)
         # A dictionary whose keys are reaciotn ids and values are reaction objects
         self.reactions_by_id = dict([(rxn.id,rxn) for rxn in self.reactions])    
         self.reactions_by_clean_id = dict([(remove_non_alphanumeric(rxn.id).lower(),rxn) for rxn in self.reactions])    
 
+        #-- Genes --
+        if self.genes == []:
+            self.genes = [g for r in self.reactions for g in r.genes] 
+
+    def set_compounds(self, compounds): 
+        """
+        Set attribute compounds
+        """
+        if not isinstance(compounds,list):
+            raise TypeError("Invalid 'compounds' format for model {}! Compounds must be a list but a {} object was provided instead".format(self.id, type(compounds)))
+        if len([n for n in compounds if not isinstance(n,compound)]) > 0:
+            raise TypeError("Invalid 'compounds' format for model {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in compounds if not isinstance(n,compound.compound)]))))
+
+        compounds = sorted(list(set(compounds)), key = lambda x: x.id)
+
+        self.__dict__['compounds'] = customList(compounds)
+
+        for m in self.compounds:
+            m.model = self
+
         # A dictionary whose keys are compound ids and values are compound objects
-        self.compounds_by_id = dict([(cmp.id,cmp) for cmp in self.compounds])    
-        self.compounds_by_clean_id = dict([(remove_non_alphanumeric(cmp.id).lower(),cmp) for cmp in self.compounds])    
+        self.compounds_by_id = dict([(cpd.id,cpd) for cpd in self.compounds])    
+        self.compounds_by_clean_id = dict([(remove_non_alphanumeric(cpd.id).lower(),cpd) for cpd in self.compounds])    
+
+        cpds_reactions = dict((cpd,[]) for cpd in self.compounds)
+        cpds_reactant_reactions = dict((cpd,[]) for cpd in self.compounds)
+        cpds_product_reactions = dict((cpd,[]) for cpd in self.compounds)
+        for rxn in self.reactions:
+            for cpd in rxn.compounds: 
+                cpds_reactions[cpd].append(rxn) 
+            for cpd in rxn.reactants: 
+                cpds_reactant_reactions[cpd].append(rxn) 
+            for cpd in rxn.products: 
+                cpds_product_reactions[cpd].append(rxn)
+        for cpd in self.compounds:
+            cpd.set_reactions(reactions = cpds_reactions[cpd])
+            cpd.set_reactant_reactions(reactant_reactions = cpds_reactant_reactions[cpd])
+            cpd.set_product_reactions(product_reactions = cpds_product_reactions[cpd])
+
+    def set_reactions(self, reactions): 
+        """
+        Set attribute reactions
+        """
+        if reactions is not None and not isinstance(reactions,list):
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
+        if len([r for r in reactions if not isinstance(r,reaction)]) > 0:
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type 'reaction'.  Objects that are not of type reaction found in the list:" + str([n for n in reactions if not isinstance(n,reaction.reaction)]))
+
+        reactions = sorted(list(set(reactions)), key = lambda x: x.id)
+
+        self.__dict__['reactions'] = customList(reactions)
+
+        for r in self.reactions:
+            r.model = self
+
+        # A dictionary whose keys are reaction ids and values are reaction objects
+        self.reactions_by_id = dict([(rxn.id,rxn) for rxn in self.reactions])    
+        self.reactions_by_clean_id = dict([(remove_non_alphanumeric(rxn.id).lower(),rxn) for rxn in self.reactions])    
+
+    def set_genes(self, genes): 
+        """
+        Set attribute genes
+        """
+        if  not isinstance(genes,list):
+            raise TypeError("Invalid 'genes' for model " + self.id + "! 'genes' for a model must be a list of objects of type gene. A " + str(genes) + " type object was entered instead")
+        if len([g for g in genes if not isinstance(g,gene)]) > 0:
+            raise TypeError("Invalid 'compounds' for model " + self.id + "! 'genes' for a model must be a list of objects of type gene. Objects that are not of type gene found in the list: " + str([r for r in genes if not isinstance(r,gene)]))
+
+        genes = sorted(list(set(genes)), key = lambda x: x.id )
+
+        self.__dict__['genes'] = customList(genes)
+
+        for gn in self.genes:
+            gn.model = self
 
         # A dictionary whose keys are gene ids and values are gene objects
-        if self.genes != None:
-            self.genes_by_id = dict([(gene.id,gene) for gene in self.genes])    
+        self.genes_by_id = dict([(g.id,g) for g in self.genes])    
 
- 
-    def _create_genes_list(self):
-        """
-        Creates a list of compound objects for all compounds present in the model 
-        """
-        if len([r for r in self.reactions if r.genes != None]) == 0:
-            self.genes = None 
-        else:
-            for reaction in [r for r in self.reactions if r.genes != None]:
-                self.genes += reaction.genes
-
-            self.genes = list(set(self.genes)) 
-            for gn in self.genes:
-                gn.model = self
-
-    def _create_compartments_list(self):
-        """
-        Creates a list of compartment objects for compartments of all 
-        compounds in the model 
-        """
-        if len([m for m in self.compounds if m.compartment != None]) == 0:
-            self.compartments = None 
-        else:
-            for compound in [m for m in self.compounds if m.compartment != None]:
-                self.compartments += compound.compartment
-
-            self.compartments = list(set(self.compartments)) 
-            for cm in self.compartments:
-                cm.model = self 
-
-    def _create_stoic_matrix(self):
-        """
-        Creates the stoichiometric matrix of the network. This is in fact 
-        not a matrix. It adds to each compound object the list of reaction
-        objects in which that compounds participates as a reactnat or product
-        The stoichiometric coefficients can then be found by referring to the 
-        particuular reaction object
-        """
-        for compound in self.compounds:
-            compound.reactions = [reaction for reaction in self.reactions if compound in reaction.compounds]
-            compound.reactant_reactions = [reaction for reaction in self.reactions if compound in reaction.reactants]
-            compound.product_reactions = [reaction for reaction in self.reactions if compound in reaction.products]
+        if hasattr(self,'reactions'):
+            for gen in [g for g in self.genes if g.reactions == []]:
+                gen.reactions = [r for r in self.reactions if gen in r.genes]
 
     def get_reactions(self,reactions_ref,search_by_clean_ref = False):
         """
@@ -594,19 +597,19 @@ class model(object):
                 if rxn.stoichiometry[cmp] > 0 and rxn not in cmp.product_reactions:
                     cmp.product_reactions.append(rxn) 
 
-    def remove_compounds(self,removed_compounds):
+    def del_compounds(self,compounds_list):
         """
         Remove selected compounds from the model
         
         INPUTS:
         ------
-        removed_compounds: A list of compound objectc that must be removed 
+        compounds_list: A list of compound objectc that must be removed 
         """
-        if type(removed_compounds) is not list:
+        if type(compounds_list) is not list:
             userError("**Error! the input to 'remove_compounds' should be a list of compound objects")
 
         # First remove this compound from all relevant reaction objects
-        for cmp in removed_compounds:
+        for cmp in compounds_list:
             for rxn in cmp.reactions:
                 if rxn.stoichiometry[cmp] < 0:
                     if rxn.reactants != []:
@@ -646,19 +649,19 @@ class model(object):
             del self.compounds_by_id[cmp.id]
             del self.compounds_by_clean_id[remove_non_alphanumeric(cmp.id).lower()]
 
-    def remove_reactions(self,removed_reactions):
+    def del_reactions(self,reactions_list):
         """
         Remove selected reactions from the model
         
         INPUTS:
         ------
-        removed_reactions: A list of reaction objectc that must be removed 
+        reactions_list: A list of reaction objectc that must be removed 
         """
-        if type(removed_reactions) is not list:
+        if type(reactions_list) is not list:
             userError("**Error! the input to 'remove_reactions' should be a list of reaction objects")
 
         # First remove this reaction from all relevant reaction objects
-        for rxn in removed_reactions:
+        for rxn in reactions_list:
             for cmp in rxn.compounds:
                 del cmp.reactions[cmp.reactions.index(rxn)]
                 if rxn.stoichiometry[cmp] < 0 and cmp.reactant_reactions != []:
@@ -754,149 +757,107 @@ class model(object):
             if self.stdout_msgs:
                 print 'Duplicates in the list of compounds were fixed'
 
+        # Removes any duplicates in fields reactions, reactant_reactions and product_reactions
+        # for each compound in the model
+        for cpd in self.compounds:
+            cpd.reactions = list(set(cpd.reactions))            
+            cpd.reactant_reactions = list(set(cpd.reactant_reactions))            
+            cpd.product_reactions = list(set(cpd.product_reactions))            
+   
         # Check if there are any duplicates in compound ids and return an error if any
-        cmp_ids = [m.id for m in self.compounds]
-        if len(set(cmp_ids)) < len(cmp_ids):
+        cpd_ids = [m.id for m in self.compounds]
+        if len(set(cpd_ids)) < len(cpd_ids):
             errors_in_model = True
 
             # Count how many times each compound id has been repated
-            cmp_id_counts = dict((id,cmp_ids.count(id)) for id in  cmp_ids)
+            cpd_id_counts = dict((id,cpd_ids.count(id)) for id in  list(set(cpd_ids)))
 
             # compound ids repated more than once
-            repeated_cmp_ids = [(id,cmp_id_counts[id]) for id in cmp_id_counts.keys() if cmp_id_counts[id] > 1]
-            raise userError('The following compound ids are repeated: ' + str(repeated_cmp_ids)) 
+            repeated_cpd_ids = [(id,cpd_id_counts[id]) for id in cpd_id_counts.keys() if cpd_id_counts[id] > 1]
+            raise userError('The following compound ids are repeated: ' + str(repeated_cpd_ids)) 
             
         # Check if each compound participates in at least a reaction in the model
-        no_rxn_cmps = [c for c in self.compounds if len(c.reactions) == 0]
-        fixed_cmp_num = 0
-        if len(no_rxn_cmps) > 0:
+        cpds_rxns_dict = dict([(c.id,len(c.reactions)) for c in self.compounds])
+        rxns_cpds_dict = dict([(l, []) for l in range(max(cpds_rxns_dict.values()) + 1)])
+        for cpd in self.compounds:
+            rxns_cpds_dict[cpds_rxns_dict[cpd.id]].append(cpd)
+        if len(rxns_cpds_dict[0]) > 0:
             errors_in_model = True
-            for cmp in no_rxn_cmps:
-                # Try to fix 
-                c_rxns = [r for r in self.reactions if cmp in r.stoichiometry.keys()]
-                if len(c_rxns) == 0 and self.warnings: 
-                    print "WARNING! compound '",cmp.id,"' does not participate in any reactions in the model"         
-                else: # fix it
-                    cmp.reactions = c_rxns
-                    cmp.reactant_reactions = [r for r in c_rxns if r.stoichiometry[cmp] < 0]
-                    cmp.product_reactions = [r for r in c_rxns if r.stoichiometry[cmp] > 0]
-                    fixed_cmp_num += 1
+            for cpd in rxns_cpds_dict[0]:
+                cpd.reactions = [r for r in self.reactions if cpd in r.stoichiometry.keys()]
+                cpd.reactant_reactions = [r for r in cpd.reactions if r.stoichiometry[cpd] < 0]
+                cpd.product_reactions = [r for r in cpd.reactions if r.stoichiometry[cpd] > 0]
 
-        if fixed_cmp_num > 0 and self.stadout_msgs:
-            print '\t',fixed_cmp_num,' compounds not participated in any reactions in the model were fixed'
+            no_rxns_cpds_afterFix = [c for c in rxns_cpds_dict[0] if len(c.reactions) == 0]
+            if len(rxns_cpds_dict[0]) > len(no_rxns_cpds_afterFix) and self.stadout_msgs:
+                print '\t{} compounds not participated in any reactions in the model were fixed'.format(len(rxns_cpds_dict[0]) - len(no_rxns_cpds_afterFix))
+            if len(no_rxns_cpds_afterFix) > 0:
+                if len(no_rxns_cpds_afterFix) > 100:
+                    print '**WARNING (model.py): {} compounds do not participate in any reactions. These compounds include: {} and {} more'.format(len(rxns_cpds_dict[0]), [c.id for c in no_rxns_cpds_afterFix[:100]], len(no_rxns_cpds_afterFix) - 100)
+                else:
+                    print '**WARNING (model.py): {} compounds do not participate in any reactions. These compounds include: {}'.format(len(rxns_cpds_dict[0]), [c.id for c in no_rxns_cpds_afterFix])
 
         # compounds that are being referred to in a reaction object but that are not
         # present in the list of compounds in the model
-        missing_cmps = list(set([m for r in self.reactions for m in r.compounds + r.reactants + r.products + r.stoichiometry.keys() if m not in self.compounds])) 
-        if len(missing_cmps) > 0:
+        missing_cpds = list(set([m for r in self.reactions for m in r.stoichiometry.keys()]) - set(self.compounds)) 
+        if len(missing_cpds) > 0:
             errors_in_model = True
-            self.compounds += missing_cmps
+            self.compounds += missing_cpds
             self.compounds = sorted(list(set(self.compounds)),key=lambda x:x.id)
-            self.compounds_by_id = dict([(cmp.id,cmp) for cmp in self.compounds])    
+            self.compounds_by_id = dict([(cpd.id,cpd) for cpd in self.compounds])    
             if self.stdout_msgs:
-                print len(missing_cmps),' compounds were added to the list of compounds'
+                print len(missing_cpds),' compounds were added to the list of compounds'
 
         # Checks and fixes any compounds that appear in a reaction stoichiomtery with a stoichiometric coefficient of zero
-        cmp_counter = 0
-        for cmp in [c for c in self.compounds if len([r for r in c.reactions if r.stoichiometry[c] == 0]) > 0]:
-            print 'hello'
-            cmp_counter += 1
-            for rxn in [r for r in cmp.reactions if r.stoichiometry[cmp] == 0]:
-                # Remove this reaciton from cmp.reactions, cmp.reactant_reactions or cmp.product_reactions
-                del rxn.stoichiometry[cmp]
+        cpd_counter = 0
+        if 0 in list(set([s for r in self.reactions for s in r.stoichiometry.values()])):
 
-                if rxn in cmp.reactions:
-                    del cmp.reactions[cmp.reactions.index(rxn)] 
-                if rxn in cmp.reactant_reactions:
-                    del cmp.reactant_reactions[cmp.reactant_reactions.index(rxn)]       
-                if rxn in cmp.product_reactions:
-                    del cmp.product_reactions[cmp.product_reactions.index(rxn)]       
+            for cpd in [c for c in self.compounds if len([r for r in c.reactions if r.stoichiometry[c] == 0]) > 0]:
+                cpd_counter += 1
+                for rxn in [r for r in cpd.reactions if r.stoichiometry[cpd] == 0]:
+                    # Remove this reaction from cpd.reactions, cpd.reactant_reactions or cpd.product_reactions
+                    del rxn.stoichiometry[cpd]
 
-                # Remove this compound from rxn.compounds, rxn.reactants and rxn.products
-                if cmp in rxn.compounds:
-                    del rxn.compounds[rxn.compounds.index(cmp)]  
-                if cmp in rxn.reactants:
-                    del rxn.reactants[rxn.reactants.index(cmp)]              
-                if cmp in rxn.products:
-                    del rxn.products[rxn.products.index(cmp)]              
+                    try: 
+                        del cpd.reactions[cpd.reactions.index(rxn)] 
+                    except:
+                        pass
+                    try: 
+                        del cpd.reactant_reactions[cpd.reactant_reactions.index(rxn)]       
+                    except:
+                        pass
+                    try: 
+                        del cpd.product_reactions[cpd.product_reactions.index(rxn)]       
+                    except:
+                        pass
 
-        if cmp_counter > 0:
+                    # Remove this compound from rxn.compounds, rxn.reactants and rxn.products
+                    try: 
+                        del rxn.compounds[rxn.compounds.index(cpd)]  
+                    except:
+                        pass
+                    try: 
+                        del rxn.reactants[rxn.reactants.index(cpd)]              
+                    except:
+                        pass
+                    try: 
+                        del rxn.products[rxn.products.index(cpd)]              
+                    except:
+                        pass
+
+        if cpd_counter > 0:
             errors_in_model = True
             if self.stdout_msgs:
-                print '\t{} compounds appearing in reactions with zero stoichiometry were fixed ...'.format(cmp_counter)
+                print '\t{} compounds appearing in reactions with zero stoichiometry were fixed ...'.format(cpd_counter)
 
-        # Removes any duplicates in fields reactions, reactant_reactions and product_reactions
-        # for each compound in the model
-        # Checks and fixes any compound that is referred to in a reaction.stoichiometry,
-        # reaction.compounds, or reaction.reactants but is not in the lsit of compound.reactions,
-        # compound.reactant_reactions or compound.product_reactions
-        cmp_counter = 0
-        for cmp in self.compounds:
-            # Compounds
-            for rxn in [r for r in self.reactions if cmp in r.compounds and (cmp not in r.stoichiometry.keys() or r.stoichiometry[cmp] == 0)]:
-                del rxn.compounds[rxn.compounds.index[cmp]]
-            if set([r for r in self.reactions if cmp in r.compounds]) != set([r for r in self.reactions if cmp in r.stoichiometry.keys()]):
-                raise userError('The set of reactions in the model in which compound ' + cmp.id + ' appears in their "compounds" field does not match the set of reactions in which this compounds appears with a nonzero stoichiometry')
-            for rxn in [r for r in self.reactions if cmp in r.compounds and r not in cmp.reactions]:
-                cmp.reactions.append(rxn)
-                cmp_counter += 1
+        #--- Check problems with reactions ----
+        self.reactions = sorted(list(set(self.reactions)),key=lambda x:x.id)
+        for rxn in self.reactions:
+            rxn.compounds = list(set(rxn.compounds))
+            rxn.reactants = list(set(rxn.reactants))
+            rxn.products = list(set(rxn.products))
 
-            # Reactants
-            for rxn in [r for r in self.reactions if cmp in r.reactants and (cmp not in r.stoichiometry.keys() or r.stoichiometry[cmp] == 0 or r.stoichiometry[cmp] > 0)]:
-                del rxn.reactants[rxn.reactants.index(cmp)] 
-            if set([r for r in self.reactions if cmp in r.reactants]) != set([r for r in self.reactions if cmp  in r.stoichiometry.keys() and r.stoichiometry[cmp] < 0]):
-                raise userError('The set of reactions in the model in which compound ' + cmp.id + ' appears in their "reactants" field does not match the set of reactions in which this compounds appears with a negative stoichiometry')
-            for rxn in [r for r in self.reactions if cmp in r.reactants and r not in cmp.reactant_reactions]:
-                cmp.reactant_reactions.append(rxn)
-                cmp_counter += 1
-  
-            # Products
-            for rxn in [r for r in self.reactions if cmp in r.products and (cmp not in r.stoichiometry.keys() or not r.stoichiometry[cmp] > 0)]:
-                del rxn.products[rxn.products.index(cmp)] 
-            if set([r for r in self.reactions if cmp in r.products]) != set([r for r in self.reactions if cmp in r.stoichiometry.keys() and r.stoichiometry[cmp] > 0]):
-                raise userError('The set of product_reactions in the model in which compound ' + cmp.id + ' appears in their "products" field (i.e., ' + str(set([r.id for r in self.reactions if cmp in r.products])) + ') does not match the set of reactions in which this compounds appears with a negative stoichiometry (i.e., ' + str(set([r.id for r in self.reactions if cmp in r.stoichiometry.keys() and r.stoichiometry[cmp] > 0])) + ')')
-            for rxn in [r for r in self.reactions if cmp in r.products and r not in cmp.product_reactions]:
-                cmp.product_reactions.append(rxn)
-                cmp_counter += 1
-
-        if cmp_counter > 0:
-            errors_in_model = True
-            if self.stdout_msgs:
-                print '\t{} compounds with issues in their "reactions", "reactant_reactions" and "product_reactions" were fixed ...'.format(cmp_counter)
-
-        # Removes any duplicates in fields reactions, reactant_reactions and product_reactions
-        # for each compound in the model
-        non_uniq_rxns_cmps = [cmp for cmp in self.compounds if len(set(cmp.reactions)) < len(cmp.reactions)]
-        if len(non_uniq_rxns_cmps) > 0:
-            errors_in_model = True
-            for cmp in non_uniq_rxns_cmps:
-                cmp.reactions = list(set(cmp.reactions))            
-            if self.stdout_msgs:
-                print "Duplicates in the field 'reactions' for {} compounds were fixed".format(len(non_uniq_rxns_cmps))    
-        non_uniq_reactant_rxns_cmps = [cmp for cmp in self.compounds if len(set(cmp.reactant_reactions)) < len(cmp.reactant_reactions)]
-        if len(non_uniq_rxns_cmps) > 0:
-            errors_in_model = True
-            for cmp in non_uniq_reactant_rxns_cmps:
-                cmp.reactant_reactions = list(set(cmp.reactant_reactions))            
-            if self.stdout_msgs:
-                print "\tDuplicates in the field 'reactant_reactions' for {} compounds were fixed".format(len(non_uniq_rxns_cmps))    
-        non_uniq_product_rxns_cmps = [cmp for cmp in self.compounds if len(set(cmp.product_reactions)) < len(cmp.product_reactions)]
-        if len(non_uniq_rxns_cmps) > 0:
-            errors_in_model = True
-            for cmp in non_uniq_product_rxns_cmps:
-                cmp.product_reactions = list(set(cmp.product_reactions))            
-            if self.stdout_msgs:
-                print "\tDuplicates in the field 'product_reactions' for {} compounds were fixed".format(len(non_uniq_rxns_cmps))    
-   
-        #-- Check problems with reactions ---
-        # Check for duplicates in the list of reaction objects and fix them
-        if len(set(self.reactions)) < len(self.reactions):
-            errors_in_model = True
-            self.reactions = sorted(list(set(self.reactions)),key=lambda x:x.id)
-            if self.stdout_msgs:
-                print '\tDuplicates in the list of reactions were fixed'
-
-        # Check if there are ny replicates in reaction ids and return an error if any 
+        # Check if there are any replicates in reaction ids and return an error if any 
         rxn_ids = [r.id for r in self.reactions]
         if len(set(rxn_ids)) < len(rxn_ids):
             errors_in_model = True
@@ -909,27 +870,14 @@ class model(object):
             raise userError('The following reaction ids are repeated: ' + str(repeated_rxn_ids)) 
 
         # Check if there are any reactions with no defined stoichiometry 
-        no_stoic_rxns = [r.id for r in self.reactions if len(r.stoichiometry) == 0]
-        if len(no_stoic_rxns) > 0 and self.warnings:
+        if 0 in [len(r.stoichiometry) for r in self.reactions] and self.warnings:
             errors_in_model = True
+            no_stoic_rxns = [r.id for r in self.reactions if len(r.stoichiometry) == 0]
             print "WARNING! 'stoichiometry' is not defined for these reactions: ",no_stoic_rxns,'\n'
 
-        # Check if each reaction has at least one participating compound
-        no_cmp_rxns = [r for r in self.reactions if len(r.compounds) == 0]
-        fixed_rxns_num = 0
-        if len(no_cmp_rxns) > 0:
-            errors_in_model = True
-            for rxn in no_cmp_rxns:
-                # Try to fix it 
-                rxn.compounds = rxn.stoichiometry.keys()
-                fixed_rxns_num += 1
-
-        if fixed_rxns_num > 0 and self.stdout_msgs:
-            print '\t',fixed_rxns_num," reactions with empty field 'compounds' were fixed"
-
         # reactions that are being referred to in a compound object but that are not
-        # present in the lis of reactions in the model
-        missing_rxns = list(set([r for m in self.compounds for r in m.reactions + m.reactant_reactions + m.product_reactions if r not in self.reactions])) 
+        # present in the list of reactions in the model
+        missing_rxns = list(set([r for c in self.compounds for r in c.reactions]) - set(self.reactions)) 
         if len(missing_rxns) > 0:
             errors_in_model = True
             self.reactions += missing_rxns
@@ -942,89 +890,36 @@ class model(object):
         # compound.reactant_reactions, or compound.product_reactions, but is not in reaction.compounds,
         # reaction.reactants or reaction.products
         rxn_counter = 0
+        rxns_cpds = dict((rxn,[]) for rxn in self.reactions)
+        rxns_reactants = dict((rxn,[]) for rxn in self.reactions)
+        rxns_products = dict((rxn,[]) for rxn in self.reactions)
+        for cpd in self.compounds:
+            counter = 0
+            for rxn in cpd.reactions:
+                rxns_cpds[rxn].append(cpd)
+            for rxn in cpd.reactant_reactions:
+                rxns_reactants[rxn].append(cpd)
+            for rxn in cpd.product_reactions:
+                rxns_products[rxn].append(cpd)
+
         for rxn in self.reactions:
-            # Reactions
-            for cmp in [c for c in self.compounds if rxn in c.reactions and (c not in rxn.stoichiometry.keys() or rxn.stoichiometry[c] == 0)]:
-                del cmp.reactions[cmp.reactions.index(rxn)]
-                rxn_counter += 1
-            if set([c for c in self.compounds if rxn in c.reactions]) != set([c for c in rxn.stoichiometry.keys()]):
+            if set(rxns_cpds[rxn]) != set(rxn.compounds):
                 raise userError('The set of compounds in the model in which rxn ' + rxn.id + ' appears in their "reactions" field does not match the set of compounds in the stoichiometry of this reaction')
-            for cmp in [c for c in self.compounds if rxn in c.reactions and c not in rxn.compounds]:
-                rxn.compounds.append(cmp)
-                rxn_counter += 1
 
-            # reactant_reactions
-            for cmp in [c for c in self.compounds if rxn in c.reactant_reactions and (c not in rxn.stoichiometry.keys() or not rxn.stoichiometry[c] < 0)]:
-                del cmp.reactant_reactions[cmp.reactant_reactions.index(rxn)]
-                rxn_counter += 1
-            if set([c for c in self.compounds if rxn in c.reactant_reactions]) != set([c for c in rxn.stoichiometry.keys() if rxn.stoichiometry[c] < 0]):
+            if set(rxns_reactants[rxn]) != set(rxn.reactants):
                 raise userError('The set of compounds in the model in which rxn ' + rxn.id + ' appears in their "reactant_reactions" field does not match the set of reactants of this reaction based on its stoichiometry')
-            for cmp in [c for c in self.compounds if rxn in c.reactant_reactions and c not in rxn.reactants]:
-                rxn.reactants.append(cmp)
-                rxn_counter += 1
 
-            # product_reactions
-            for cmp in [c for c in self.compounds if rxn in c.product_reactions and (c not in rxn.stoichiometry.keys() or not rxn.stoichiometry[c] > 0)]:
-                del cmp.product_reactions[cmp.product_reactions.index(rxn)]
-                rxn_counter += 1
-            if set([c for c in self.compounds if rxn in c.product_reactions]) != set([c for c in rxn.stoichiometry.keys() if rxn.stoichiometry[c] > 0]):
+            if set(rxns_products[rxn]) != set(rxn.products):
                 raise userError('The set of compounds in the model in which rxn ' + rxn.id + ' appears in their "product_reactions" field (i.e.,' + str(set([c.id for c in self.compounds if rxn in c.product_reactions])) + ')does not match the set of products of this reaction based on its stoichiometry (i.e., ' + str(set([c.id for c in rxn.stoichiometry.keys() if rxn.stoichiometry[c] > 0])) + ')')
-            for cmp in [c for c in self.compounds if rxn in c.product_reactions and c not in rxn.products]:
-                rxn.products.append(cmp)
-                rxn_counter += 1
 
-        for rxn in self.reactions:
-            # Compounds in which rxn appears in compounds reactions, reactant reactions or product reactions 
-            rxn_cmps = [c for c in self.compounds if rxn in c.reactions or rxn in c.reactant_reactions or rxn in c.product_reactions]
-            if set(rxn_cmps) != set(rxn.compounds):
-                rxn_counter += 1
-                for c in [c for c in rxn_cmps if c not in rxn.compounds]:
-                    rxn.compounds.append(c)
-
-                for c in [c for c in rxn_cmps if rxn in c.reactant_reactions and c not in rxn.reactants]:
-                    rxn.reactants.append(c)
-                    if c not in rxn.stoichiometry.keys():
-                        raise userError('Unknown stoichiometric coefficient for compound ' + c.id + ' in rxn ' + rxn.id)
-                    elif rxn.stoichiometry[c] > 0 and self.warnings:
-                        print 'WARNING! Compound ' + c.id + ' has a stoichiometric coefficinet of ' + str(rxn.stoichiometry[c]) + ' in reaction ' + rxn.id + ' but reaction ' + rxn.id + ' appears in reactnat_reactions of ' + c.id
-
-                for c in [c for c in rxn_cmps if rxn in c.product_reactions and c not in rxn.products]:
-                    rxn.products.append(c)
-                    if c not in rxn.stoichiometry.keys():
-                        raise userError('Uknonwn stoichiometric coefficient for compound ' + c.id + ' in reaction ' + rxn.id)
-                    elif rxn.stoichiometry[c] < 0 and self.warnings:
-                        print 'WARNING! Compound ' + c.id + ' has a stoichiometric coefficinet of ' + str(rxn.stoichiometry[c]) + ' in reaction ' + rxn.id + ' but reaction ' + rxn.id + ' appears in product_reactions of ' + c.id
-            
         if rxn_counter > 0:
             errors_in_model = True
             if self.stdout_msgs:
                 print '\t{} reactions with with issues in their "compounds", "reactant" or "products" were fixed ...'.format(rxn_counter)
 
-        # Check for and fix any dupliates in fields 'compounds', 'reactants' and 'products'
-        # for each reaction in the model
-        non_uniq_cmp_rxns = [r for r in self.reactions if len(set(r.compounds)) < len(r.compounds)]
-        if len(non_uniq_cmp_rxns) > 0:
-            errors_in_model = True
-            for r in non_uniq_cmp_rxns:
-                r.compounds = list(set(r.compounds))
-            print "\tDupliates in field 'compounds' were fixed for {} reactions in the model".format(len(non_uniq_cmp_rxns))
-        non_uniq_reactant_rxns = [r for r in self.reactions if len(set(r.reactants)) < len(r.reactants)]
-        if len(non_uniq_reactant_rxns) > 0:
-            errors_in_model = True
-            for r in non_uniq_reactant_rxns:
-                r.reactants = list(set(r.reactants))
-            print "\tDupliates in field 'reactants' were fixed for {} reactions in the model".format(len(non_uniq_reactant_rxns))
-        non_uniq_product_rxns = [r for r in self.reactions if len(set(r.products)) < len(r.products)]
-        if len(non_uniq_product_rxns) > 0:
-            errors_in_model = True
-            for r in non_uniq_product_rxns:
-                r.products = list(set(r.products))
-            print "\tDupliates in field 'products' were fixed for {} reactions in the model".format(len(non_uniq_product_rxns))
-
         if errors_in_model == False and self.stdout_msgs:
             print '\tChecked the model. All are OK'
  
-
     def print_reactions(self,ref_type = 'id', print_equation = True, cmp_ref = 'id'):
         """
         Prints in the output the list of all reactions and in the model 
@@ -1165,17 +1060,284 @@ class model(object):
         if output_filename == '':
             output_filename = self.id
 
+        #------- COBRA ------
         if output_format.lower() == 'sbml':
             cobra_model = convert_to_cobra(self)
             cobra.io.write_sbml_model(cobra_model,output_filename + '.xml',use_fbc_package=False)       
             if stdout_msgs:
                 print 'The model was exported to {}'.format(output_filename + '.xml')
+
+        #--------- pydict -----------
         elif output_format.lower() == 'pydict':
-            pass
+            import inspect
+
+            model = {}
+            
+            # organism
+            model['organism'] = {}
+            model['organism_global_attrs'] = {}
+
+            # Attributes that are class methods
+            method_attrs = [a for a in dir(self.organism) if inspect.ismethod(self.organism.__getattribute__(a))]
+
+            # known attributes that are an instance of another class
+            known_classType_attrs = ['model']
+
+            # Attributes that are an instance of an unknown  class
+            unknown_classType_attrs = [a for a in dir(self.organism) if '__' not in a and ('class' in str(type(self.organism.__getattribute__(a))) or 'object at' in repr(self.organism.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+            if len(unknown_classType_attrs) > 0 and self.warnings:
+                print '**WARNING (model.export_model)! The following unknonw attributes for "organism" were not exported: {}'.format(unknown_classType_attrs)
+
+            # Global class attributes that are not an instance of a class
+            global_attrs = [a for a in dir(self.organism) if '__' not in a  and a not in self.organism.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+
+            # Instance variables (attributes) that are not an instance of a class
+            instance_attrs = [a for a in dir(self.organism) if a in self.organism.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+    
+            for attr in global_attrs:
+                model['organism_global_attrs'][attr] = self.organism.__getattribute__(attr) 
+            for attr in instance_attrs:
+                model['organism'][attr] = self.organism.__getattribute__(attr) 
+            model['organism']['model'] = self.organism.model.id  # just save the id
+
+            #-- Compartments --
+            model['compartments'] = {}
+            model['compartments_global_attrs'] = {}
+            for cpt in self.compartments:
+                attr_dict = {}
+
+                # Attributes that are class methods
+                method_attrs = [a for a in dir(cpt) if inspect.ismethod(cpt.__getattribute__(a))]
+
+                # known attributes that are an instance of another class
+                known_classType_attrs = ['model']
+    
+                # Attributes that are an instance of an unknown class
+                unknown_classType_attrs = [a for a in dir(cpt) if '__' not in a and ('class' in str(type(cpt.__getattribute__(a))) or 'object at' in repr(cpt.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                if len(unknown_classType_attrs) > 0 and self.warnings:
+                    print '**WARNING (model.export_model)! The following unknonw attributes for "compartment" were not exported: {}'.format(unknown_classType_attrs)
+    
+                # Global class attributes that are not an instance of a class
+                global_attrs = [a for a in dir(cpt) if '__' not in a  and a not in cpt.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+    
+                # Instance variables (attributes) that are not an instance of a class
+                instance_attrs = [a for a in dir(cpt) if a in cpt.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+                for attr in instance_attrs:
+                    attr_dict[attr] = cpt.__getattribute__(attr) 
+                attr_dict['model'] = cpt.model.id
+                if cpt.id in model['compartments'].keys():
+                   raise userError('duplicated compartment id: {}'.format(cpt.id))
+                else:
+                    model['compartments'][cpt.id] = attr_dict
+            # Global attributes are the same for all compartments, so use the one from the last cpt
+            model['compartments']['global_attrs'] = {}
+            for attr in global_attrs:
+                model['compartments_global_attrs'][attr] = cpt.__getattribute__(attr) 
+
+            #-- Compounds --
+            model['compounds'] = {} 
+            model['compounds_global_attrs'] = {} 
+            for cpd in self.compounds:
+                attr_dict = {}
+
+                # Attributes that are class methods
+                method_attrs = [a for a in dir(cpd) if inspect.ismethod(cpd.__getattribute__(a))]
+
+                # known attributes that are an instance of another class
+                known_classType_attrs = ['model','compartment','reactions','reactant_reactions','product_reactions']
+    
+                # Attributes that are an instance of an unknown class
+                unknown_classType_attrs = [a for a in dir(cpd) if '__' not in a and ('class' in str(type(cpd.__getattribute__(a))) or 'object at' in repr(cpd.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                if len(unknown_classType_attrs) > 0 and self.warnings:
+                    print '**WARNING (model.export_model)! The following unknonw attributes for "compound" were not exported: {}'.format(unknown_classType_attrs)
+    
+                # Global class attributes that are not an instance of a class
+                global_attrs = [a for a in dir(cpd) if '__' not in a  and a not in cpd.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+    
+                # Instance variables (attributes) that are not an instance of a class
+                instance_attrs = [a for a in dir(cpd) if a in cpd.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                for attr in instance_attrs:
+                    attr_dict[attr] = cpd.__getattribute__(attr) 
+                attr_dict['model'] = cpd.model.id
+                attr_dict['compartment'] = cpd.compartment.id
+                attr_dict['reactions'] = [r.id for r in cpd.reactions]
+                attr_dict['reactant_reactions'] = [r.id for r in cpd.reactant_reactions]
+                attr_dict['product_reactions'] = [r.id for r in cpd.product_reactions]
+                if cpd.id in model['compounds'].keys():
+                    raise userError('Duplicated compound id: {}'.format(cpd.id))
+                else:
+                    model['compounds'][cpd.id] = attr_dict
+            model['compounds']['global_attrs'] = {}
+            for attr in global_attrs:
+                model['compounds_global_attrs'][attr] = cpd.__getattribute__(attr) 
+               
+            #-- Reactions --
+            model['reactions'] = {} 
+            model['reactions_global_attrs'] = {} 
+            for rxn in self.reactions:
+                attr_dict = {}
+
+                # Attributes that are class methods
+                method_attrs = [a for a in dir(rxn) if inspect.ismethod(rxn.__getattribute__(a))]
+
+                # known attributes that are an instance of another class
+                known_classType_attrs = ['model','compounds','reactants','products','stoichiometry','compartment','genes']
+    
+                # Attributes that are an instance of an unknown class
+                unknown_classType_attrs = [a for a in dir(rxn) if '__' not in a and ('class' in str(type(rxn.__getattribute__(a)) or 'object at' in repr(rxn.__getattribute__(a)))) and a not in known_classType_attrs]
+                if len(unknown_classType_attrs) > 0 and self.warnings:
+                    print '**WARNING (model.export_model)! The following unknonw attributes for "reaction" were not exported: {}'.format(unknown_classType_attrs)
+    
+                # Global class attributes that are not an instance of a class
+                global_attrs = [a for a in dir(rxn) if '__' not in a  and a not in rxn.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+    
+                # Instance variables (attributes) that are not an instance of a class
+                instance_attrs = [a for a in dir(rxn) if a in rxn.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                for attr in instance_attrs:
+                    attr_dict[attr] = rxn.__getattribute__(attr) 
+                attr_dict['model'] = rxn.model.id
+                attr_dict['compartment'] = [c.id for c in rxn.compartment]
+                attr_dict['compounds'] = [c.id for c in rxn.compounds]
+                attr_dict['reactants'] = [c.id for c in rxn.reactants]
+                attr_dict['products'] = [c.id for c in rxn.products]
+                attr_dict['genes'] = [g.id for g in rxn.genes]
+                attr_dict['stoichiometry'] = dict([(c.id,rxn.stoichiometry[c]) for c in rxn.compounds])
+                if rxn.id in model['reactions'].keys():
+                    raise userError('Duplicated reaction id: {}'.format(rxn.id))
+                else:
+                    model['reactions'][rxn.id] = attr_dict
+            model['reactions']['global_attrs'] = {}
+            for attr in global_attrs:
+                model['reactions_global_attrs'][attr] = rxn.__getattribute__(attr) 
+
+            #-- Genes --
+            model['genes'] = {} 
+            model['genes_global_attrs'] = {} 
+            for gen in self.genes:
+                attr_dict = {}
+
+                # Attributes that are class methods
+                method_attrs = [a for a in dir(gen) if inspect.ismethod(gen.__getattribute__(a))]
+
+                # known attributes that are an instance of another class
+                known_classType_attrs = ['model','compartment','reactions']
+    
+                # Attributes that are an instance of an unknown class
+                unknown_classType_attrs = [a for a in dir(gen) if '__' not in a and ('class' in str(type(gen.__getattribute__(a))) or 'object at' in repr(gen.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                if len(unknown_classType_attrs) > 0 and self.warnings:
+                    print '**WARNING (model.export_model)! The following unknonw attributes for "gene" were not exported: {}'.format(unknown_classType_attrs)
+    
+                # Global class attributes that are not an instance of a class
+                global_attrs = [a for a in dir(gen) if '__' not in a  and a not in gen.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+    
+                # Instance variables (attributes) that are not an instance of a class
+                instance_attrs = [a for a in dir(gen) if a in gen.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                for attr in instance_attrs:
+                    attr_dict[attr] = gen.__getattribute__(attr) 
+                attr_dict['model'] = gen.model.id
+                attr_dict['compartment'] = [c.id for c in gen.compartment]
+                attr_dict['reactions'] = [r.id for r in gen.reactions]
+                if gen.id in model['genes'].keys():
+                    raise userError('Duplicated gene id: {}'.formaT(gen.id))
+                else:
+                    model['genes'][gen.id] = attr_dict
+            model['genes']['global_attrs'] = {}
+            for attr in global_attrs:
+                model['genes_global_attrs'][attr] = gen.__getattribute__(attr) 
+
+            #-- Other model properties --
+            model['model_global_attrs'] = {}
+            model['model_instance_attrs'] = {}
+
+            # Attributes already taken care of (see agove) or others that should not be saved (as they are created during
+            # the instantiation of class 'model'
+            ignore_attrs = ['organism','compartments','compounds','reactions','genes','reactions_by_id','reactions_by_clean_id','compounds_by_id','compounds_by_clean_id', 'genes_by_id','compartments_by_id']
+
+            # Attributes that are class methods
+            method_attrs = [a for a in dir(self) if inspect.ismethod(self.__getattribute__(a))]
+
+            # known attributes that are an instance of another class
+            known_classType_attrs = ['biomass_reaction','atpm_reaction']
+    
+            # Attributes that are an instance of an unknown class
+            unknown_classType_attrs = [a for a in dir(self) if '__' not in a and ('class' in str(type(self.__getattribute__(a))) or 'object at' in repr(self.__getattribute__(a))) and a not in known_classType_attrs + method_attrs + ignore_attrs]
+            if len(unknown_classType_attrs) > 0 and self.warnings:
+                print '**WARNING (model.export_model)! The following unknonw attributes for "model" were not exported: {}'.format(unknown_classType_attrs)
+    
+            # Global class attributes that are not an instance of a class
+            global_attrs = [a for a in dir(self) if '__' not in a  and a not in self.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + ignore_attrs + method_attrs]
+    
+            # Instance variables (attributes) that are not an instance of a class
+            instance_attrs = [a for a in dir(self) if a in self.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + ignore_attrs + method_attrs]
+        
+            for attr in global_attrs:
+                model['model_global_attrs'][attr] = self.__getattribute__(attr) 
+
+            for attr in instance_attrs:
+                model['model_instance_attrs'][attr] = self.__getattribute__(attr) 
+            if self.biomass_reaction != None:
+                model['model_instance_attrs']['biomass_reaction'] = self.biomass_reaction.id
+            else:
+                model['model_instance_attrs']['biomass_reaction'] = None 
+            if self.atpm_reaction != None:
+                model['model_instance_attrs']['atpm_reaction'] = self.atpm_reaction.id
+            else:
+                model['model_instance_attrs']['atpm_reaction'] = None 
+
+            #-- Save model to file --
+            with open(output_filename,'w') as f:
+                f.write('model = {\n')
+
+                # organism
+                f.write("\t'organism_global_attrs': {")
+                for k in sorted(model['organism_global_attrs'].keys()):
+                    f.write("'{}': {}, ".format(k, repr(model['organism_global_attrs'][k])))        
+                f.write("},\n")
+
+                f.write("\t'organism': {")
+                for k in sorted(model['organism'].keys()):
+                    f.write("'{}': {},".format(k,repr(model['organism'][k])))        
+                f.write("},\n")
+
+                # compartments, compounds, reactions and genes
+                for model_attr in ['compartments','compounds','reactions','genes']:
+                    f.write("\n\t'{}_global_attrs':{{".format(model_attr))
+                    for k in sorted(model[model_attr + '_global_attrs'].keys()):
+                        f.write("'{}: {},\n'".format(k,repr(model[model_attr + '_global_attrs'][k])))
+                    f.write("},\n")
+
+                    f.write("\n\t'{}': {{\n".format(model_attr))
+                    for entry in sorted([e for e in model[model_attr].keys() if e != 'global_attrs']):
+                        f.write("\t\t'{}':{{".format(entry))
+                        for k in sorted(model[model_attr][entry].keys()):
+                            f.write("'{}':{}, ".format(k,repr(model[model_attr][entry][k])))
+                        f.write("},\n")
+                    f.write("\t},\n")
+
+                # Instance and global variables of the model
+                f.write("\n\t'model_global_attrs': {\n")
+                for k in sorted(model['model_global_attrs'].keys()):
+                    f.write("\t\t'{}': {},\n".format(k,repr(model['model_global_attrs'][k])))        
+                f.write("\t},\n")
+                f.write("\n\t'model_instance_attrs': {\n")
+                for k in sorted(model['model_instance_attrs'].keys()):
+                    f.write("\t\t'{}': {},\n".format(k,repr(model['model_instance_attrs'][k])))        
+                f.write("\t}\n")
+
+                f.write('}\n')
+
+        #----- json ----
         elif output_format.lower() == 'json':
-            pass
+            import json as js
+            js.dump(self)
+
+        #----- Pickle or cPickle ----
         elif output_format.lower() == 'pickle':
-            pass
+            import cPickle as pk
+            pk.dump(self) 
    
     def fba(self,optimization_solver = default_optim_solver, build_new_optModel = True, maximize = True, reset_fluxes = True, store_opt_fluxes = True, store_all_rxn_fluxes = False, flux_key = None, run = True, assign_wildType_max_biomass = False, simulation_conditions = '', stdout_msgs = True, warnings = True):
         """
@@ -1215,12 +1377,13 @@ class model(object):
                 r.flux = None
 
         if build_new_optModel == True:
-            self.fba_model = fba(model = self,optimization_solver = optimization_solver, build_new_optModel = build_new_optModel, flux_key = flux_key, store_opt_fluxes = store_opt_fluxes, simulation_conditions = simulation_conditions, warnings = warnings, stdout_msgs = stdout_msgs)
+            self.fba_model = fba(model = self,optimization_solver = optimization_solver, build_new_optModel = build_new_optModel, flux_key = flux_key, store_opt_fluxes = store_opt_fluxes, simulation_conditions = simulation_conditions, maximize = maximize, warnings = warnings, stdout_msgs = stdout_msgs)
         else:
             self.fba_model.build_new_optModel = build_new_optModel
             self.fba_model.flux_key = flux_key
             self.fba_model.optimization_solver = optimization_solver
             self.fba_model.store_opt_fluxes = store_opt_fluxes
+            self.fba_model.maximize = maximize
             self.fba_model.simulation_conditions = simulation_conditions
             self.fba_model.warnings = warnings 
             self.fba_model.stdout_msgs = stdout_msgs 

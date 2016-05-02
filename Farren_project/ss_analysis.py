@@ -79,21 +79,21 @@ def add_nsAA_pathways(model, add_pyrrolysine = True, add_pAF = True, warnings = 
     
         model.add_compounds([metorn_c,metornlys_c,metglusaldlys_c,pyrlys_L_c,pyrlys_L_p,pyrlys_L_e])
     
-        #-- New reactions --
         lys_L_c = model.compounds_by_id['lys_L_c']
     
+        #-- New reactions --
         # PylB: L-lysine --> (3R)-3-methyl-D-ornithine
-        PylB = reaction(id = 'PylB', name = 'methylornithine synthase', ModelSEED_id = 'rxn19159', stoichiometry = {lys_L_c:-1, metorn_c:1}, reversibility =  'irreversible',objective_coefficient = 0)
+        PylB = reaction(id = 'PylB', name = 'methylornithine synthase', ModelSEED_id = 'rxn19159', stoichiometry = {lys_L_c:-1, metorn_c:1}, reversibility =  'irreversible',objective_coefficient = 0, gene_reaction_rule = 'pylB')
     
         # PylC: L-lysine  + (3R)-3-methyl-D-ornithine + ATP --> (3R)-3-Methyl-D-ornithyl-Neps-L-lysine + ADP + Pi + H+
-        PylC = reaction(id = 'PylC', name = '(2R,3R)-3-methylornithyl-N6-lysine synthase', ModelSEED_id = 'rxn23366', stoichiometry = {lys_L_c:-1, metorn_c:-1, atp_c:-1, metornlys_c:1, adp_c:1, pi_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+        PylC = reaction(id = 'PylC', name = '(2R,3R)-3-methylornithyl-N6-lysine synthase', ModelSEED_id = 'rxn23366', stoichiometry = {lys_L_c:-1, metorn_c:-1, atp_c:-1, metornlys_c:1, adp_c:1, pi_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0, gene_reaction_rule = 'pylC')
     
         # PylD1: (3R)-3-Methyl-D-ornithyl-Neps-L-lysine + NAD+ + H2O --> (3R)-3-methyl-D-glutamyl-semialdehyde-Neps-L-Lysine + NADH +  NH3 + 2 H+ 
         # Given that ammonium in the model is in the form of NH4+, instead of NH3 + 2 H+, we write it as NH4+ + H+
-        PylD1 = reaction(id = 'PylD1', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23370', KEGG_id = 'R10012', stoichiometry = {metornlys_c:-1, nad_c:-1, h2o_c:-1, metglusaldlys_c:1, nadh_c:1, nh4_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+        PylD1 = reaction(id = 'PylD1', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23370', KEGG_id = 'R10012', stoichiometry = {metornlys_c:-1, nad_c:-1, h2o_c:-1, metglusaldlys_c:1, nadh_c:1, nh4_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0, gene_reaction_rule = 'pylD')
     
         # PylD2: (3R)-3-methyl-D-glutamyl-semialdehyde-Neps-L-Lysine --> L-pyrrolysine + H2O + H+
-        PylD2 = reaction(id = 'PylD2', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23371', stoichiometry = {metglusaldlys_c:-1, pyrlys_L_c:1, h2o_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+        PylD2 = reaction(id = 'PylD2', name = 'pyrrolysine synthase', ModelSEED_id = 'rxn23371', stoichiometry = {metglusaldlys_c:-1, pyrlys_L_c:1, h2o_c:1, h_c:1}, reversibility =  'irreversible', objective_coefficient = 0, gene_reaction_rule = 'pylD')
     
         # PyrLYSabcpp: atp_c + h2o_c + pyrlys_L_p --> adp_c + h_c + pyrlys_L_c + pi_c
         PyrLYSabcpp = reaction(id = 'PyrLYSabcpp', name = 'L-pyrrolysine transport via ABC system (periplasm)', stoichiometry = {atp_c:-1, h2o_c:-1, pyrlys_L_p:-1, adp_c:1, h_c:1, pyrlys_L_c:1, pi_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
@@ -139,13 +139,13 @@ def add_nsAA_pathways(model, add_pyrrolysine = True, add_pAF = True, warnings = 
         cpd_4adcho_c = model.compounds_by_id['4adcho_c'] 
     
         # PapB: 4-amino-4-deoxychorismate --> 4-amino-4-deoxyprephenate
-        PapB = reaction(id = 'PapB', name = 'chorismate mutase', stoichiometry = {cpd_4adcho_c:-1, adpphn_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+        PapB = reaction(id = 'PapB', name = 'chorismate mutase', stoichiometry = {cpd_4adcho_c:-1, adpphn_c:1}, reversibility =  'irreversible', objective_coefficient = 0, gene_reaction_rule = 'papB')
     
         # PapC: 4-amino-4-deoxyprephenate  + NAD+ --> p-aminophenylpyruvate + CO2 + NADH
-        PapC = reaction(id = 'PapC', name = 'prephenate dehydrogenase', stoichiometry = {adpphn_c:-1, nad_c:-1, aphpyr_c:1, nadh_c:1, co2_c:1}, reversibility =  'irreversible', objective_coefficient = 0)
+        PapC = reaction(id = 'PapC', name = 'prephenate dehydrogenase', stoichiometry = {adpphn_c:-1, nad_c:-1, aphpyr_c:1, nadh_c:1, co2_c:1}, reversibility =  'irreversible', objective_coefficient = 0, gene_reaction_rule = 'papC')
     
         # PAPHES: p-aminophenylpyruvate + L-glutamine <==>  p-amino-phenylalanine + 2-Oxoglutarate
-        PAPHES = reaction(id = 'PAPHES', name = 'p-amino-phenylalanine synthase', stoichiometry = {aphpyr_c:-1, gln_L_c:-1, paphe_c:1, akg_c:1}, reversibility =  'reversible', objective_coefficient = 0)
+        PAPHES = reaction(id = 'PAPHES', name = 'p-amino-phenylalanine synthase', stoichiometry = {aphpyr_c:-1, gln_L_c:-1, paphe_c:1, akg_c:1}, reversibility =  'reversible', objective_coefficient = 0, gene_reaction_rule = 'tyrB or aspC or ilvE')
      
         # PAPHEt2rpp: h_p + paphe_p <==> h_c + paphe_c 
         PAPHEt2rpp = reaction(id = 'PAPHEt2rpp', name = 'p-amino-phenylalanine reversible transport via proton symport (periplasm)', stoichiometry = {h_p:-1, paphe_p:-1, h_c:1, paphe_c:1}, reversibility =  'reversible', objective_coefficient = 0)
@@ -164,6 +164,7 @@ def add_nsAA_pathways(model, add_pyrrolysine = True, add_pAF = True, warnings = 
                 print rxn.id,':\t',rxn.get_equation()   
             print '\n'
     
+    #model.assign_props()
     #model.validate()
 
     return model

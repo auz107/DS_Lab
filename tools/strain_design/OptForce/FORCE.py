@@ -3,7 +3,6 @@ import sys,os, time
 sys.path.append('../../../')
 from copy import deepcopy
 from datetime import timedelta  # To convert elapsed time to hh:mm:ss format
-from shared_data_holder import shared_data_holder
 from MUST_doubles import MUST_doubles
 from tools.userError import userError
 from tools.globalVariables import *
@@ -30,13 +29,12 @@ class FORCE(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: March 28, 2016
     """
-    def __init__(self,model, product_exchrxn_id, flux_bounds_ref, flux_bounds_overprod, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, min_biomass_percent = 10, stopWith_product_yield_percent = 80, MUST_X = [], MUST_L = [], MUST_U = [], MUST_LU_L = [], MUST_LU_U = [], MUST_LL_L1 = [], MUST_LL_L2 = [], MUST_UU_U1 = [], MUST_UU_U2 = [], total_interven_num = 10, notMUST_total_interven_num = 0, notXrxns_interven_num = 0, notLrxns_interven_num = 0, notUrxns_interven_num = 0, fixed_X_rxns = [], fixed_L_rxns = [], fixed_U_rxns = {}, inSilico_essential_rxns = [], inVivo_essential_rxns= [], blocked_rxns = [], build_new_optModel = True, dual_formulation_type = 'simplified', validate_results = True, results_filename = '', optimization_solver = default_optim_solver, warnings = True, stdout_msgs = True, stdout_msgs_details = False): 
+    def __init__(self,model, product_exchrxn_id, flux_bounds_ref, flux_bounds_overprod, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, min_biomass_percent = 10, stopWith_product_yield_percent = 80, MUST_X = [], MUST_L = [], MUST_U = [], MUST_LU_L = [], MUST_LU_U = [], MUST_LL_L1 = [], MUST_LL_L2 = [], MUST_UU_U1 = [], MUST_UU_U2 = [], total_interven_num = 10, notMUST_total_interven_num = 0, notXrxns_interven_num = 0, notLrxns_interven_num = 0, notUrxns_interven_num = 0, fixed_X_rxns = [], ignored_X_rxns = [], fixed_L_rxns = [], ignored_L_rxns = [], fixed_U_rxns = {}, ignored_U_rxns = [], inSilico_essential_rxns = [], inVivo_essential_rxns= [], blocked_rxns = [], build_new_optModel = True, dual_formulation_type = 'simplified', validate_results = True, results_filename = '', optimization_solver = default_optim_solver, warnings = True, stdout_msgs = True, stdout_msgs_details = False): 
         """
         All inputs are a subset of those for OptForce
 
         INPUTS:
         ------
-                       shared_data: An instance of class shared_data_holder
                 total_interven_num: The maximum total number of interventions
         notMUST_total_interven_num: The maximum allowed number of interventions out of the MUST sets
              notXrxns_interven_num: Allowed number of knockouts outside of X_rxns
@@ -49,15 +47,20 @@ class FORCE(object):
                                     'simplified': We analyze each term in the dual objective function considering the duality theory and
                                                   try to simplify the product of binary and dual variables. No linearization of the 
                                                   binary and dual variables is needed here.
-                     fixed_X_rxns: A list of reactions ids that must be knocked out by fixing their
-                                   corresponidng yX to one
-                     fixed_L_rxns: A list of reactions ids that must be down-regulated by fixing their
-                                   corresponidng yL to one
-                     fixed_U_rxns: A list of reactions ids that must be up-regulated by fixing their
-                                   corresponidng yU to one
+        fixed_X_rxns, fixed_L_rxns, fixed_U_rxns: A list of reactions ids that must be knocked out, down-regulated or 
+                                   up-regulated by fixing their corresponidng yX, yL or yU to one
+        ignored_X_rxns, ignored_L_rxns, ignored_U_rxns: A list of reactions ids that must NOT be knocked out, down-regulate
+                                   or up-regulated by fixing their corresponindg yX, yL or yU to zero
           inSilico_essential_rxns: List of in silico essential reaciton ids
             inVivo_essential_rxns: List of in vivo essential reaction ids
-              blocked_rxns: List of alwqys blocked reactions in the model
+                     blocked_rxns: List of alwqys blocked reactions in the model
+         growthMedium_flux_bounds: Information about growth media
+                                   flux_bounds_filename: Name of and path of the file containing the flux bounds
+                                                         file for exchange reactions corresponding to compounds in 
+                                                         in the growth media
+                                       flux_bounds_dict: A dictionary containing the flux bounds for other reactions (such as carbon
+                                                         source uptake, oxygen uptake, etc), that have to be set for reactions not 
+                                                         in flux_data_filenam or media_filename
                  validate_results: If True each obtained solution is validated before finding the next
                                    one
                  results_filename: A string containing the name of the file where the results should
@@ -146,6 +149,9 @@ class FORCE(object):
         self.fixed_X_rxns = fixed_X_rxns
         self.fixed_L_rxns = fixed_L_rxns
         self.fixed_U_rxns = fixed_U_rxns
+        self.ignored_X_rxns = ignored_X_rxns
+        self.ignored_L_rxns = ignored_L_rxns
+        self.ignored_U_rxns = ignored_U_rxns
 
     def __setattr__(self,attr_name,attr_value):
         """
@@ -204,7 +210,7 @@ class FORCE(object):
         elif attr_name == 'notUrxns_interven_num' and attr_value < 0:
             raise ValueError('notUrxns_interven_num must be a non-negative integer') 
 
-        if attr_name in ['fixed_X_rxns','fixed_L_rxns','fixed_U_rxns'] and not isinstance(attr_value,list):
+        if attr_name in ['fixed_X_rxns','fixed_L_rxns','fixed_U_rxns','ignore_X_rxns','ignored_L_rxns','ignored_U_rxns'] and not isinstance(attr_value,list):
             raise TypeError('{} must be a list of strings'.format(attr_name))
         elif attr_name in ['fixed_X_rxns','fixed_L_rxns','fixed_U_rxns'] and len([k for k in attr_value if not isinstance(k,str)]) > 0: 
             raise TypeError('Elements of {} must be a string'.format(attr_name))
@@ -304,14 +310,8 @@ class FORCE(object):
         # Max value of the dual variables
         self._bigM_dualvar = 1e4
 
-        # Reactions that must be excluded (ignore) from MUST doube consideration
-        self._ignore = []
-        # Rxns in MUST single sets 
-        # Rxns whose flux bounds have a lower and upper bound of zero
-        # Rxns whose flux bounds in the reference and overproducing strains are the same
-        # Transport reactions
-        # Exchange reactions
-        # Reactions with no gene association
+        # Reactions that must be excluded (ignore) from any type of manupulaiton (X, L or U) 
+        ignore_all = []
         for rxn in self.model.reactions:
             if rxn in self.blocked_rxns or \
                rxn.flux_bounds == [0,0] or \
@@ -319,14 +319,38 @@ class FORCE(object):
                rxn.subsystem != '' and 'transport' in rxn.subsystem.lower() or \
                rxn.reversibility.lower() == 'exchange' or \
                (rxn.genes == [] and rxn.gene_reaction_rule == ''):
-                self._ignore.append(rxn.id)
+                ignore_all.append(rxn.id)
 
         # biomass
-        self._ignore.append(self.model.biomass_reaction.id)
+        ignore_all.append(self.model.biomass_reaction.id)
 
         # ATPM
         if 'ATPM' in self.model.reactions_by_id.keys():
-            self._ignore.append('ATPM')
+            ignore_all.append('ATPM')
+
+        #--- Reactions that must be ignored for knock outs --- 
+        self.ignored_X_rxns += ignore_all
+
+        # in silico and in vivo essential rxns
+        self.ignored_X_rxns += list(set(self.inSilico_essential_rxns + self.inVivo_essential_rxns))
+
+        # Reactions not in X_rxns 
+        if self.notXrxns_interven_num == 0:
+            self.ignored_X_rxns += [r.id for r in self.model.reactions if r.id not in self.X_rxns]
+
+        #---- L_rxns ----
+        self.ignored_L_rxns += ignore_all + self.U_rxns
+
+        # Reactions not in L_rxns 
+        if self.notLrxns_interven_num == 0:
+            self.ignored_L_rxns +=  [r.id for r in self.model.reactions if r.id not in self.L_rxns]
+
+        #---- U_rxns ----
+        self.ignored_U_rxns += ignore_all + self.L_rxns
+
+        # Reactions not in U_rxns 
+        if self.notUrxns_interven_num == 0:
+            self.ignored_U_rxns += [r.id for r in self.model.reactions if r.id not in self.U_rxns]
 
     #------------------------------------------------------------------------
     #--- Define rules for the objective function and various constraints ----
@@ -338,18 +362,18 @@ class FORCE(object):
         if self.dual_formulation_type.lower() == 'standard':
             const = \
                   optModel.v[self.product_exchrxn_id] ==  \
-                  sum([self.shared_data_model.reactions_by_id[j].flux_bounds[0]*(optModel.muLB[j] - optModel.muLB_yX[j]) for j in optModel.J]) - \
-                  sum([self.shared_data_model.reactions_by_id[j].flux_bounds[1]*(optModel.muUB[j] - optModel.muUB_yX[j]) for j in optModel.J]) + \
-                  sum([(self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.thethaLB_yU[j] - self._bigM_rxnflux*optModel.thethaLB for j in self.U_rxns]) - \
-                  sum([(self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.thethaUB_yL[j] + self._bigM_rxnflux*thethaUB for j in self.L_rxns])
+                  sum([self.model.reactions_by_id[j].flux_bounds[0]*(optModel.muLB[j] - optModel.muLB_yX[j]) for j in optModel.J]) - \
+                  sum([self.model.reactions_by_id[j].flux_bounds[1]*(optModel.muUB[j] - optModel.muUB_yX[j]) for j in optModel.J]) + \
+                  sum([(self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.thethaLB_yU[j] - self._bigM_rxnflux*optModel.thethaLB[j] for j in optModel.J if j not in self.ignored_U_rxns]) - \
+                  sum([(self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.thethaUB_yL[j] + self._bigM_rxnflux*optModel.thethaUB[j] for j in optModel.J if j not in self.ignored_L_rxns])
                         
         elif self.dual_formulation_type.lower() == 'simplified':
             const = \
                   optModel.v[self.product_exchrxn_id] == \
                   sum([self.model.reactions_by_id[j].flux_bounds[0]*optModel.muLB[j] for j in optModel.J if self.model.reactions_by_id[j].flux_bounds[0] != -self._bigM_rxnflux]) - \
                   sum([self.model.reactions_by_id[j].flux_bounds[1]*optModel.muUB[j] for j in optModel.J if self.model.reactions_by_id[j].flux_bounds[1] != self._bigM_rxnflux]) + \
-                  sum([self.flux_bounds_overprod[j][0]*optModel.thethaLB[j] for j in self.U_rxns]) - \
-                  sum([self.flux_bounds_overprod[j][1]*optModel.thethaUB[j] for j in self.L_rxns])
+                  sum([self.flux_bounds_overprod[j][0]*optModel.thethaLB[j] for j in optModel.J if j not in self.ignored_U_rxns]) - \
+                  sum([self.flux_bounds_overprod[j][1]*optModel.thethaUB[j] for j in optModel.J if j not in self.ignored_L_rxns])
 
         return const
 
@@ -360,16 +384,20 @@ class FORCE(object):
         Objective function of the dual problem
         """
         if self.dual_formulation_type.lower() == 'standard':
-            obj = sum([self.shared_data_model.reactions_by_id[j].flux_bounds[0]*(optModel.muLB[j] - optModel.muLB_yX[j]) for j in optModel.J]) - \
-                  sum([self.shared_data_model.reactions_by_id[j].flux_bounds[1]*(optModel.muUB[j] - optModel.muUB_yX[j]) for j in optModel.J]) + \
-                  sum([(self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.thethaLB_yU[j] - self._bigM_rxnflux*optModel.thethaLB for j in self.U_rxns]) - \
-                  sum([(self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.thethaUB_yL[j] + self._bigM_rxnflux*thethaUB for j in self.L_rxns])
+            # sum(j, muLB(j)*[LB(j)*(1 - yX(j)] + 
+            #        muUB(j)*[UB(j)*(1 - yX(j)] +]
+            #        thethaLB(j)*[(LBon(j) - (-M))*yU(j) + (-M)] +
+            #        thethaUB(j)*[(UBon(j) - bigM)*yU(j) + bigM]
+            obj = sum([self.model.reactions_by_id[j].flux_bounds[0]*(optModel.muLB[j] - optModel.muLB_yX[j]) for j in optModel.J if j not in self.ignored_X_rxns]) - \
+                  sum([self.model.reactions_by_id[j].flux_bounds[1]*(optModel.muUB[j] - optModel.muUB_yX[j]) for j in optModel.J if j not in self.ignored_X_rxns]) + \
+                  sum([(self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.thethaLB_yU[j] - self._bigM_rxnflux*optModel.thethaLB[j] for j in optModel.J if j not in self.ignored_U_rxns]) - \
+                  sum([(self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.thethaUB_yL[j] + self._bigM_rxnflux*optModel.thethaUB[j] for j in optModel.J if j not in self.ignored_L_rxns])
                         
         elif self.dual_formulation_type.lower() == 'simplified':
             obj = sum([self.model.reactions_by_id[j].flux_bounds[0]*optModel.muLB[j] for j in optModel.J if self.model.reactions_by_id[j].flux_bounds[0] != -self._bigM_rxnflux]) - \
                   sum([self.model.reactions_by_id[j].flux_bounds[1]*optModel.muUB[j] for j in optModel.J if self.model.reactions_by_id[j].flux_bounds[1] != self._bigM_rxnflux]) + \
-                  sum([self.flux_bounds_overprod[j][0]*optModel.thethaLB[j] for j in self.U_rxns]) - \
-                  sum([self.flux_bounds_overprod[j][1]*optModel.thethaUB[j] for j in self.L_rxns])
+                  sum([self.flux_bounds_overprod[j][0]*optModel.thethaLB[j] for j in optModel.J if j not in self.ignored_U_rxns]) - \
+                  sum([self.flux_bounds_overprod[j][1]*optModel.thethaUB[j] for j in optModel.J if j not in self.ignored_L_rxns])
 
         return obj
 
@@ -391,9 +419,6 @@ class FORCE(object):
         """
         Creates a pyomo optimization model for the primal problem 
         """
-        # Define parameters and scalars needed to define the optimizaiton problem
-        self.define_optModel_params()
-
         # Create a pyomo model optimization model
         optModel = ConcreteModel()
 
@@ -424,18 +449,18 @@ class FORCE(object):
         # v(j) =g= LBon(j)*yU(j) + (1-yU(j))*LB(j) or v(j) =g= (LBon(j) - LB(j))*yU(j) + LB(j).
         # Instead of LB(j) use -bigM to make the constraint inactive when yU(j) = 0:
         # v(j) =g= (LBon(j) - (-M))*yU(j) + (-M) 
-        optModel.U_rxns_const = Constraint([j for j in optModel.J if j in self.U_rxns], rule = lambda optModel, j: optModel.v[j] >= (self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.yU[j] - self._bigM_rxnflux)
+        optModel.U_rxns_const = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.v[j] >= (self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.yU[j] - self._bigM_rxnflux)
 
         # Constraint for U_rxns
         # v(j) =l= UBon(j)*yL(j) + (1-yL(j))*UB(j) or v(j) =l= (UBon(j) - UB(j))*yL(j) + UB(j)
         # Instead of UB(j) use bigM to make the constraint inactive when yL(j) = 0:
         # v(j) =l= (UBon(j) - bigM)*yU(j) + bigM
-        optModel.L_rxns_const = Constraint([j for j in optModel.J if j in self.L_rxns], rule = lambda optModel, j: optModel.v[j] <= (self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.yL[j] + self._bigM_rxnflux)
+        optModel.L_rxns_const = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optModel, j: optModel.v[j] <= (self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.yL[j] + self._bigM_rxnflux)
 
         # Cconstraints for X_rxns. This constraint is written over all reactions (not just thos ein X_rxns) to incorporate
         # their LB and UB into the calculations
         # LB(j)*(1 - yX(j)) <= v(j)  and v(j) <= UB(j)*(1 - yX(j)) 
-        optModel.X_rxns_const1 = Constraint(optModel.J, rule = lambda optModel, j: optModel.v[j] >= self.model.reactions_by_id[j].flux_bounds[0]*(1 - optModel.yX[j]) )
+        optModel.X_rxns_const1 = Constraint(optModel.J, rule = lambda optModel, j: optModel.v[j] >= self.model.reactions_by_id[j].flux_bounds[0]*(1 - optModel.yX[j]))
         optModel.X_rxns_const2 = Constraint(optModel.J, rule = lambda optModel, j: optModel.v[j] <= self.model.reactions_by_id[j].flux_bounds[1]*(1 - optModel.yX[j]))
 
         self.optModel = optModel
@@ -444,9 +469,6 @@ class FORCE(object):
         """
         Creates a pyomo optimization model for the dual problem 
         """
-        # Define parameters and scalars needed to define the optimizaiton problem
-        self.define_optModel_params()
-
         # Create a pyomo model optimization model
         optModel = ConcreteModel()
 
@@ -494,24 +516,24 @@ class FORCE(object):
         # x - (1-y)*UpperBound_of_x <= s <= x- (1-y)*LowerBound_of_x 
         # muLB[j] - (1 - yX[j])*muLB_max[j] <= muLB_yX[j] <= muLB[j] - (1 - yX[j])*muLB_min[j] and muLB_min = 0
         if self.dual_formulation_type.lower() == 'standard':
-            optModel.linearize_muLB_yX_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muLB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
-            optModel.linearize_muLB_yX_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muLB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muLB_yX[j])
-            optModel.linearize_muLB_yX_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muLB_yX[j] <= optModel.muLB[j] - (1 - optModel.yX[j])*0)
+            optModel.linearize_muLB_yX_const1 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muLB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
+            optModel.linearize_muLB_yX_const2 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muLB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muLB_yX[j])
+            optModel.linearize_muLB_yX_const3 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muLB_yX[j] <= optModel.muLB[j] - (1 - optModel.yX[j])*0)
 
             # muUB_min[j]*yX[j] <= muUB_yX[j] <= muUB_max*yX[j]  and muUB_min = 0
-            optModel.linearize_muUB_yX_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muUB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
-            optModel.linearize_muUB_yX_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muUB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muUB_yX[j])
-            optModel.linearize_muUB_yX_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muUB_yX[j] <= optModel.muUB[j] - (1 - optModel.yX[j])*0)
+            optModel.linearize_muUB_yX_const1 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muUB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
+            optModel.linearize_muUB_yX_const2 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muUB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muUB_yX[j])
+            optModel.linearize_muUB_yX_const3 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muUB_yX[j] <= optModel.muUB[j] - (1 - optModel.yX[j])*0)
 
             # thethaLB_min[j]*yU[j] <= thethaLB_yU[j] <= thethaLB_max*yU[j]  and thethaLB_min = 0
-            optModel.linearize_thethaLB_yU_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= self._bigM_dualvar*optModel.yU[j])
-            optModel.linearize_thethaLB_yU_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaLB[j] - (1 - optModel.yU[j])*self._bigM_dualvar <= optModel.thethaLB_yU[j])
-            optModel.linearize_thethaLB_yU_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= optModel.thethaLB[j] - (1 - optModel.yU[j])*0)
+            optModel.linearize_thethaLB_yU_const1 = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= self._bigM_dualvar*optModel.yU[j])
+            optModel.linearize_thethaLB_yU_const2 = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.thethaLB[j] - (1 - optModel.yU[j])*self._bigM_dualvar <= optModel.thethaLB_yU[j])
+            optModel.linearize_thethaLB_yU_const3 = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= optModel.thethaLB[j] - (1 - optModel.yU[j])*0)
 
             # thethaUB_min[j]*yL[j] <= thethaUB_yL[j] <= thethaUB_max*yL[j]  and thethaUB_min = 0
-            optModel.linearize_thethaUB_yL_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaUB_yL[j] <= self._bigM_dualvar*optModel.yL[j])
-            optModel.linearize_thethaUB_yL_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaUB[j] - (1 - optModel.yL[j])*self._bigM_dualvar <= optModel.thethaUB_yL[j])
-            optModel.linearize_thethaUB_yL_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optMode, j: optModel.thethaUB_yL[j] <= optModel.thethaUB[j] - (1 - optModel.yL[j])*0)
+            optModel.linearize_thethaUB_yL_const1 = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optModel, j: optModel.thethaUB_yL[j] <= self._bigM_dualvar*optModel.yL[j])
+            optModel.linearize_thethaUB_yL_const2 = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optModel, j: optModel.thethaUB[j] - (1 - optModel.yL[j])*self._bigM_dualvar <= optModel.thethaUB_yL[j])
+            optModel.linearize_thethaUB_yL_const3 = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optMode, j: optModel.thethaUB_yL[j] <= optModel.thethaUB[j] - (1 - optModel.yL[j])*0)
 
         if self.dual_formulation_type.lower() == 'simplified':
             optModel.muLB_yX_const = Constraint([j for j in optModel.J if self.model.reactions_by_id[j].flux_bounds[0] == -self._bigM_rxnflux], rule = lambda optModel,j:optModel.muLB[j] <= self._bigM_dualvar*optModel.yX[j])
@@ -580,7 +602,7 @@ class FORCE(object):
         # Restrict the total number of interventions: sum(j,yL(j) + yU(j) + yX(j)) =l= interven_num_curr;
         optModel.total_interven_const = Constraint(rule = lambda optModel: sum([optModel.yL[j] + optModel.yU[j] + optModel.yX[j] for j in optModel.J]) <= self._interven_num_curr)
 
-        # Maximum allowed number of interventions for out of the must sets
+        # Maximum allowed number of interventions r out of the must sets
         optModel.notMUST_interven_const = Constraint(rule = lambda optModel: sum([optModel.yX[j] for j in optModel.J if j not in self.X_rxns]) + sum([optModel.yL[j] for j in optModel.J if j not in self.L_rxns]) + sum([optModel.yU[j] for j in optModel.J if j not in self.U_rxns]) <= self.notMUST_total_interven_num)
 
         # Maximum allowed number of knockouts, up-regulations and down-regulations outside of X_rxns, U_rxns and L_rxns
@@ -602,13 +624,13 @@ class FORCE(object):
         # v(j) =g= LBon(j)*yU(j) + (1-yU(j))*LB(j) or v(j) =g= (LBon(j) - LB(j))*yU(j) + LB(j).
         # Instead of LB(j) use -bigM to make the constraint inactive when yU(j) = 0:
         # v(j) =g= (LBon(j) - (-M))*yU(j) + (-M) 
-        optModel.U_rxns_const = Constraint([j for j in optModel.J if j in self.U_rxns], rule = lambda optModel, j: optModel.v[j] >= (self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.yU[j] - self._bigM_rxnflux)
+        optModel.U_rxns_const = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.v[j] >= (self.flux_bounds_overprod[j][0] + self._bigM_rxnflux)*optModel.yU[j] - self._bigM_rxnflux)
 
-        # Constrain for U_rxns
+        # Constrain for L_rxns
         # v(j) =l= UBon(j)*yL(j) + (1-yL(j))*UB(j) or v(j) =l= (UBon(j) - UB(j))*yL(j) + UB(j)
         # Instead of UB(j) use bigM to make the constraint inactive when yL(j) = 0:
         # v(j) =l= (UBon(j) - bigM)*yU(j) + bigM
-        optModel.L_rxns_const = Constraint([j for j in optModel.J if j in self.L_rxns], rule = lambda optModel, j: optModel.v[j] <= (self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.yL[j] + self._bigM_rxnflux)
+        optModel.L_rxns_const = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optModel, j: optModel.v[j] <= (self.flux_bounds_overprod[j][1] - self._bigM_rxnflux)*optModel.yL[j] + self._bigM_rxnflux)
 
         # Cconstraints for X_rxns. This constraint is written over all reactions (not just thos ein X_rxns) to incorporate
         # their LB and UB into the calculations
@@ -624,24 +646,24 @@ class FORCE(object):
         # x - (1-y)*UpperBound_of_x <= s <= x- (1-y)*LowerBound_of_x 
         # muLB[j] - (1 - yX[j])*muLB_max[j] <= muLB_yX[j] <= muLB[j] - (1 - yX[j])*muLB_min[j] and muLB_min = 0
         if self.dual_formulation_type.lower() == 'standard':
-            optModel.linearize_muLB_yX_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muLB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
-            optModel.linearize_muLB_yX_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muLB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muLB_yX[j])
-            optModel.linearize_muLB_yX_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muLB_yX[j] <= optModel.muLB[j] - (1 - optModel.yX[j])*0)
+            optModel.linearize_muLB_yX_const1 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muLB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
+            optModel.linearize_muLB_yX_const2 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muLB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muLB_yX[j])
+            optModel.linearize_muLB_yX_const3 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muLB_yX[j] <= optModel.muLB[j] - (1 - optModel.yX[j])*0)
 
             # muUB_min[j]*yX[j] <= muUB_yX[j] <= muUB_max*yX[j]  and muUB_min = 0
-            optModel.linearize_muUB_yX_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muUB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
-            optModel.linearize_muUB_yX_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muUB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muUB_yX[j])
-            optModel.linearize_muUB_yX_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.muUB_yX[j] <= optModel.muUB[j] - (1 - optModel.yX[j])*0)
+            optModel.linearize_muUB_yX_const1 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muUB_yX[j] <= self._bigM_dualvar*optModel.yX[j])
+            optModel.linearize_muUB_yX_const2 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muUB[j] - (1 - optModel.yX[j])*self._bigM_dualvar <= optModel.muUB_yX[j])
+            optModel.linearize_muUB_yX_const3 = Constraint([j for j in optModel.J if j not in self.ignored_X_rxns], rule = lambda optModel, j: optModel.muUB_yX[j] <= optModel.muUB[j] - (1 - optModel.yX[j])*0)
 
             # thethaLB_min[j]*yU[j] <= thethaLB_yU[j] <= thethaLB_max*yU[j]  and thethaLB_min = 0
-            optModel.linearize_thethaLB_yU_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= self._bigM_dualvar*optModel.yU[j])
-            optModel.linearize_thethaLB_yU_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaLB[j] - (1 - optModel.yU[j])*self._bigM_dualvar <= optModel.thethaLB_yU[j])
-            optModel.linearize_thethaLB_yU_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= optModel.thethaLB[j] - (1 - optModel.yU[j])*0)
+            optModel.linearize_thethaLB_yU_const1 = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= self._bigM_dualvar*optModel.yU[j])
+            optModel.linearize_thethaLB_yU_const2 = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.thethaLB[j] - (1 - optModel.yU[j])*self._bigM_dualvar <= optModel.thethaLB_yU[j])
+            optModel.linearize_thethaLB_yU_const3 = Constraint([j for j in optModel.J if j not in self.ignored_U_rxns], rule = lambda optModel, j: optModel.thethaLB_yU[j] <= optModel.thethaLB[j] - (1 - optModel.yU[j])*0)
 
             # thethaUB_min[j]*yL[j] <= thethaUB_yL[j] <= thethaUB_max*yL[j]  and thethaUB_min = 0
-            optModel.linearize_thethaUB_yL_const1 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaUB_yL[j] <= self._bigM_dualvar*optModel.yL[j])
-            optModel.linearize_thethaUB_yL_const2 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optModel, j: optModel.thethaUB[j] - (1 - optModel.yL[j])*self._bigM_dualvar <= optModel.thethaUB_yL[j])
-            optModel.linearize_thethaUB_yL_const3 = Constraint([j for j in optModel.J if j not in self._ignore], rule = lambda optMode, j: optModel.thethaUB_yL[j] <= optModel.thethaUB[j] - (1 - optModel.yL[j])*0)
+            optModel.linearize_thethaUB_yL_const1 = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optModel, j: optModel.thethaUB_yL[j] <= self._bigM_dualvar*optModel.yL[j])
+            optModel.linearize_thethaUB_yL_const2 = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optModel, j: optModel.thethaUB[j] - (1 - optModel.yL[j])*self._bigM_dualvar <= optModel.thethaUB_yL[j])
+            optModel.linearize_thethaUB_yL_const3 = Constraint([j for j in optModel.J if j not in self.ignored_L_rxns], rule = lambda optMode, j: optModel.thethaUB_yL[j] <= optModel.thethaUB[j] - (1 - optModel.yL[j])*0)
 
         if self.dual_formulation_type.lower() == 'simplified':
             optModel.muLB_yX_const = Constraint([j for j in optModel.J if self.model.reactions_by_id[j].flux_bounds[0] == -self._bigM_rxnflux], rule = lambda optModel,j:optModel.muLB[j] <= self._bigM_dualvar*optModel.yX[j])
@@ -658,68 +680,30 @@ class FORCE(object):
         """
         Fixies all known binary variables to zero/one
         """
-        # Do not manipulate reactions in self._ignore
-        for rxn in self._ignore:
+        # Do not manipulate reactions in self.ignorex_X_rxns
+        for rxn in self.ignored_X_rxns:
             self.optModel.yX[rxn] = 0
             self.optModel.yX[rxn].fixed = True
-
-            self.optModel.yL[rxn] = 0
-            self.optModel.yL[rxn].fixed = True
-
-            self.optModel.yU[rxn] = 0
-            self.optModel.yU[rxn].fixed = True
-
             if self.dual_formulation_type.lower() == 'standard':
                 self.optModel.muLB_yX[rxn] = 0
                 self.optModel.muLB_yX[rxn].fixed = True
                 self.optModel.muUB_yX[rxn] = 0
                 self.optModel.muUB_yX[rxn].fixed = True
 
+        for rxn in self.ignored_L_rxns:
+            self.optModel.yL[rxn] = 0
+            self.optModel.yL[rxn].fixed = True
+            if self.dual_formulation_type.lower() == 'standard':
+                self.optModel.thethaUB_yL[rxn] = 0 
+                self.optModel.thethaUB_yL[rxn].fixed = True
+
+        for rxn in self.ignored_U_rxns:
+            self.optModel.yU[rxn] = 0
+            self.optModel.yU[rxn].fixed = True
+            if self.dual_formulation_type.lower() == 'standard':
                 optModel.thethaLB_yU[rxn] = 0 
                 optModel.thethaLB_yU[rxn].fixed = True 
 
-                optModel.thethaUB_yL[rxn] = 0 
-                optModel.thethaUB_yL[rxn].fixed = True
-
-        #---- X_rxns ----
-        # Do not consider reactions that are blocked, essential in vivo or essential in silico for knockout
-        for rxn in list(set(self.inSilico_essential_rxns + self.inVivo_essential_rxns)):
-            self.optModel.yX[rxn] = 0
-            self.optModel.yX[rxn].fixed = True
-            if self.dual_formulation_type.lower() == 'standard':
-                self.optModel.muLB_yX[rxn] = 0
-                self.optModel.muLB_yX[rxn].fixed = True
-                self.optModel.muUB_yX[rxn] = 0
-                self.optModel.muUB_yX[rxn].fixed = True
-
-        # Reactions not in X_rxns 
-        if self.notXrxns_interven_num == 0:
-            for rxn in [r.id for r in self.model.reactions if r.id not in self.X_rxns]:
-                self.optModel.yX[rxn] = 0
-                self.optModel.yX[rxn].fixed = True
-                if self.dual_formulation_type.lower() == 'standard':
-                    self.optModel.muLB_yX[rxn] = 0
-                    self.optModel.muLB_yX[rxn].fixed = True
-                    self.optModel.muUB_yX[rxn] = 0
-                    self.optModel.muUB_yX[rxn].fixed = True
-
-        #---- L_rxns ----
-        if self.notLrxns_interven_num == 0:
-            for rxn in [r.id for r in self.model.reactions if r.id not in self.L_rxns]:
-                self.optModel.yL[rxn] = 0
-                self.optModel.yL[rxn].fixed = True
-                if self.dual_formulation_type.lower() == 'standard':
-                    self.optModel.thethaUB_yL[rxn] = 0 
-                    self.optModel.thethaUB_yL[rxn].fixed = True
-
-        #---- U_rxns ----
-        if self.notUrxns_interven_num == 0:
-            for rxn in [r.id for r in self.model.reactions if r.id not in self.U_rxns]:
-                self.optModel.yU[rxn] = 0
-                self.optModel.yU[rxn].fixed = True
-                if self.dual_formulation_type.lower() == 'standard':
-                    self.optModel.thethaLB_yU[rxn] = 0 
-                    self.optModel.thethaLB_yU[rxn].fixed = True 
 
         # Fix binary variables for a priori imposed knockouts, down-regulations and up-regulations
         for rxn in self.fixed_X_rxns:
@@ -761,7 +745,7 @@ class FORCE(object):
         except  Exception, e:
             solver_flag = 'solverError'
             if self.warnings:
-                print '**WARNING (MUST_doubles)! {} failed with the following error: \n{} \n'.format(self.optimization_solver,e)
+                print '**WARNING (FORCE)! {} failed with the following error: \n{} \n'.format(self.optimization_solver,e)
 
         elapsed_solver_pt = str(timedelta(seconds = time.clock() - start_solver_pt))
         elapsed_solver_wt = str(timedelta(seconds = time.time() - start_solver_wt))
@@ -802,27 +786,44 @@ class FORCE(object):
             print '\nObjective value = {}, Optimality status = {}, Solution status = {}, Solver run status = {}'.format(opt_objValue, optSoln.solver.termination_condition, optSoln.Solution.status, solver_flag)
             print 'Took (hh:mm:ss) {}/{} of processing/walltime to create a pyomo model, {}/{} to  preprcoess the model and {}/{} to solve the model\n'.format(self._elapsed_create_optModel_pt, self._elapsed_create_optModel_wt, elapsed_preproc_pyomo_pt,elapsed_preproc_pyomo_wt, elapsed_solver_pt,elapsed_solver_wt)
 
-    def validate_soln(self):
+    def find_min_product_yield(self, validate = True):
         """
-        Validates an obtained solution
+        If validate is True it Validates an obtained solution. 
+        if validate is False, it finds the min product yield for a set of fixed binary
+        variables provided by self.fixed_X_rxns, self.fixed_L_rxns and self.fixed_U_rxns
         """
         for rxn in self.model.reactions:
             rxn.objective_coefficient = 0
         self.model.reactions_by_id[self.product_exchrxn_id].objective_coefficient = 1                
-        for j in self._curr_soln['X_rxns']:
-            self.model.reactions_by_id[j].flux_bounds = [0,0]
-        for j in self._curr_soln['L_rxns']:
-            self.model.reactions_by_id[j].flux_bounds[1] = self.flux_bounds_overprod[j][1]
-        for j in self._curr_soln['U_rxns']:
-            self.model.reactions_by_id[j].flux_bounds[0] = self.flux_bounds_overprod[j][0]
+
+        if validate:
+            for j in self._curr_soln['X_rxns']:
+                self.model.reactions_by_id[j].flux_bounds = [0,0]
+            for j in self._curr_soln['L_rxns']:
+                self.model.reactions_by_id[j].flux_bounds[1] = self.flux_bounds_overprod[j][1]
+            for j in self._curr_soln['U_rxns']:
+                self.model.reactions_by_id[j].flux_bounds[0] = self.flux_bounds_overprod[j][0]
+        else:
+            for j in self.fixed_X_rxns:
+                self.model.reactions_by_id[j].flux_bounds = [0,0]
+            for j in self.fixed_L_rxns:
+                self.model.reactions_by_id[j].flux_bounds[1] = self.flux_bounds_overprod[j][1]
+            for j in self.fixed_U_rxns:
+                self.model.reactions_by_id[j].flux_bounds[0] = self.flux_bounds_overprod[j][0]
 
         if hasattr(self.model,'fba_model'):
             self.model.fba(build_new_optModel = False, maximize = False, stdout_msgs = False)
         else:
             self.model.fba(build_new_optModel = True, maximize = False, stdout_msgs = False)
 
-        if self.model.fba_model.solution['exit_flag'] == 'globallyOptimal' and (self.model.fba_model.solution['objective_value'] < self._curr_soln['objective_value']):
-            raise userError('Validaiton failed for X_rxns = {} , L_rxns = {} , U_rxns = {} because the production flux of the product ({}) is less than the objective function value of the optimizaiton problem for identifhing FORCE sets ({})'.format(self._curr_soln['X_rxns'], self._curr_soln['L_rxns'], self._curr_soln['U_rxns'], self.model.fba_model.solution['objective_value'], self._curr_soln['objective_value']))
+        if self.model.fba_model.solution['exit_flag'] == 'globallyOptimal': 
+            if validate and (self._curr_soln['objective_value'] - self.model.fba_model.solution['objective_value'] > 1e-6):
+                raise userError('Validation failed for X_rxns = {} , L_rxns = {} , U_rxns = {} because the production flux of the product ({}) is less than the objective function value of the optimizaiton problem for identifhing FORCE sets ({})'.format(self._curr_soln['X_rxns'], self._curr_soln['L_rxns'], self._curr_soln['U_rxns'], self.model.fba_model.solution['objective_value'], self._curr_soln['objective_value']))
+            elif not validate:
+                self._best_product_yield_soFar_init = self.model.fba_model.solution['objective_value']
+            else:
+                if self.stdout_msgs_details:
+                    print 'The following soluiton was successfully validates: X_rxns = {}\nL_rxns = {}\nU_rxns = {}'.format(self._curr_soln['X_rxns'],self._curr_soln['L_rxns'],self._curr_soln['U_rxns'])
 
         elif self.model.fba_model.solution['exit_flag'] != 'globallyOptimal':
             raise userError('Validaiton failed for X_rxns = {} , L_rxns = {} , U_rxns = {} because the fba problem to find the minimum production flux of the product was not solved to optimality and ended with an exit_flag of {}'.format(self._curr_soln['X_rxns'], self._curr_soln['L_rxns'], self._curr_soln['U_rxns'], self.model.fba_model.solution['exit_flag']))
@@ -845,30 +846,34 @@ class FORCE(object):
         # Set flux bounds for the model
         self.set_model_flux_bounds()
 
-        # List of solutions obtained
-        self.solutions = []
-
         # Number of solutions found so far
         found_solutions_num = 0
 
         # Current max number of interventions
         self._interven_num_curr = len(self.fixed_X_rxns) + len(self.fixed_L_rxns) + len(self.fixed_U_rxns) + 1
+
+        # Find the min product yield, if a number of fixed interventions has already provided using fixed_X_rxns, 
+        # fixed_L-rxns or fixed_U_rxns,
+        if len(self.fixed_X_rxns) > 0 or len(self.fixed_L_rxns) > 0 or len(self.fixed_U_rxns) > 0:
+            self.find_min_product_yield(validate = False)
+        else:
+            self._best_product_yield_soFar_init = 0.0
         if self.stdout_msgs:
-            print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
+            print '\nMin product yield = {:0.4} ({:0.3}% of theoretical maximum = {:0.4}) , biomass flux = {} ({:0.3}%) of max biomass = {:0.4})'.format(self._best_product_yield_soFar_init, 100*self._best_product_yield_soFar_init/self.product_max_theor_yield, self.product_max_theor_yield, self.model.fba_model.optModel.v[self.biomass_rxn_id].value, 100*self.model.fba_model.optModel.v[self.biomass_rxn_id].value/self.max_biomass_flux, self.max_biomass_flux)
 
         # Best product yield achieved so far
-        self._best_product_yield_soFar = 0
+        self._best_product_yield_soFar = self._best_product_yield_soFar_init
 
         # The following parameter is essentially the same as self._best_product_yield_soFar but it is
         # reset to zero each time self._interven_num_curr increases. This parameter store the best
         # objective function with the current number of interventions. 
-        best_product_yield_soFar = 0
+        best_product_yield_soFar = self._best_product_yield_soFar_init
 
         if self.results_filename != '':
             with open(self.results_filename,'w') as f:
                 f.write('')
 
-        #---- Creating the pyomo optModel ----
+        # Creating the pyomo optModel 
         if self.build_new_optModel:
             start_pyomo_pt = time.clock()
             start_pyomo_wt = time.time()
@@ -890,6 +895,10 @@ class FORCE(object):
         # A list of dictionaries holding the optimal solution in different iterations
         self.solutions = []
         done = False
+
+        if self.stdout_msgs:
+            print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
+
         # For a given number of interventions we keep finding alternative solutions all giving the same objective 
         # function value. If the problem becomes infeasible or the objective funciton is less than the best current
         # then we increase the number of iterventions 
@@ -903,7 +912,7 @@ class FORCE(object):
 
                 # If the product yield for the current number of iterations is zero, move on  
                 # by increasing the number of interventions
-                if self._curr_soln['objective_value'] < 1e-6:
+                if abs(self._curr_soln['objective_value'] - self._best_product_yield_soFar_init) < 1e-6:
                     if self.stdout_msgs:
                         print '\n** Iterations with {} interventions stopped with the following solution, which results in an objective function of almost zero'.format(self._interven_num_curr)
                         self.print_results_summary()
@@ -911,8 +920,8 @@ class FORCE(object):
                     self._interven_num_curr += 1
                     if self.stdout_msgs and self._interven_num_curr <= self.total_interven_num:
                         print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
-                    best_product_yield_soFar = 0 
-                    self._best_product_yield_soFar = 0 
+                    best_product_yield_soFar = self._best_product_yield_soFar_init 
+                    self._best_product_yield_soFar = self._best_product_yield_soFar_init 
          
                 # If the product yield with the current number of iterations is less than best_product_yield_soFar
                 # then move on by increasing the number of iterations  
@@ -933,7 +942,7 @@ class FORCE(object):
                             if self.stdout_msgs and self._interven_num_curr <= self.total_interven_num:
                                 print '\n-------- # of interventions = {} ----------\n'.format(self._interven_num_curr)
                             self._best_product_yield_soFar = best_product_yield_soFar
-                            best_product_yield_soFar = 0  # reset to zero before moving to higher order interventions 
+                            #best_product_yield_soFar = 0  # reset to zero before moving to higher order interventions 
    
                 # Otherwise store the results
                 else:
@@ -942,12 +951,12 @@ class FORCE(object):
                     # If this is the first solution with the current number of iterations specified 
                     # by self._interven_num_curr, then set best_product_yield_soFar to the objective funciton
                     # value, if it is greater than zero
-                    if best_product_yield_soFar == 0:
+                    if self._curr_soln['objective_value'] > best_product_yield_soFar:
                         best_product_yield_soFar = self._curr_soln['objective_value']
 
                     # Validate the solution
                     if self.validate_results:
-                        self.validate_soln()
+                        self.find_min_product_yield()
 
                     self.solutions.append(self._curr_soln)
 
@@ -1009,7 +1018,6 @@ class FORCE(object):
                         best_product_yield_soFar = 0 
 
             # Stop if the maximum number of iterations has exceeded
-            print '\nself._interven_num_curr = {}'.format(self._interven_num_curr)
             if self._interven_num_curr > self.total_interven_num:
                 if self.stdout_msgs and not done:
                     print '\n**Iterations stopped because the maximum number of interventions = {} has been reached\n'.format(self.total_interven_num)
@@ -1055,6 +1063,12 @@ class FORCE(object):
 
         # Set flux bounds for the model
         self.set_model_flux_bounds()
+        self.define_optModel_params()
+   
+        # Empty ignored reacitons
+        self.ignored_X_rxns = []
+        self.ignored_L_rxns = []
+        self.ignored_U_rxns = []
 
         # Create a solver and set the options
         self._optSolver = pyomoSolverCreator(self.optimization_solver)
@@ -1065,17 +1079,17 @@ class FORCE(object):
         self.build_primal_optModel()
         self._elapsed_create_optModel_pt = str(timedelta(seconds = time.clock() - start_pyomo_pt))
         self._elapsed_create_optModel_wt = str(timedelta(seconds = time.time() - start_pyomo_wt))
-        # Fix known variables
-        self.fix_known_variables()
 
         for j in self.optModel.J:
             self.optModel.yX[j] = 0
-            self.optModel.yX[j].fixed = True
-
             self.optModel.yL[j] = 0
-            self.optModel.yL[j].fixed = True
-
             self.optModel.yU[j] = 0
+
+        self.optModel.yU['PylB'] = 1
+
+        for j in self.optModel.J:
+            self.optModel.yX[j].fixed = True
+            self.optModel.yL[j].fixed = True
             self.optModel.yU[j].fixed = True
 
         # Solve the optimizaiton model 
@@ -1087,17 +1101,17 @@ class FORCE(object):
         self.build_dual_optModel()
         self._elapsed_create_optModel_pt = str(timedelta(seconds = time.clock() - start_pyomo_pt))
         self._elapsed_create_optModel_wt = str(timedelta(seconds = time.time() - start_pyomo_wt))
-        # Fix known variables
-        self.fix_known_variables()
 
         for j in self.optModel.J:
             self.optModel.yX[j] = 0
-            self.optModel.yX[j].fixed = True
-
             self.optModel.yL[j] = 0
-            self.optModel.yL[j].fixed = True
-
             self.optModel.yU[j] = 0
+
+        self.optModel.yU['PylB'] = 1
+
+        for j in self.optModel.J:
+            self.optModel.yX[j].fixed = True
+            self.optModel.yL[j].fixed = True
             self.optModel.yU[j].fixed = True
 
         # Solve the optimizaiton model 

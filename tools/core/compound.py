@@ -4,6 +4,7 @@ sys.path.append('../../')
 import reaction 
 from compartment import compartment
 from tools.userError import *
+from tools.custom_objects import customList, customDict
 from copy import deepcopy
 
 class compound(object):
@@ -12,6 +13,11 @@ class compound(object):
 
     METHODS:
     -------
+                   assign_props: Assign some properties to the compound related to other components of the model
+                    reset_props: Resets the properties of the compound related to other components of the model
+                  set_reactions: Sets the field reactions (direct modification of this attribute is not allowed)
+          set_reactant_reactios: Sets attribute reactant_reactions (direct modification of this attribute is not allowed)
+           set_product_reactios: Sets attribute product_reactions (direct modification of this attribute is not allowed)
              print_reactions_by: Prints in the out the list of reactions in which this 
                                  imetabolite partcipates as a reactnat or product 
     print_reactant_reactions_by: Prints in the output the list of reacitons in which this
@@ -23,9 +29,8 @@ class compound(object):
                                  satisfy the non-growth associated ATPM maintenance (if applicable)
  
     Ali R. Zomorrodi - Segre Lab @ BU
-    Last updated: 12-07-2015
+    Last updated: 04-25-2016
     """
-
     def __init__(self, id, compartment = None, name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], formula = '', molecular_weight = None, charge = None, reactions = [], reactant_reactions = [], product_reactions = [], concentration = None, deltaG = None, deltaG_uncertainty = None, deltaG_range = [], notes = None, warnings = True): 
 
         # Warnings 
@@ -100,7 +105,7 @@ class compound(object):
 
     def assign_props(self):
         """
-        Assigns the properties of reaction
+        Assigns the properties of a compound related to the model they belong to
         """
         # List of reaction objects in which this metabolite participates as a
         # reactant or product. If the list is not provided, it can be constructed
@@ -110,21 +115,27 @@ class compound(object):
         # reactant or product
         if self.reactions == [] and (self.reactant_reactions != [] or self.product_reactions != []):
             self.reactions = list(set(self.reactant_reactions + self.product_reactions))
-        self.reactions = sorted(self.reactions,key=lambda x:x.id)
 
         # List of reaction objects in which this metabolite participates as a
         # reactant 
         if self.reactant_reactions == [] and len(self.reactions) >= 1:
             for rxn in [r for r in self.reactions if self in r.stoichiometry.keys() and r.stoichiometry[self] < 0]:
                 self.reactant_reactions.append(rxn)
-        self.reactant_reactions = sorted(self.reactant_reactions,key=lambda x:x.id)
 
         # List of reaction objects in which this metabolite participates as a
         # product 
         if self.product_reactions == [] and len(self.reactions) >= 1:
             for rxn in [r for r in self.reactions if self in r.stoichiometry.keys() and r.stoichiometry[self] > 0]:
                 self.product_reactions.append(rxn)
-        self.product_treactions = sorted(self.product_reactions,key=lambda x:x.id)
+
+    def reset_props(self):
+        """
+        Resets the properties of a compound to default related to the model they belong to
+        """
+        self.model = None
+        self.reactions = []
+        self.reactant_reactions = []
+        self.product_reactions = []
     
     def __setattr__(self,attr_name,attr_value):
         """
@@ -157,27 +168,16 @@ class compound(object):
             raise TypeError("Invalid 'compartment' for compound " + str(self.id) + "! 'compartment' must be an object of type compartment. A "  + str(type(attr_value)) + " type object was entered instead")
 
         # KEGG id
-        if attr_name == 'KEGG_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'KEGG_id' for compound " + str(self.id) + "'KEGG_id' must be either a string or a list of strings. A "  + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'KEGG_id' and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
-            raise TypeError("Invalid 'KEGG_id' for compound " + str(self.id) + "'KEGG_id' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
-
-        # ModelSEED id
-        if attr_name == 'ModelSEED_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'ModelSEED_id' for compound " + str(self.id) + "! 'ModelSEED_id' must be either a string or a list of strings. A " + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'ModelSEED_id' and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
-            raise TypeError("Invalid 'ModelSEED_id' for compound " + str(self.id) + "! 'ModelSEED_id' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
-
-        # ModelSEED id
-        if attr_name == 'BiGG_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'BiGG_id' for compound " + str(self.id) + "! 'BiGG_id' must be either a string or a list of strings. A " + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'BiGG_id' and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
-            raise TypeError("Invalid 'BiGG_id' for compound " + str(self.id) + "! 'BiGG_id' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
-
+        if attr_name in ['ModelSEED_id', 'KEGG_id', 'BiGG_id'] and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
+            raise TypeError('{} must be a list. A {} object were provided insteaded.'.format(attr_name, type(attr_value)))
+        if attr_name in ['ModelSEED_id', 'KEGG_id', 'BiGG_id'] and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
+            raise TypeError('Invalid {} for compound {}! {} must be a list of strings. Objects of type {} were observed in the list instead.'.format(attr_name, self.id, attr_name, list(set([type(n) for n in attr_value if not isinstance(n,str)])))) 
 
         # Formula 
-        if attr_name == 'formula' and not isinstance(attr_value,str):
+        if attr_name == 'formula' and attr_value != None and not isinstance(attr_value,str):
             raise TypeError("Invalid 'formula' for compound " + str(self.id) + "! 'formula'  must be a string. A " + str(type(attr_value)) + " type object was entered instead")
+        elif attr_name == 'formula' and attr_value == None: 
+            self.__dict__[attr_name] = ''
 
         # Molecular weight
         if attr_name == 'molecular_weight' and (attr_value is not None and not isinstance(attr_value,int) and not isinstance(attr_value,float)):
@@ -199,30 +199,71 @@ class compound(object):
         if attr_name == 'deltaG_range' and not isinstance(attr_value,list):
             raise TypeError("Invlaud 'deltaG_range' for compound " + self.id + "! 'deltaG_range' must be a list. A " + str(type(attr_value)) + " type object was entered instead")
 
-        # Reactions
-        if attr_name == 'reactions' and (attr_value is not None and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type reaction. A " + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'reactions' and len([n for n in attr_value if not isinstance(n,reaction.reaction)]) > 0:
-            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type 'reaction'.  Objects that are not of type reaction found in the list:" + str([n for n in attr_value if not isinstance(n,reaction.reaction)]))
-
-        # Reactant reactions 
-        if attr_name == 'reactant_reactions' and (attr_value is not None and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. A " + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'reactant_reactions' and len([n for n in attr_value if not isinstance(n,reaction.reaction)]) > 0:
-            raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. Objects that are not of type reaction found in the list: " + str([n for n in attr_value if not isinstance(n,reaction.reaction)]))
-
-        # Product reactions 
-        if attr_name == 'product_reactions' and (attr_value is not None and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. A " + str(type(attr_value)) + " type object was entered instead")
-        if attr_name == 'product_reactions' and len([n for n in attr_value if not isinstance(n,reaction.reaction)]) > 0:
-            raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'product_reactions'  must be a list of objects of type reaction. Objects that are not of type reaction found in the list: " + str([n for n in attr_value if not isinstance(n,reaction.reaction)]))
 
         # Concentration 
         if attr_name == 'concentration' and (attr_value is not None and not isinstance(attr_value,int) and not isinstance(attr_value,float) and not isinstance(attr_value,dict)):
             raise TypeError("Invalid 'concentration' for compound " + str(id) + "! 'concentration' must be either a float or an integer or a dictionary. A " + str(type(attr_value)) + " type object was entered instead")
 
-        self.__dict__[attr_name] = attr_value
+        if attr_name in 'reactions':
+            self.set_reactions(reactions = attr_value)
+        elif attr_name in 'reactant_reactions':
+            self.set_reactant_reactions(reactant_reactions = attr_value)
+        elif attr_name in 'product_reactions':
+            self.set_product_reactions(product_reactions = attr_value)
+        else:
+            self.__dict__[attr_name] = attr_value
 
+    def set_reactions(self, reactions):
+        """
+        Makes changes to attribute reactions
+        """
+        if reactions is not None and not isinstance(reactions,list):
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
+        if len([n for n in reactions if not isinstance(n,reaction.reaction)]) > 0:
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type 'reaction'.  Objects that are not of type reaction found in the list:" + str([n for n in reactions if not isinstance(n,reaction.reaction)]))
+
+        problem_rxns = [r.id for r in reactions if self not in r.stoichiometry.keys()]
+
+        if len(problem_rxns) > 0: 
+            raise userError('The following {} reactions appears in "reactions" of compound {} but do not appear in the stoichioemtry of this reaction: {}'.format(len(problem_rxns), self,id, problem_rxns))
+
+        reactions = sorted(reactions,key=lambda x:x.id)
+
+        self.__dict__['reactions'] = customList(reactions)
+
+    def set_reactant_reactions(self, reactant_reactions):
+        """
+        Makes changes to attribute reactant_reactions
+        """
+        if (reactant_reactions is not None and not isinstance(reactant_reactions,list)):
+            raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. A " + str(type(reactant_reactions)) + " type object was entered instead")
+        if len([n for n in reactant_reactions if not isinstance(n,reaction.reaction)]) > 0:
+            raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. Objects that are not of type reaction found in the list: " + str([n for n in reactant_reactions if not isinstance(n,reaction.reaction)]))
+
+        problem_rxns = [r.id for r in reactant_reactions if self not in [c for c in r.stoichiometry.keys() if r.stoichiometry[c] < 0]]
+        if len(problem_rxns) > 0: 
+            raise userError('The following {} reactions appears in "reactant_reactions" of compound {} but it does not appear in the stoichioemtry of this reaction as a reactant {}'.format(len(problem_rxns), self,id, problem_rxns))
+
+        reactant_reactions = sorted(reactant_reactions,key=lambda x:x.id)
+
+        self.__dict__['reactant_reactions'] = customList(reactant_reactions)
+
+    def set_product_reactions(self, product_reactions):
+        """
+        Makes changes to attribute product_reactions
+        """
+        if product_reactions is not None and not isinstance(product_reactions,list):
+            raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. A " + str(type(product_reactions)) + " type object was entered instead")
+        if len([n for n in product_reactions if not isinstance(n,reaction.reaction)]) > 0:
+            raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'product_reactions'  must be a list of objects of type reaction. Objects that are not of type reaction found in the list: " + str([n for n in product_reactions if not isinstance(n,reaction.reaction)]))
+
+        problem_rxns = [r.id for r in product_reactions if self not in [c for c in r.stoichiometry.keys() if r.stoichiometry[c] > 0]]
+        if len(problem_rxns) > 0: 
+            raise userError('The following {} reactions appears in "product_reactions" of compound {} but it does not appear in the stoichioemtry of this reaction as a product {}'.format(len(problem_rxns), self,id, problem_rxns))
+
+        product_reactions = sorted(product_reactions,key=lambda x:x.id)
+
+        self.__dict__['product_reactions'] = customList(product_reactions)
 
     def print_reactions_by(self,ref_type, metab_ref = None):
         """

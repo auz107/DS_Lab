@@ -182,18 +182,6 @@ class fbaTools(object):
         """
         pass
 
-    def assignFluxBounds(self,optModel,j):
-        """
-        Define the flux bounds
-        """
-        return self.model.reactions_by_id[j].flux_bounds 
-        
-    def massBalance_rule(self,optModel,i):
-        """
-        Mass balance 
-        """
-        return sum(j.stoichiometry[self.model.compounds_by_id[i]]*optModel.v[j.id] for j in self.model.compounds_by_id[i].reactions) == 0 
-        
     def build_optModel(self):
         """
         This optModel creates a pyomo model for FBA optModel
@@ -209,7 +197,7 @@ class fbaTools(object):
         optModel.J = Set(initialize = self.model.reactions_by_id.keys())     
 
         #--- Define the optModel variables --- 
-        optModel.v = Var(optModel.J, domain=Reals, bounds = self.assignFluxBounds)
+        optModel.v = Var(optModel.J, domain=Reals, bounds = lambda optModel, j: self.model.reactions_by_id[j].flux_bounds)
         
         #--- Defiine the objective function and constraints ----
         # Objective function
@@ -219,7 +207,7 @@ class fbaTools(object):
             optModel.objectiveFunc = Objective(rule=self.objectiveFunc_rule, sense = minimize)
 
         # Mass balance 
-        optModel.massBalance_const = Constraint(optModel.I, rule=self.massBalance_rule)
+        optModel.massBalance_const = Constraint(optModel.I, rule = lambda optModel, i: sum(j.stoichiometry[self.model.compounds_by_id[i]]*optModel.v[j.id] for j in self.model.compounds_by_id[i].reactions) == 0)
 
         self.optModel = optModel 
     
@@ -257,7 +245,7 @@ class fbaTools(object):
                 self.optimization_solver == 'gurobi_ampl'
                 self.optSolver = pyomoSolverCreator(self.optimization_solver)
 
-                self.optSolver.options['presolve'] = 0  # Turn off presolve
+                #self.optSolver.options['presolve'] = 0  # Turn off presolve
                 self.optSolver.options['basis'] = 3     # make sure gurobi_ampl returns and uses the sstatus suffix (solution basis info)
                 self.optSolver.options['method'] = 0    # use primal simplex
                 # According to the Gurobi documentation, sstatus suffix

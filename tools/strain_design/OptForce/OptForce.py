@@ -234,8 +234,8 @@ class OptForce(object):
 
         if attr_name == 'FORCE_params' and not isinstance(attr_value,dict):
             raise TypeError('FORCE_params must be a dictionary')
-        elif attr_name == 'FORCE_params' and len([k for k in attr_value.keys() if k not in ['growthMedium_flux_bounds', 'min_biomass_percent', 'stopWith_product_yield_percent', 'MUST_X', 'MUST_L', 'MUST_U', 'MUST_LU_L', 'MUST_LU_U', 'MUST_LL_L1', 'MUST_LL_L2', 'MUST_UU_U1', 'MUST_UU_U2', 'total_interven_num', 'notMUST_total_interven_num', 'notXrxns_interven_num', 'notLrxns_interven_num', 'notUrxns_interven_num', 'fixed_X_rxns', 'fixed_L_rxns', 'fixed_U_rxns', 'inSilico_essential_rxns', 'inVivo_essential_rxns', 'blocked_rxns', 'build_new_optModel', 'dual_formulation_type', 'validate_results', 'results_filename', 'warnings', 'stdout_msgs']]) > 0:
-            raise ValueError('Invalid key(s) for FORCE_params: {}'.format([k for k in attr_value.keys() if k not in ['growthMedium_flux_bounds', 'min_biomass_percent', 'stopWith_product_yield_percent', 'MUST_X', 'MUST_L', 'MUST_U', 'MUST_LU_L', 'MUST_LU_U', 'MUST_LL_L1', 'MUST_LL_L2', 'MUST_UU_U1', 'MUST_UU_U2', 'total_interven_num', 'notMUST_total_interven_num', 'notXrxns_interven_num', 'notLrxns_interven_num', 'notUrxns_interven_num', 'fixed_X_rxns', 'fixed_L_rxns', 'fixed_U_rxns', 'inSilico_essential_rxns', 'inVivo_essential_rxns', 'blocked_rxns', 'build_new_optModel', 'dual_formulation_type', 'validate_results', 'results_filename', 'warnings', 'stdout_msgs']])) 
+        elif attr_name == 'FORCE_params' and len([k for k in attr_value.keys() if k not in ['growthMedium_flux_bounds', 'min_biomass_percent', 'stopWith_product_yield_percent', 'MUST_X', 'MUST_L', 'MUST_U', 'MUST_LU_L', 'MUST_LU_U', 'MUST_LL_L1', 'MUST_LL_L2', 'MUST_UU_U1', 'MUST_UU_U2', 'total_interven_num', 'notMUST_total_interven_num', 'notXrxns_interven_num', 'notLrxns_interven_num', 'notUrxns_interven_num', 'fixed_X_rxns', 'fixed_L_rxns', 'fixed_U_rxns', 'ignored_X_rxns', 'ignored_L_rxns', 'ignored_U_rxns', 'inSilico_essential_rxns', 'inVivo_essential_rxns', 'blocked_rxns', 'build_new_optModel', 'dual_formulation_type', 'validate_results', 'results_filename', 'warnings', 'stdout_msgs']]) > 0:
+            raise ValueError('Invalid key(s) for FORCE_params: {}'.format([k for k in attr_value.keys() if k not in ['growthMedium_flux_bounds', 'min_biomass_percent', 'stopWith_product_yield_percent', 'MUST_X', 'MUST_L', 'MUST_U', 'MUST_LU_L', 'MUST_LU_U', 'MUST_LL_L1', 'MUST_LL_L2', 'MUST_UU_U1', 'MUST_UU_U2', 'total_interven_num', 'notMUST_total_interven_num', 'notXrxns_interven_num', 'notLrxns_interven_num', 'notUrxns_interven_num', 'fixed_X_rxns', 'fixed_L_rxns', 'fixed_U_rxns', 'ignored_X_rxns', 'ignored_L_rxns', 'ignored_U_rxns', 'inSilico_essential_rxns', 'inVivo_essential_rxns', 'blocked_rxns', 'build_new_optModel', 'dual_formulation_type', 'validate_results', 'results_filename', 'warnings', 'stdout_msgs']])) 
         elif attr_name == 'FORCE_params':
             # Assign default values to FORCE_params
             if 'growthMedium_flux_bounds' not in attr_value.keys():
@@ -278,6 +278,12 @@ class OptForce(object):
                 attr_value['fixed_L_rxns'] = []
             if 'fixed_U_rxns' not in attr_value.keys():
                 attr_value['fixed_U_rxns'] = []
+            if 'ignored_X_rxns' not in attr_value.keys():
+                attr_value['ignored_X_rxns'] = []
+            if 'ignored_L_rxns' not in attr_value.keys():
+                attr_value['ignored_L_rxns'] = []
+            if 'ignored_U_rxns' not in attr_value.keys():
+                attr_value['ignored_U_rxns'] = []
             if 'read_inSilico_essential_rxns_fromThisFile' not in attr_value.keys():
                 attr_value['read_inSilico_essential_rxns_fromThisFile'] = ''
             if 'read_inVivo_essential_rxns_fromThisFile' not in attr_value.keys():
@@ -618,8 +624,10 @@ class OptForce(object):
                            MUST_X = self.MUST_X, MUST_L = self.MUST_L, MUST_U = self.MUST_U, MUST_LU_L = self.MUST_LU_L, MUST_LU_U = self.MUST_LU_U, MUST_LL_L1 = self.MUST_LL_L1, MUST_LL_L2 = self.MUST_LL_L2, MUST_UU_U1 = self.MUST_UU_U1, MUST_UU_U2 = self.MUST_UU_U2, 
                            total_interven_num = self.FORCE_params['total_interven_num'], notMUST_total_interven_num = self.FORCE_params['notMUST_total_interven_num'], notXrxns_interven_num = self.FORCE_params['notXrxns_interven_num'], notLrxns_interven_num = self.FORCE_params['notLrxns_interven_num'], notUrxns_interven_num = self.FORCE_params['notUrxns_interven_num'], 
                            fixed_X_rxns = self.FORCE_params['fixed_X_rxns'], fixed_L_rxns = self.FORCE_params['fixed_L_rxns'], fixed_U_rxns = self.FORCE_params['fixed_U_rxns'], 
+                           ignored_X_rxns = self.FORCE_params['ignored_X_rxns'], ignored_L_rxns = self.FORCE_params['ignored_L_rxns'], ignored_U_rxns = self.FORCE_params['ignored_U_rxns'], 
                            inSilico_essential_rxns = self.inSilico_essential_rxns, inVivo_essential_rxns = self.inVivo_essential_rxns, blocked_rxns = self.blocked_rxns, 
                            build_new_optModel = self.FORCE_params['build_new_optModel'], dual_formulation_type = self.FORCE_params['dual_formulation_type'], validate_results = self.FORCE_params['validate_results'], 
                            results_filename = self.FORCE_params['results_filename'], optimization_solver = self.FORCE_params['optimization_solver'], warnings = self.FORCE_params['warnings'], stdout_msgs = self.FORCE_params['stdout_msgs'])
+        #force_inst.run_primal_dual()
         force_inst.run()
  

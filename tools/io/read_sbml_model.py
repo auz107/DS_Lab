@@ -12,7 +12,7 @@ import cobra
 from libsbml import readSBML
 import re
 
-def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpolic',model_name = '', import_params = False, use_cobra_parser = True, remove_M_R = True, warnings = True, stdout_msgs = True): 
+def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpolic',model_name = '', import_params = False, use_cobra_parser = True, remove_M_R = True, validate = True, warnings = True, stdout_msgs = True): 
     """
     A class to read a sbml model into a model object. The sbml model is 
     first converted into a COBRApy model, which is used as an input to create
@@ -47,6 +47,9 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
         raise TypeError("stdout_msgs must be True or False")
     if not isinstance(warnings,bool):
         raise TypeError("warnings must be True or False")
+    if not isinstance(validate,bool):
+        raise TypeError("validate must be True or False")
+
 
     # organism
     if type(model_organism) is str:             # If name is provided
@@ -377,7 +380,7 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
         atpm_reaction = atpm_reaction[0] 
 
     #--- model ---
-    return model(id = model_id, type = model_type, organism = model_organism, reactions = reactions, compounds = compounds, genes = genes, compartments = compartments, biomass_reaction = biomass_reaction,atpm_reaction = atpm_reaction, warnings = warnings, stdout_msgs = stdout_msgs)
+    return model(id = model_id, type = model_type, organism = model_organism, reactions = reactions, compounds = compounds, genes = genes, compartments = compartments, biomass_reaction = biomass_reaction,atpm_reaction = atpm_reaction, validate = validate, warnings = warnings, stdout_msgs = stdout_msgs)
 
 def parse_sbml_notes(note_string, note_delimiter = ':'):
     """

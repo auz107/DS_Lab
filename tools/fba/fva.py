@@ -82,7 +82,7 @@ def fva(model, optimization_solver = default_optim_solver, save_to_model = False
         rxn.objective_coefficient = 1
 
         if counter == 1:
-            fba_model = fba(model = model, optimization_solver = optimization_solver, build_new_optModel = True, maximize = False, save_to_model = False, simulation_conditions = simulation_conditions, warmstart = warmstart, warmings = warnings, stdout_msgs = False, show_solver_output = True)
+            fba_model = fba(model = model, optimization_solver = optimization_solver, build_new_optModel = True, maximize = False, save_to_model = False, simulation_conditions = simulation_conditions, warmstart = warmstart, warmings = warnings, stdout_msgs = False, show_solver_output = False)
 
         # From counter 2 on, turn off build_new_optModel and preprocessing and turn on warmstart 
         elif counter == 2:
@@ -122,7 +122,7 @@ def fva(model, optimization_solver = default_optim_solver, save_to_model = False
         rxn.objective_coefficient = 1
 
         if counter == 1:
-            fba_model = fba(model = model, optimization_solver = optimization_solver, build_new_optModel = True, maximize = True, save_to_model = False, simulation_conditions = simulation_conditions, warmstart = warmstart, warnings = warnings, stdout_msgs = False, show_solver_output = True)
+            fba_model = fba(model = model, optimization_solver = optimization_solver, build_new_optModel = True, maximize = True, save_to_model = False, simulation_conditions = simulation_conditions, warmstart = warmstart, warnings = warnings, stdout_msgs = False, show_solver_output = False)
 
         # From counter 2 on, turn off build_new_optModel and preprocessing and turn on warmstart 
         elif counter == 2:

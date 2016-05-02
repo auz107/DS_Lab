@@ -12,16 +12,19 @@ class compartment(object):
     Last updated: 11-24-2014
     """
 
-    def __init__(self, id, name = None, synonyms = [], model = None, notes = None): 
+    def __init__(self, id, name = '', name_aliases = [], model = None, notes = ''): 
     
         # Gene id 
         self.id = id
 
-        # Gene name (case insensitive string)
+        # na,e 
         if name == None or name == '':
             self.name = self.id
         else:
             self.name = name
+
+        # name aliases
+        self.name_aliases = name_aliases
 
         # The model in which this compartment is used
         self.model = model

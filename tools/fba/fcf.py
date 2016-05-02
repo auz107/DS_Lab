@@ -86,7 +86,7 @@ class fcf(object):
         """
         # model 
         if attr_name == 'model' and not isinstance(attr_value,model):
-            raise TypeError('model must be instance of class model')
+            raise TypeError('model must be instance of class model. Type of input object: {}'.format(type(attr_value)))
 
         # Always blocked reactions 
         if attr_value == 'blocked_rxns' and not isinstance(simulation_conditions,list):
@@ -375,8 +375,6 @@ class fcf(object):
                 else:
                     Rmin = None 
 
-                print '(j1,j2) = {}, (self_curr_j1, self_curr_j2) = {}, (Rmin, Rmax) = {}'.format((j1,j2), (self._curr_j1, self._curr_j2), (Rmin, Rmax))
-
                 #--- Check for coupling relations ---
                 if Rmin != None and Rmax != None and Rmax != float('inf') and Rmin == 0 and Rmax > 0:
                     self.directionally_coupled_split.append({'j1':j1,'j2':j2,'direction':'j1 --> j2', 'Rmin':Rmin, 'Rmax':Rmax})
@@ -447,10 +445,14 @@ class fcf(object):
 
         if self.results_filename != '':
             # Save the results into a temporary file in case there are errors in save_results_toFile
-            with open(results_filename + '.tmp','w') as f:
-                f.write('directionarlly_coupled = {}\n'.format(self.directionally_coupled))
-                f.write('\nparially_coupled = {}\n'.format(self.partially_coupled))
-                f.write('\nfully_coupled = {}\n'.format(self.fully_coupled))
+            with open(self.results_filename + '.tmp','w') as f:
+                f.write('directionally_coupled_split = {}\n'.format(self.directionally_coupled_split))
+                f.write('\nparially_coupled_split = {}\n'.format(self.partially_coupled_split))
+                f.write('\nfully_coupled_split = {}\n'.format(self.fully_coupled_split))
+                f.write('\nfully_coupled_reps_split = {}\n'.format(self.fully_coupled_reps_split))
+            print '\nResults were temporarily saved to {}\n'.format(self.results_filename + '.tmp')
+
+            # Save results into file
             self.save_results_toFile()
 
         # Time required to perform FBA
@@ -469,21 +471,21 @@ class fcf(object):
         with open(self.results_filename, 'w') as f:
 
             # Directionally coupled
-            f.write('directionarlly_coupled_split = [\n')
-            for dcoupled in self.directionarlly_coupled:
-                f.write("{{'j1':'{}', 'j2':'{}', 'direction':'{}', 'Rmin':{}, 'Rmax':{}}},\n".format(dcoupled['j1'],dcoupled['j2'], dcoupled['direction'], dcoupled['Rmin'], doucpled['Rmax'])) 
+            f.write('directionally_coupled_split = [\n')
+            for dcoupled in self.directionally_coupled_split:
+                f.write("{{'j1':'{}', 'j2':'{}', 'direction':'{}', 'Rmin':{}, 'Rmax':{}}},\n".format(dcoupled['j1'],dcoupled['j2'], dcoupled['direction'], dcoupled['Rmin'], dcoupled['Rmax'])) 
             f.write(']\n\n')
 
             # Partially coupled
             f.write('partially_coupled_split = [\n')
             for pcoupled in self.partially_coupled_split:
-                f.write("{{'j1':'{}', 'j2':'{}', 'Rmin':{}, 'Rmax':{}}},\n".format(pcoupled['j1'],pcoupled['j2'], pcoupled['Rmin'], doucpled['Rmax'])) 
+                f.write("{{'j1':'{}', 'j2':'{}', 'Rmin':{}, 'Rmax':{}}},\n".format(pcoupled['j1'],pcoupled['j2'], pcoupled['Rmin'], dcoupled['Rmax'])) 
             f.write(']\n\n')
 
             # Fully coupled
             f.write('fully_coupled_split = [\n')
-            for fcoupled in self.fully_coupled_reps_split:
-                f.write("{{'j1':'{}', 'j2':'{}', 'Rmin':{}, 'Rmax':{}}},\n".format(fcoupled['j1'],fcoupled['j2'], fcoupled['Rmin'], doucpled['Rmax'])) 
+            for fcoupled in self.fully_coupled_split:
+                f.write("{{'j1':'{}', 'j2':'{}', 'Rmin':{}, 'Rmax':{}}},\n".format(fcoupled['j1'],fcoupled['j2'], fcoupled['Rmin'], dcoupled['Rmax'])) 
             f.write(']\n\n')
 
             # Fully coupled sets
@@ -497,7 +499,6 @@ class fcf(object):
             for k in self.fully_coupled_reps.keys():
                 f.write("'{}':{},".format(k),fully_coupled_reps[j])
             f.write('}')
-
 
 
 def find_coupling_with_revrxn(self, j1_f_j2_coupling, j1_b_j2_coupling):

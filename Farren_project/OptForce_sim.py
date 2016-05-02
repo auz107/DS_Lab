@@ -53,15 +53,14 @@ def create_modifed_model(nsAA = 'Pyrrolysine', aeration = 'aerobic', media_type 
     model_organism = organism(id = 'Ecoli', name = 'Escherichia coli',domain = 'Bacteria', genus = 'Escherichia', species = 'coli', strain = 'MG1655')
 
     # Orignal iJo1266 model
-    model = create_model(model_organism = model_organism, model_info = {'id':'iJO1366', 'sbml_filename':model_path + 'iJO1366_updated.xml', 'biomassrxn_id':'Ec_biomass_iJO1366_core_53p95M'}, growthMedium_flux_bounds = {'flux_bounds_filename':flux_bounds_filename, 'flux_bounds_dict': flux_bounds_dict}, stdout_msgs = True, warnings = True)
+    model = create_model(model_organism = model_organism, model_info = {'id':'iJO1366', 'input_file_type':'sbml', 'model_filename':model_path + 'iJO1366_updated.xml', 'biomassrxn_id':'Ec_biomass_iJO1366_core_53p95M'}, growthMedium_flux_bounds = {'flux_bounds_filename':flux_bounds_filename, 'flux_bounds_dict': flux_bounds_dict}, stdout_msgs = True, warnings = True)
 
-    # Load reaction subsystems 
-    load_source('dataFile', model_path + 'iJO1366_rxns_subsystems.py')
+    # Load the list of transport-like (pseudo-transport) reacitons and add "pseudo-transport" to their subsystem 
+    load_source('dataFile', model_path + 'iJO1366_transport_like_rxns.py')
     import dataFile
-    rxns_subsystems = dataFile.rxns_subsystems
-    #for r_id in rxns_subsystems.keys():
-    #    model.reactions_by_id[r_id].subsystem = rxns_subsystems[r_id]
-
+    transport_like_rxns = dataFile.transport_like_rxns
+    for r_id in transport_like_rxns:
+        model.reactions_by_id[r_id].subsystem = model.reactions_by_id[r_id].subsystem + ' (pseudo-transport)' 
 
     # Add the nsAA biosynthesis pathways to the model
     if nsAA.lower() == 'pyrrolysine':
@@ -163,7 +162,7 @@ def find_coupled_rxns(nsAA = 'Pyrrolysine', aeration = 'aerobic', media_type = '
     """
     Finds the set of fully coupled reactions 
     """
-    Ecoli_nsAA_producing = create_modifed_model(nsAA = nsAA, aeration = aeration, media_type = media_type, stdout_msgs = stdout_msgs, warnings = warnings)
+    (Ecoli_nsAA_producing, product_exchrxn_id, flux_bounds_dict, flux_bounds_filename) = create_modifed_model(nsAA = nsAA, aeration = aeration, media_type = media_type, stdout_msgs = stdout_msgs, warnings = warnings)
 
     # Load blocked rxns list 
     blocked_results_filename = home_dir + 'work/Farren_project/results/iJO1366nsAA_blocked_rxns_' + aeration + '_' + media_type + '_' + nsAA.lower() + '.py'
@@ -171,10 +170,11 @@ def find_coupled_rxns(nsAA = 'Pyrrolysine', aeration = 'aerobic', media_type = '
     import dataFile
     blocked_rxns = dataFile.blocked_rxns
 
-    results_filename = home_dir + 'work/Farren_project/results/iJO1366nsAA_fullyCoupled_sets_' + aeration + '_' + media_type + '_' + nsAA.lower() + '.py'
+    results_filename = home_dir + 'work/Farren_project/results/iJO1366nsAA_coupled_sets_' + aeration + '_' + media_type + '_' + nsAA.lower() + '.py'
 
     fcf_inst = fcf(model = Ecoli_nsAA_producing, blocked_rxns = blocked_rxns, results_filename = results_filename, warnings = True, stdout_msgs = True)
     fcf_inst.run()
+
 
 def OptForce_sim(nsAA = 'Pyrrolysine', aeration = 'aerobic', media_type = 'minimal', stdout_msgs = True, warnings = True):
     """
@@ -218,28 +218,102 @@ def OptForce_sim(nsAA = 'Pyrrolysine', aeration = 'aerobic', media_type = 'minim
     read_exp_flux_bounds_ref_fromThisFile = '/usr2/postdoc/alizom/work/tools/strain_design/flux_data/Escherichia_coli/iJO1366_minimal_aerobic_glc_PMID_23036703.py'
     read_blocked_rxns_fromThisFile = home_dir + 'work/Farren_project/results/iJO1366nsAA_blocked_rxns_' + aeration + '_' + media_type + '_' + nsAA.lower() + '.py'
     read_inSilico_essential_rxns_fromThisFile = home_dir + 'work/Farren_project/results/iJO1366nsAA_essential_rxns_' + aeration + '_' + media_type + '_' + nsAA.lower() + '.py'
-    read_inVivo_essential_rxns_fromThisFile = home_dir + 'work/models/Escherichia_coli/iJO1366/' + 'inVivo_essential_rxns_aerobic_glucose_minimal.py'
+    read_inVivo_essential_rxns_fromThisFile = home_dir + 'work/models/Escherichia_coli/iJO1366/iJO1366_inVivo_essential_rxns_aerobic_glucose_minimal.py'
 
-    MUST_doubles_params = {'objective_thr':1, 'validate_results':True, 'results_filename':results_filename_base + '_MUST_doubles.py'}
+    MUST_singles_diff_thr = 1
+    MUST_doubles_params = {'objective_thr':1, 'validate_results':True, 'results_filename':results_filename_base + '_MUST_doubles.py', 'stdout_msgs': False}
 
-    FORCE_params = {'total_interven_num':10, 'notMUST_total_interven_num':0, 'notXrxns_interven_num':0, 'notLrxns_interven_num':0, 'notUrxns_interven_num':0, 'fixed_X_rxns':[], 'fixed_L_rxns':[], 'fixed_U_rxns':[], 'build_new_optModel':True, 'dual_formulation_type': 'simplified', 'stopWith_product_yield_percent': 95, 'validate_results': True, 'results_filename':results_filename_base + '_FORCE_sets.py'}
+    OptForce_nsAA = OptForce(model = Ecoli_nsAA_producing, product_exchrxn_id = product_exchrxn_id, product_targetYield_percent = 80, min_biomass_percent = 20, growthMedium_flux_bounds = {'flux_bounds_filename':flux_bounds_filename, 'flux_bounds_dict': flux_bounds_dict}, read_exp_flux_bounds_ref_fromThisFile = read_exp_flux_bounds_ref_fromThisFile, read_blocked_rxns_fromThisFile = read_blocked_rxns_fromThisFile, read_inSilico_essential_rxns_fromThisFile = read_inSilico_essential_rxns_fromThisFile, read_inVivo_essential_rxns_fromThisFile = read_inVivo_essential_rxns_fromThisFile, MUST_singles_diff_thr = MUST_singles_diff_thr, MUST_doubles_params = MUST_doubles_params, stdout_msgs = True)
 
-    OptForce_nsAA = OptForce(model = Ecoli_nsAA_producing, product_exchrxn_id = product_exchrxn_id, product_targetYield_percent = 80, min_biomass_percent = 10,  growthMedium_flux_bounds = {'flux_bounds_filename':flux_bounds_filename, 'flux_bounds_dict': flux_bounds_dict}, read_exp_flux_bounds_ref_fromThisFile = read_exp_flux_bounds_ref_fromThisFile, read_blocked_rxns_fromThisFile = read_blocked_rxns_fromThisFile, read_inSilico_essential_rxns_fromThisFile = read_inSilico_essential_rxns_fromThisFile, read_inVivo_essential_rxns_fromThisFile = read_inVivo_essential_rxns_fromThisFile, MUST_doubles_params = MUST_doubles_params, FORCE_params = FORCE_params, stdout_msgs = True)
+    if nsAA.lower() == 'pyrrolysine':
+        #OptForce_nsAA.save_flux_bounds_ref_toThisFile = results_filename_base + '_flux_bounds_ref.py' 
+        OptForce_nsAA.read_flux_bounds_ref_fromThisFile = results_filename_base + '_flux_bounds_ref.py' 
 
-    #OptForce_nsAA.save_flux_bounds_ref_toThisFile = home_dir + 'work/Farren_project/results/optforce_' + aeration + '_' + media_type + '_flux_bounds_ref.py'
-    OptForce_nsAA.read_flux_bounds_ref_fromThisFile = home_dir + 'work/Farren_project/results/optforce_' + aeration + '_' + media_type + '_flux_bounds_ref.py'
+        #OptForce_nsAA.save_flux_bounds_overprod_toThisFile = results_filename_base + '_flux_bounds_overprod.py'
+        OptForce_nsAA.read_flux_bounds_overprod_fromThisFile = results_filename_base + '_flux_bounds_overprod.py'
 
-    OptForce_nsAA.save_flux_bounds_overprod_toThisFile = results_filename_base + '_flux_bounds_overprod.py'
-    #OptForce_nsAA.read_flux_bounds_overprod_fromThisFile = results_filename_base + '_flux_bounds_overprod.py'
+        #OptForce_nsAA.save_MUST_singles_toThisFile = results_filename_base + '_MUST_singles.py'
+        OptForce_nsAA.read_MUST_singles_fromThisFile = results_filename_base + '_MUST_singles.py'
 
-    OptForce_nsAA.save_MUST_singles_toThisFile = results_filename_base + '_MUST_singles.py'
-    #OptForce_nsAA.read_MUST_singles_fromThisFile = results_filename_base + '_MUST_singles.py'
+        OptForce_nsAA.read_MUST_doubles_fromThisFile = results_filename_base + '_MUST_doubles.py'
 
-    #OptForce_nsAA.read_MUST_doubles_fromThisFile = results_filename_base + '_MUST_doubles.py'
+        # First round: PylB or PylC or PylD1 or PylD2 --> product yield = 31.96 (80.0% of theoretical maximum = 39.95) 
+        #fixed_U_rxns = []
+        fixed_U_rxns = ['DAPDC']
+        #ignored_U_rxns = []
+        ignored_U_rxns = ['PylB','PylC','PylD1','PylD2']
+        OptForce_nsAA.FORCE_params = {'total_interven_num':10, 'notMUST_total_interven_num':5, 'notXrxns_interven_num':5, 'notLrxns_interven_num':5, 'notUrxns_interven_num':5, 'fixed_X_rxns':[], 'fixed_L_rxns':[], 'fixed_U_rxns':fixed_U_rxns, 'ignored_X_rxns':[], 'ignored_L_rxns':[], 'ignored_U_rxns':ignored_U_rxns, 'build_new_optModel':True, 'dual_formulation_type': 'simplified', 'stopWith_product_yield_percent': 95, 'validate_results': True, 'results_filename':results_filename_base + '_FORCE_sets.py'}
+
+    elif nsAA.lower() == 'paf':
+        #OptForce_nsAA.save_flux_bounds_ref_toThisFile = results_filename_base + '_flux_bounds_ref.py' 
+        OptForce_nsAA.read_flux_bounds_ref_fromThisFile = results_filename_base + '_flux_bounds_ref.py' 
+
+        #OptForce_nsAA.save_flux_bounds_overprod_toThisFile = results_filename_base + '_flux_bounds_overprod.py'
+        OptForce_nsAA.read_flux_bounds_overprod_fromThisFile = results_filename_base + '_flux_bounds_overprod.py'
+
+        #OptForce_nsAA.save_MUST_singles_toThisFile = results_filename_base + '_MUST_singles.py'
+        OptForce_nsAA.read_MUST_singles_fromThisFile = results_filename_base + '_MUST_singles.py'
+
+        OptForce_nsAA.read_MUST_doubles_fromThisFile = results_filename_base + '_MUST_doubles.py'
+
+        # First round: PapB or PapC or PAPHES or ADCS --> yield = 44.21 (80.0% of theoretical maximum = 55.27)
+        fixed_U_rxns = []
+        #fixed_U_rxns = ['PapB']
+        #ignored_U_rxns = []
+        ignored_U_rxns = ['PapB','PapC','PAPHES','ADCS']
+        OptForce_nsAA.FORCE_params = {'total_interven_num':10, 'notMUST_total_interven_num':5, 'notXrxns_interven_num':5, 'notLrxns_interven_num':5, 'notUrxns_interven_num':5, 'fixed_X_rxns':[], 'fixed_L_rxns':[], 'fixed_U_rxns':fixed_U_rxns, 'ignored_X_rxns':[], 'ignored_L_rxns':[], 'ignored_U_rxns':ignored_U_rxns, 'build_new_optModel':True, 'dual_formulation_type': 'simplified', 'stopWith_product_yield_percent': 95, 'validate_results': True, 'results_filename':results_filename_base + '_FORCE_sets.py'}
+
+    else:
+        raise userError('Invalid nsAA: {}'.format(nsAA))
 
     # Find the Must single sets
     OptForce_nsAA.run()
 
+def print_must_subsystems():
+    """
+    Prints how many reaction participates in the subsystem for each type of manipualtion
+    """
+    # Model path
+    model_path = home_dir + 'work/models/Escherichia_coli/iJO1366/'
+
+    model_organism = organism(id = 'Ecoli', name = 'Escherichia coli',domain = 'Bacteria', genus = 'Escherichia', species = 'coli', strain = 'MG1655')
+
+    # Orignal iJo1266 model
+    model = create_model(model_organism = model_organism, model_info = {'id':'iJO1366', 'input_file_type':'sbml','model_filename':model_path + 'iJO1366_updated.xml', 'biomassrxn_id':'Ec_biomass_iJO1366_core_53p95M'}, perform_fba = False, stdout_msgs = True, warnings = True)
+
+    Ecoli_pyr_producing = add_nsAA_pathways(model = deepcopy(model), add_pyrrolysine = True, add_pAF = False)
+    Ecoli_paf_producing = add_nsAA_pathways(model = deepcopy(model), add_pyrrolysine = False, add_pAF = True)
+
+    must_sets = {}
+    must_sets['X_pyr'] = ['ICL', 'MALS', 'COBALT2tex', 'S2FE2ST']
+    must_sets['L_pyr'] = ['PTAr']
+    must_sets['U_pyr'] = ['PylB', 'PylC', 'PylD1', 'PylD2', 'PyrLYStex', 'ASPK', 'DAPDC', 'SDPTA', 'DHDPS', 'GLUSy', 'GLUDy', 'SDPDS', 'PPC', 'THDPS', 'DHDPRy', 'DAPE', 'ASAD', 'ASPTA', 'ACKr', 'ACtex', 'CO2tex', 'CO2tpp', 'NH4tex', 'NH4tpp']
+    must_sets['all_pyr'] = list(set(must_sets['X_pyr'] + must_sets['L_pyr'] + must_sets['U_pyr']))
+
+    must_sets['X_paf'] = ['ICL', 'MALS', 'COBALT2tex', 'S2FE2ST']
+    must_sets['L_paf'] = ['ENO','GAPD', 'PGI', 'TPI', 'ACONTa', 'ACONTb', 'ICDHyr', 'AKGDH', 'PTAr']
+    must_sets['U_paf'] = ['PapB', 'PapC', 'PAPHEtex', 'PAPHEt2rpp', 'ADCS', 'CHORS', 'DDPA', 'DHQS', 'DHQTi', 'DRPA', 'RPI', 'RPE', 'GLUDy', 'GND', 'PGK', 'PGM', 'PPM2', 'PSCVT', 'SHKK', 'SHK3Dr', 'TKT1', 'TKT2', 'ACKr', 'ACtex', 'CO2tex', 'CO2tpp', 'NH4tex', 'NH4tpp']
+    must_sets['all_paf'] = list(set(must_sets['X_paf'] + must_sets['L_paf'] + must_sets['U_paf']))
+
+    for must_set in ['X_paf', 'L_paf', 'U_paf', 'all_paf', 'X_pyr', 'L_pyr', 'U_pyr', 'all_pyr']: 
+        print '\n----- {} --------'.format(must_set)
+        subsys_dict = {}
+        for r in must_sets[must_set]:
+            if 'pyr' in must_set.lower():
+                subsys = Ecoli_pyr_producing.reactions_by_id[r].subsystem
+            elif 'paf' in must_set.lower():
+                subsys = Ecoli_paf_producing.reactions_by_id[r].subsystem
+            else:
+                raise ValueError('Unknown must)set: {}'.format(must_set))
+
+            if subsys != '':
+                if subsys in subsys_dict.keys():
+                    subsys_dict[subsys].append(r) 
+                else:
+                    subsys_dict[subsys] = [r]    
+        for k in sorted(subsys_dict.keys(), key = lambda x: len(subsys_dict[x]), reverse = False):
+            print '{}\t{}'.format(k,len(subsys_dict[k]))
+  
 #------------------------------------
 if __name__ == '__main__':
     OptForce_sim(nsAA = 'Pyrrolysine', aeration = 'aerobic', media_type = 'minimal', stdout_msgs = True, warnings = True)

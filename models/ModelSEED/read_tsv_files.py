@@ -1199,7 +1199,7 @@ def read_rxns_master(rxns_master_file, rxns_default_file, rxns_results_file):
                 deltaG_uncertainty_ModelSEED_str = line[headers.index('deltagerr')]
                 if deltaG_uncertainty_ModelSEED_str != 'null' and deltaG_uncertainty_ModelSEED_str != '10000000':
                     deltaG_uncertainty_ModelSEED = float(deltaG_uncertainty_ModelSEED_str)
-                    rxn_info['deltaG_uncertainty_MoelSEED'] = deltaG_uncertainty_ModelSEED 
+                    rxn_info['deltaG_uncertainty_ModelSEED'] = deltaG_uncertainty_ModelSEED 
                 else:
                     deltaG_uncertainty_ModelSEED = None
                     rxn_info['deltaG_uncertainty_ModelSEED'] = deltaG_uncertainty_ModelSEED 
@@ -1216,7 +1216,9 @@ def read_rxns_master(rxns_master_file, rxns_default_file, rxns_results_file):
                     else:
                         raise userError('probability_dG_lessThanZero for rxn ' + ModelSEED_id + ' not between zero and one: ' + str(probability_dG_lessThanZero))
                 else:
-                    probability_dG_lessThanZero = None 
+                    rxn_info['deltaG_min_ModelSEED'] = None 
+                    rxn_info['deltaG_max_ModelSEED'] = None 
+                    rxn_info['probability_dG_lessThanZero'] = None 
 
                 # Reaction reversability (this seems to be consistent with deltaG value.
                 rev_str = line[headers.index('reversibility')]
@@ -1376,9 +1378,9 @@ def read_template_rxns(rxns_tsv_file, rxns_results_file, results_var_name):
                 # Direction
                 direction_str = line[headers.index('direction')]
                 if direction_str == '>':
-                    rxn_info['reversibility_ModelSEED_curated_template'] = 'forward'
+                    rxn_info['reversibility_ModelSEED_curated_template'] = 'irreversible_forward'
                 elif direction_str == '<':
-                    rxn_info['reversibility_ModelSEED_curated_template'] = 'backward'
+                    rxn_info['reversibility_ModelSEED_curated_template'] = 'irreversible_backward'
                 elif direction_str == '=':
                     rxn_info['reversibility_ModelSEED_curated_template'] = 'reversible'
                 elif direction_str == '?':
@@ -1587,11 +1589,11 @@ if __name__ == '__main__':
     read_template_rxns(rxns_tsv_file = 'github/Templates/Human/Reactions.tsv', rxns_results_file = 'ModelSEED_rxns_Human.py', results_var_name = 'rxns_Human')
 
     # Biomass
-    read_template_biomass(biomasses_tsv_file = 'github/Templates/GramPositive/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramPositive/BiomassCompounds.tsv',biomass_results_file = 'ModelSEED_rxns_GramPositive_Biomass.py', results_var_name = 'biomass_rxn_GramPositive')
+    #read_template_biomass(biomasses_tsv_file = 'github/Templates/GramPositive/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramPositive/BiomassCompounds.tsv',biomass_results_file = 'ModelSEED_rxns_GramPositive_Biomass.py', results_var_name = 'biomass_rxn_GramPositive')
 
-    read_template_biomass(biomasses_tsv_file = 'github/Templates/GramNegative/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramNegative/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_GramNegative_Biomass.py', results_var_name = 'biomass_rxn_GramNegative')
+    #read_template_biomass(biomasses_tsv_file = 'github/Templates/GramNegative/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/GramNegative/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_GramNegative_Biomass.py', results_var_name = 'biomass_rxn_GramNegative')
 
-    read_template_biomass(biomasses_tsv_file = 'github/Templates/Human/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/Human/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_Human_Biomass.py',results_var_name = 'biomass_rxn_Human')
+    #read_template_biomass(biomasses_tsv_file = 'github/Templates/Human/Biomasses.tsv', biomass_cpds_tsv_file = 'github/Templates/Human/BiomassCompounds.tsv', biomass_results_file = 'ModelSEED_rxns_Human_Biomass.py',results_var_name = 'biomass_rxn_Human')
 
     #write_cpds_formula_aliases(cpds_results_file = 'ModelSEED_cpds_formula_aliases.py')
 

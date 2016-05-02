@@ -2,8 +2,9 @@ from __future__ import division
 import sys
 sys.path.append('../../')
 from tools.userError import *
+from tools.custom_objects import customList, customDict
 import compound 
-from gene import gene
+import gene 
 from compartment import compartment
 
 class reaction(object):
@@ -25,7 +26,7 @@ class reaction(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: 03-11-2016
     """
-    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = '', pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level =None, notes = None, warnings = True): 
+    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = '', pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level = None, notes = '', warnings = True): 
 
         # Warnings and messages in the standard output
         self.warnings = warnings
@@ -129,15 +130,10 @@ class reaction(object):
        
     def assign_props(self):
         """
-        Assigns the properties of reaction
+        Assigns the properties of a reaction 
         """
-        # A list of the form [dGmin,dGmax] containing the min and max values of deltaG
-        # (Gibbs free energy change) for this reaction
-        if self.deltaG_range == [] and self.deltaG != None and self.deltaG_uncertainty != None:
-            self.deltaG_range = [min(self.deltaG - self.deltaG_uncertainty,self.deltaG + self.deltaG_uncertainty),max(self.deltaG - self.deltaG_uncertainty,self.deltaG + self.deltaG_uncertainty)]
-
         # List of compound objects containing all compounds participating in this reaction
-        self.compounds = sorted(list(set([c for c in self.stoichiometry.keys() if self.stoichiometry[c] < 0] + [c for c in self.stoichiometry.keys() if self.stoichiometry[c] > 0])),key=lambda x:x.id) 
+        self.compounds = sorted(list(set(self.stoichiometry.keys())),key=lambda x:x.id) 
 
         # List of compound objects containing all reactants of this reaction
         self.reactants = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] < 0])),key=lambda x:x.id)
@@ -151,6 +147,11 @@ class reaction(object):
         if self.compartment == []:
             self.compartment = list(set([c.compartment for c in self.compounds]))
 
+        # A list of the form [dGmin,dGmax] containing the min and max values of deltaG
+        # (Gibbs free energy change) for this reaction
+        if self.deltaG_range == [] and self.deltaG != None and self.deltaG_uncertainty != None:
+            self.deltaG_range = [min(self.deltaG - self.deltaG_uncertainty,self.deltaG + self.deltaG_uncertainty),max(self.deltaG - self.deltaG_uncertainty,self.deltaG + self.deltaG_uncertainty)]
+
         # model
         models = list(set([c.model for c in self.compounds if hasattr(c,'model') and c.model != None]))
         if len(models) == 1:
@@ -159,6 +160,12 @@ class reaction(object):
             raise userError('More than one model assigned to "compounds" of reaction ' + self.id + ': ' + str([m.id for m in models]))
         if len(models) == 0:
            self.model = None 
+
+    def reset_props(self):
+        """
+        Resets the propertes of a reaction RELATED to the model they belong to
+        """
+        self.model = None
 
     def __setattr__(self,attr_name,attr_value):
         """
@@ -179,13 +186,9 @@ class reaction(object):
         # Reversibility 
         if attr_name == 'reversibility' and not isinstance(attr_value,str):
             raise TypeError("Invalid 'reversibility' for reaaction " + self.id +"! reaction type must be a string. A " + str(attr_value) + " type object was entered instead")
-        elif attr_name == 'reversibility' and attr_value.lower() not in ['irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward']: 
-            raise ValueError("Invalid 'reversibility' for reaaction " + self.id + "! Eligible choices are 'irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward'") 
+        elif attr_name == 'reversibility' and attr_value.lower() not in ['irreversible','reversible','exchange','reversible_forward','reversible_backward','irreversible_forward','irreversible_backward','exchange_forward','exchange_backward']: 
+            raise ValueError("Invalid 'reversibility' for reaaction " + self.id + ": " + attr_value +  "! Eligible choices are 'irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward'") 
 
-        # stoichiometry
-        if attr_name == 'stoichiometry' and not isinstance(attr_value,dict):
-            raise TypeError("Invalid 'stoichiometry' for reaaction " + self.id + "! 'stoichiometry' must be a dictionary. A " + str(attr_value) + " type object was entered instead")
-        
         # Name
         if attr_name == 'name' and not isinstance(attr_value,str):
             raise TypeError("Invalid 'name' for reaction " + self.id + "! 'name' must be a string. A " + str(attr_value) + " type object was entered instead")
@@ -196,23 +199,11 @@ class reaction(object):
         if attr_name == 'name_aliases' and len([n for n in attr_value if not isinstance(n,str)]) > 0:
             raise TypeError("Invalid 'name_aliases' for reaction " + self.id + "! 'name_aliases'  must be a list of strings. Objects that are not string found in the list:" + str([n for n in attr_value if not isinstance(n,str)]))
 
-        # KEGG id
-        if attr_name == 'KEGG_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'KEGG_id' for reaction " + self.id + "! 'KEGG_id'  must be eitehr a string or a list of strings. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'KEGG_id' and isinstance(attr_value,list) and len([n for n in attr_value if not isinstance(n,str)]) > 0:
-            raise TypeError("Invalid 'KEGG_id' for reaction " + self.id + "! 'KEGG_id'  must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
-
-        # ModelSEED id
-        if attr_name == 'ModelSEED_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'ModelSEED_id' for reaction " + self.id + "! 'ModelSEED_id'  must be either a string or a list of strings. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'ModelSEED_id' and len([n for n in attr_value if not isinstance(n,str)]) > 0:
-            raise TypeError("Invalid 'ModelSEED_id' for reaction " + self.id + "! 'ModelSEED_id'  must be a list of strings. Objects that are not string found in the list:" + str([n for n in attr_value if not isinstance(n,str)]))
-
-        # ModelSEED id
-        if attr_name == 'BiGG_id' and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
-            raise TypeError("Invalid 'BiGG_id' for reaction " + self.id + "! 'BiGG_id'  must be either a string or a list of strings. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'BiGG_id' and len([n for n in attr_value if not isinstance(n,str)]) > 0:
-            raise TypeError("Invalid 'BiGG_id' for reaction " + self.id + "! 'BiGG_id'  must be a list of strings. Objects that are not string found in the list:" + str([n for n in attr_value if not isinstance(n,str)]))
+        # ModelSEED id, KEGG_id and BiGG_id
+        if attr_name in ['ModelSEED_id','KEGG_id', 'BiGG_id'] and (not isinstance(attr_value,str) and not isinstance(attr_value,list)):
+            raise TypeError("Invalid {} for reaction {}! {} must be either a string or a list of strings. {} objects were given instead".format(attr_name,self.id, attr_name,type(attr_value)))
+        if attr_name in ['ModelSEED_id','KEGG_id', 'BiGG_id'] and len([n for n in attr_value if not isinstance(n,str)]) > 0:
+            raise TypeError('Invalid {} for reaction {}, Objects of type {} were given instead.'.format(attr_name, self.id, attr_name, list(set([type(n) for n in attr_value if not isinstance(n,str)]))))
 
         # EC numbers of the enzyme coding for the reaction
         if attr_name == 'EC_numbers' and not isinstance(attr_value,list):
@@ -230,24 +221,6 @@ class reaction(object):
         if attr_name == 'pathways' and len([n for n in attr_value if not isinstance(n,str)]) > 0:
             raise TypeError("Invalid 'pathways' for reaction " + self.id + "! 'pathways' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(n,str)]))
 
-        # Compounds
-        if attr_name == 'compounds' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'compounds' format for reaction " + self.id + "! 'compounds'  must be a list of objects of type compound. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'compounds' and len([n for n in attr_value if not isinstance(n,compound.compound)]) > 0:
-            raise TypeError("Invalid 'compounds' format for reaction " + self.id + "! 'compounds'  must be a list of objects of type compound. Objects that are not of type compound found in the list: " + str([r for r in attr_value if not isinstance(n,compound.compound)]))
-
-        # reactants
-        if attr_name == 'reactants' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'reactants' format for reaction " + self.id + "! 'reactants'  must be a list of objects of type compound. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'reactants' and len([n for n in attr_value if not isinstance(n,compound.compound)]) > 0:
-            raise TypeError("Invalid 'reactants' format for reaction " + self.id + "! 'reactants'  must be a list of objects of type compound. Objects that are not of type compound found in the list:" + str([r for r in attr_value if not isinstance(n,compound.compound)]))
-
-        # products
-        if attr_name == 'products' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'products' format for reaction " + self.id + "! 'products'  must be a list of objects of type compound. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'products' and len([n for n in attr_value if not isinstance(n,compound.compound)]) > 0:
-            raise TypeError("Invalid 'products' format for reaction " + self.id + "! 'products'  must be a list of objects of type compound. Objects that are not of type compound found in the list: " + str([r for r in attr_value if not isinstance(n,compound.compound)]))
-
         # Compartments 
         if attr_name == 'compartments' and not isinstance(attr_value,list):
             raise TypeError("Invalid 'compartments' format for reaction " + self.id + "! compartments for a model must be a list of objects of type compartment. A " + str(attr_value) + " type object was entered instead")
@@ -257,7 +230,7 @@ class reaction(object):
         # Genes 
         if attr_name == 'genes' and (attr_value is not None and not isinstance(attr_value,list)):
             raise TypeError("Invalid 'genes' format for reaction " + self.id + "! 'genes' for a model must be a list of objects of type gene. A " + str(attr_value) + " type object was entered instead")
-        if attr_name == 'genes' and len([n for n in attr_value if not isinstance(n,gene)]) > 0:
+        if attr_name == 'genes' and len([n for n in attr_value if not isinstance(n,gene.gene)]) > 0:
             raise TypeError("Invalid 'genes' format for reaction " + self.id + "! 'genes' for a model must be a list of objects of type gene. Objects that are not of type gene found in the list: " + str([r for r in attr_value if not isinstance(n,gene)]))
 
         # gene_reaction_rule
@@ -298,7 +271,16 @@ class reaction(object):
         if attr_name == 'confidence_level' and attr_value is not None and  (attr_value < 0 or attr_value > 1):
             raise TypeError("Invlaud 'confidence_level' for reaction " + self.id + "! 'confidence_level' must be either a float or an integer between zero and one")
 
-        self.__dict__[attr_name] = attr_value
+        if attr_name == 'compounds':
+            self.set_compounds(compounds = attr_value)
+        elif attr_name == 'reactants':
+            self.set_reactants(reactants = attr_value)
+        elif attr_name == 'products':
+            self.set_products(products = attr_value)
+        elif attr_name == 'stoichiometry':
+            self.set_stoichiometry(stoichiometry = attr_value, replace = True)
+        else: 
+            self.__dict__[attr_name] = attr_value
 
     def assign_flux_bounds(self, assignLB = True, assignUB = True):
         """
@@ -312,11 +294,17 @@ class reaction(object):
             flux_LB = None
             flux_UB = None
 
-        if self.reversibility.lower() == 'irreversible':
+        if self.reversibility.lower() in ['irreversible','irreversible_forward']:
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
+        # An irreversible reaction written in the backward direction, e.g., B <-- A
+        elif self.reversibility.lower() == 'irreversible_backward':
+            if assignLB:
+                flux_LB = -1000
+            if assignUB:
+                flux_UB = 0
         elif self.reversibility.lower() == 'reversible':
             if assignLB:
                 flux_LB = -1000
@@ -327,6 +315,8 @@ class reaction(object):
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
+        # Reverse part of a reversible reaciton wirttein the forward direction. For example, if A <==> B, 
+        # A --> B is reversible_forward and B --> A is reversible_backward
         elif self.reversibility.lower() == 'reversible_backward':
             if assignLB:
                 flux_LB = 0
@@ -352,29 +342,117 @@ class reaction(object):
 
         self.flux_bounds = [flux_LB,flux_UB]
 
+    def set_compounds(self, compounds):
+        """
+        Makes modificaitons to attribute compounds
+        """
+        if not isinstance(compounds,list):
+            raise TypeError("Invalid 'compounds' format for reaction {}! Compounds must be a list but a {} object was provided instead".format(self.id, type(compounds))) 
+        if len([n for n in compounds if not isinstance(n,compound.compound)]) > 0:
+            raise TypeError("Invalid 'compounds' format for reaction {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in compounds if not isinstance(n,compound.compound)]))))
+
+        problem_cpds = [cpd.id for cpd in compounds if cpd not in self.stoichiometry.keys()]
+        if len(problem_cpds) > 0:
+            raise userError('The following {} compounds appear in compounds of reaction {} but they do not appear in the reaction stoichiometry: {}'.format(len(problem_cpds), self.id, problem_cpds))
+
+        self.__dict__['compounds'] = customList(compounds)
+
+    def set_reactants(self, reactants):
+        """
+        Makes modificaitons to attribute reactants
+        """
+        if not isinstance(reactants,list):
+            raise TypeError("Invalid 'reactants' format for reaction {}! Compounds must be a list of reactants but a {} object was provided instead".format(self.id, type(reactants))) 
+        if len([n for n in reactants if not isinstance(n,compound.compound)]) > 0:
+            raise TypeError("Invalid 'reactants' format for reaction {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in reactants if not isinstance(n,compound.compound)]))))
+
+        problem_cpds = [cpd.id for cpd in reactants if cpd not in [c for c in self.stoichiometry.keys() if self.stoichiometry[c] < 0]]
+        if len(problem_cpds) > 0:
+            raise userError('The following {} compounds appear in reactants of reaction {} but they do not appear in the reaction stoichiometry: {}'.format(len(problem_cpds), self.id, problem_cpds))
+
+        self.__dict__['reactants'] = customList(reactants)
+
+    def set_products(self, products):
+        """
+        Makes modificaitons to attribute reactants
+        """
+        if not isinstance(products,list):
+            raise TypeError("Invalid 'products' format for reaction {}! Compounds must be a list of products but a {} object was provided instead".format(self.id, type(products))) 
+        if len([n for n in products if not isinstance(n,compound.compound)]) > 0:
+            raise TypeError("Invalid 'products' format for reaction {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in products if not isinstance(n,compound.compound)]))))
+
+        problem_cpds = [cpd.id for cpd in products if cpd not in [c for c in self.stoichiometry.keys() if self.stoichiometry[c] > 0]]
+        if len(problem_cpds) > 0:
+            raise userError('The following {} compounds appear in reactants of reaction {} but they do not appear in the reaction stoichiometry: {}'.format(len(problem_cpds), self.id, problem_cpds))
+
+        self.__dict__['products'] = customList(products)
+
+    def set_stoichiometry(self, stoichiometry, replace = True):
+        """
+        Makes modificaitons to existing stoichiometric coefficients. It does not allow removing a compound or 
+        adding a compound from/to the reaction stoichiometry. 
+
+        INPUTS:
+        ------
+        stoichiometry: A dictionary containing the existing compounds in the reaction stoichiometry 
+                       whose stoichiomeric coefficient has changed. This must be used with replace = False.
+                       It can also be a dictionary containing a whole new reaction stoichiometry, which must be
+                       used with replace = True 
+              replace: If True, the existing reaction stoichiometry is totally replaced with the provided input.
+                       If False, it changes the stoichiometric coefficients of the existing compounds in the reaction
+                       stoichiometry. In thie case, adding a new compound or removing a new compound is not allowed 
+        """
+        if not isinstance(stoichiometry,dict):
+            raise TypeError("Invalid 'stoichiometry' for reaaction " + self.id + "! 'stoichiometry' must be a dictionary. A " + str(stoichiometry) + " type object was entered instead")
+        if len([c for c in stoichiometry.keys() if not isinstance(c, compound.compound)]) > 0:
+            raise userError('Keys of reactions stoichiometry must be objects of type compound. Non-compound type objects were observed for reaction {}'.format(self.id)) 
+        if 0 in [stoichiometry.values()]:
+            raise userError('A stoichiometric coefficient of zero is not allowed to reduce memory usage. Remove all compounds with a stoichiometric coefficient of zero from the input instead')
+        
+        if not replace:
+            # Original stoichiometry
+            orig_stoic = self.stoichiometry
+       
+            # Check for new compounds thay may have been included 
+            if len(list(set(stoichiometry.keys()) - set(orig_stoic.keys()))): # If a new compound has added
+                raise userError('Directly adding new compounds to reaciton stoichiometry is not allowed. Use reaction.add_compounds method istead')
+
+            # Add compounds from the original stoichiometry whose stoichiometric coefficients have been changed 
+            for cpd in list(set(orig_stoic.keys()) - set(stoichiometry.keys())):
+                stoichiometry[cpd] = orig_stoic[cpd] 
+
+        self.__dict__['stoichiometry'] = customDict(stoichiometry)
+
+        # Update compounds, reactants and products
+        self.compounds = sorted(list(set(self.stoichiometry.keys())),key=lambda x:x.id) 
+        self.reactants = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] < 0])),key=lambda x:x.id)
+        self.products = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] > 0])),key=lambda x:x.id)
+
     def get_compounds(self,ref_type = 'id'):
         """
         Reports the list of compounds participating in this reaction in the output 
-        with the format specified by ref_type 
+        with the format specified by show_cpds_by 
  
         INPUTS:
         -------
-        ref_type: A string indicating the in what format the compounds should be 
-                  printed in the output. Current eligible choices are 'id', 'name'
-                  and formula. If name or id was not provided, id used instead.
+        show_cpds_by: A string indicating the in what format the compounds should be 
+                  printed in the output. Current eligible choices are 'id', 'name', 'formula',
+                  'ModelSEED_id', 'KEGG_id', 'BiGG_id'. If ModelSEED_id, KEGG_id or BiGG_id ir not
+                  available for any compound participating in the reaction, it is replaced with 
+                  its id.
         """
-        if ref_type.lower() not in ['id','name','formula']:
+        if show_cpds_by.lower() not in ['id','name','formula','ModelSEED_id', 'KEGG_id', 'BiGG_id']:
             raise userError("**Error! Invalid reference type (eligible choices are 'id' and 'name')")
 
         for metab in self.compounds:
-            if ref_type.lower() == 'id':
+            if show_cpds_by.lower() == 'id':
                 mm = metab.id
-            elif ref_type.lower() == 'name':
+            elif show_cpds_by.lower() == 'name':
                 if metab.name is None:
                     mm = metab.id
                 else:
                     mm = metab.name
-            elif ref_type.lower() == 'formula':
+            elif show_cpds_by.lower() == 'formula':
                 if metab.formula is None:
                     mm = metab.id
                 else:
@@ -382,30 +460,30 @@ class reaction(object):
 
             return mm
 
-    def get_reactants(self,ref_type = 'id'):
+    def get_reactants(self,show_cpds_by = 'id'):
         """
         Reports the list of reactants of this reaction in the output 
-        with the format specified by ref_type 
+        with the format specified by show_cpds_by 
  
         INPUTS:
         -------
-        ref_type: A string indicating the in what format the compounds should be 
+        show_cpds_by: A string indicating the in what format the compounds should be 
                   printed in the output. Current eligible choices are 'id', 'name'
                   and formula, If name or id was not provided, id used instead.
 
         """
-        if ref_type.lower() not in ['id','name','formula']:
+        if show_cpds_by.lower() not in ['id','name','formula']:
             raise userError("**Error! Invalid reference type (eligible choices are 'id' and 'name')")
 
         for metab in self.reactants: 
-            if ref_type.lower() == 'id':
+            if show_cpds_by.lower() == 'id':
                 mm = metab.id
-            elif ref_type.lower() == 'name':
+            elif show_cpds_by.lower() == 'name':
                 if metab.name is None:
                     mm = metab.id
                 else:
                     mm = metab.name
-            elif ref_type.lower() == 'formula':
+            elif show_cpds_by.lower() == 'formula':
                 if metab.formula is None:
                     mm = metab.id
                 else:
@@ -413,29 +491,29 @@ class reaction(object):
 
             return mm
 
-    def get_products(self,ref_type = 'id'):
+    def get_products(self,show_cpds_by = 'id'):
         """
         Reports the list of products of this reaction in the output 
-        with the format specified by ref_type 
+        with the format specified by show_cpds_by 
  
         INPUTS:
         -------
-        ref_type: A string indicating the in what format the compounds should be 
+        show_cpds_by: A string indicating the in what format the compounds should be 
                   printed in the output. Current eligible choices are 'id', 'name'
                   and formula. If name or id was not provided, id used instead.
         """
-        if ref_type.lower() not in ['id','name']:
+        if show_cpds_by.lower() not in ['id','name']:
             raise userError("**Error! Invalid reference type (eligible choices are 'id' and 'name')")
 
         for metab in self.products: 
-            if ref_type.lower() == 'id':
+            if show_cpds_by.lower() == 'id':
                 mm = metab.id
-            elif ref_type.lower() == 'name':
+            elif show_cpds_by.lower() == 'name':
                 if metab.name is None:
                     mm = metab.id
                 else:
                     mm = metab.name
-            elif ref_type.lower() == 'formula':
+            elif show_cpds_by.lower() == 'formula':
                 if metab.formula is None:
                     mm = metab.id
                 else:
@@ -443,68 +521,70 @@ class reaction(object):
 
             return mm
 
-    def get_equation(self,ref_type = 'id'):
+    def get_equation(self,show_cpds_by = 'id'):
         """
         Prints in the output the reaction equation where compounds are referenced
-        with the format specified in ref_type. If name or id was not provided, id used instead.
+        with the format specified in show_cpds_by. 
  
         INPUTS:
         -------
-        ref_type: A string indicating the in what format the compounds should be 
-                  printed in the output. Current eligible choices are 'id', 'name'
-                  and formula
+        show_cpds_by: A string indicating in what format the compounds should be 
+                      printed in the output. Current eligible choices are 'id', 'name',
+                      'formula', 'ModelSEED_id', 'KEGG_id' and 'BiGG_id'
 
         """
-        if ref_type.lower() not in ['id','name','formula']:
+        if show_cpds_by.lower() not in ['id','name','formula', 'ModelSEED_id', 'KEGG_id', 'BiGG_id']:
             raise userError("**Error! Invalid reference type (eligible choices are 'id' and 'name')")
         
         # Type of the reaction arrow
         if self.reversibility.lower() in ['reversible','exchange']:
             arrow_type = '<==>'
-        else:
+        elif self.reversibility.lower() in ['irreversible','irreversible_forward']:
             arrow_type = '-->'
+        elif self.reversibility.lower() == 'irreversible_backward':
+            arrow_type = '<--'
 
         # Loop over reactants
         reactants_eqn = ''
-        for metab in self.reactants: 
-            if ref_type.lower() == 'id':
-                mm = metab.id
-            elif ref_type.lower() == 'name':
-                if metab.name is None:
-                    mm = metab.id
+        for cpd in self.reactants: 
+            if show_cpds_by.lower() == 'id':
+                mm = cpd.id
+            elif show_cpds_by.lower() == 'name':
+                if cpd.name is None:
+                    mm = cpd.id
                 else:
-                    mm = metab.name
-            elif ref_type.lower() == 'formula':
-                if metab.formula is None:
-                    mm = metab.id
+                    mm = cpd.name
+            elif show_cpds_by.lower() == 'formula':
+                if cpd.formula is None:
+                    mm = cpd.id
                 else:
-                    mm = metab.formula
+                    mm = cpd.formula
 
-            if self.reactants.index(metab) < len(self.reactants)-1: 
-                reactants_eqn += str(-self.stoichiometry[metab]) + ' ' + mm + ' + ' 
+            if self.reactants.index(cpd) < len(self.reactants)-1: 
+                reactants_eqn += str(-self.stoichiometry[cpd]) + ' ' + mm + ' + ' 
             else:
-                reactants_eqn += str(-self.stoichiometry[metab]) + ' ' + mm 
+                reactants_eqn += str(-self.stoichiometry[cpd]) + ' ' + mm 
                 
         # Loop over products
         products_eqn = ''
-        for metab in self.products: 
-            if ref_type.lower() == 'id':
-                mm = metab.id
-            elif ref_type.lower() == 'name':
-                if metab.name is None:
-                    mm = metab.id
+        for cpd in self.products: 
+            if show_cpds_by.lower() == 'id':
+                mm = cpd.id
+            elif show_cpds_by.lower() == 'name':
+                if cpd.name is None:
+                    mm = cpd.id
                 else:
-                    mm = metab.name
-            elif ref_type.lower() == 'formula':
-                if metab.formula is None:
-                    mm = metab.id
+                    mm = cpd.name
+            elif show_cpds_by.lower() == 'formula':
+                if cpd.formula is None:
+                    mm = cpd.id
                 else:
-                    mm = metab.formula
+                    mm = cpd.formula
 
-            if self.products.index(metab) < len(self.products)-1: 
-                products_eqn += str(self.stoichiometry[metab]) + ' ' + mm + ' + ' 
+            if self.products.index(cpd) < len(self.products)-1: 
+                products_eqn += str(self.stoichiometry[cpd]) + ' ' + mm + ' + ' 
             else:
-                products_eqn += str(self.stoichiometry[metab]) + ' ' + mm 
+                products_eqn += str(self.stoichiometry[cpd]) + ' ' + mm 
 
         return  reactants_eqn + ' ' + arrow_type + ' ' + products_eqn
 

@@ -11,7 +11,7 @@ class organism(object):
     Last updated: 10-22-2014
     """
 
-    def __init__(self, id, name = None, domain = None, genus = None, species = None, strain = None, gDW_per_cell = None, gWW_per_cell = None, cells_per_ml = None, gDW_per_ml = None, mu = None, random_mortality_rate = None, notes = None): 
+    def __init__(self, id, name = '', domain = '', genus = '', species = '', strain = '', ModelSEED_type = '', gDW_per_cell = None, gWW_per_cell = None, cells_per_ml = None, gDW_per_ml = None, mu = None, random_mortality_rate = None, notes = ''): 
     
         # Organism id 
         self.id = id
@@ -31,6 +31,9 @@ class organism(object):
 
         # Strain ((case insensitive string)). Example: MG1655
         self.strain = strain
+
+        # ModelSEED type (bacteria_GramPositive, bacteria_GramNegative, Human and Plant)
+        self.ModelSEED_type = ModelSEED_type
 
         # Gram of dry weight per (one) cell
         self.gDW_per_cell = gDW_per_cell
@@ -59,29 +62,6 @@ class organism(object):
         else:
             self.notes = ''
 
-    def check_attr(self,attr_name,attr_value):
-        """
-        Checks the conditions on the class attributes
- 
-        INPUTS:
-        -------
-         attr_name: Attribute name
-        attr_value: Attribute vlaue
-        """
-        # id 
-        if attr_name == 'id' and not isinstance(attr_value,str):
-            raise TypeError("Invalid 'id' for compound " + str(id) + "! 'id' must be a string")
-
-        # Name
-        if attr_name == 'name' and (attr_value is not None and not isinstance(attr_value,str)):
-            raise TypeError("Invalid 'name' for compound " + self.id + "! 'name' must be a string")
-
-        # Name aliases
-        if attr_name == 'name_aliases' and not isinstance(attr_value,list):
-            raise TypeError("Invalid 'name_aliases' for compound " + str(id) + "! 'name_aliases' must be a list of strings")
-        if attr_name == 'name_aliases' and len([n for n in attr_value if not isinstance(r,str)]) > 0:
-            raise TypeError("Invalid 'name_aliases' for compound " + str(id) + "! 'name_aliases' must be a list of strings. Objects that are not string found in the list")
-
     def __setattr__(self,attr_name,attr_value):
         """
         Redefines funciton __setattr__
@@ -104,6 +84,15 @@ class organism(object):
         if attr_name == 'name_aliases' and len([n for n in attr_value if not isinstance(r,str)]) > 0:
             raise TypeError("Invalid 'name_aliases' for organism " + str(id) + "! 'name_aliases' must be a list of strings. Objects that are not string found in the list:" + str([n for n in attr_value if not isinstance(r,str)]))
 
+        # Domain 
+        if attr_name == 'domain' and not isinstance(attr_value,str):
+            raise TypeError("Invalid 'domain' for organism " + str(attr_value) + "! 'domain' must be a string. A " + str(type(attr_value)) + " type object was entered instead")
+
+        # ModelSEED type 
+        if attr_name == 'ModelSEED_type' and attr_value != None and not isinstance(attr_value,str):
+            raise TypeError("Invalid 'ModelSEED_type' for organism " + str(attr_value) + "! 'ModelSEED_type' must be a string. A " + str(type(attr_value)) + " type object was entered instead")
+        elif attr_name == 'ModelSEED_type' and attr_value.lower() not in ['','bacteria_grampositive','bacteria_gramnegative','human','plant']:
+            raise ValueError("Illegal value for 'ModelSEED_type' for organism " + str(attr_value) + "! Allowed values are bacteria_grampositive, bacteria_gramnegative, human and plant")
 
         # Random mortality rate
         if attr_name == 'random_mortality_rate' and attr_value > 0:
