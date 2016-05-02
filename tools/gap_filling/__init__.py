@@ -1,4 +1,4 @@
-__all__ = ["break_cycles","gapfill"]
+__all__ = ["break_cycles","gapfill","create_superModel"]
 
 # Add Directories to PYTHONPATH
 import sys, os
