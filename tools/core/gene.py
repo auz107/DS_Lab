@@ -1,7 +1,10 @@
 from __future__ import division
 import sys
 sys.path.append('../../')
+import reaction
+from compartment import compartment
 from tools.userError import userError
+from tools.custom_objects import customList
 from copy import deepcopy
 
 class gene(object):
@@ -11,20 +14,22 @@ class gene(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: 11-24-2014
     """
-
-    def __init__(self, id, compartment = None, name = None, name_aliases = [], locus_pos = None, expression_level = None, notes = None): 
+    def __init__(self, id, name = '', name_aliases = [], compartment = [], reactions = [], locus_pos = None, expression_level = None, notes = None): 
     
         # Gene id 
         self.id = id
-
-        # Gene compartment (case insensitive string)
-        self.compartment = compartment
 
         # Gene name (case insensitive string)
         self.name = name
 
         # Name name_aliases
         self.name_aliases = name_aliases
+
+        # Gene compartment (case insensitive string)
+        self.compartment = compartment
+
+        # Reactions coded for by this gene 
+        self.reactions = reactions
 
         # A tuple of type (start,end) indicating the start and end locus position of the gene 
         self.locus_pos = locus_pos
@@ -57,6 +62,30 @@ class gene(object):
         if attr_name == 'name_aliases' and len([n for n in attr_value if not isinstance(r,str)]) > 0:
             raise TypeError("Invalid 'name_aliases' for gene " + str(id) + "! 'name_aliases' must be a list of strings. Objects that are not string found in the list: " + str([n for n in attr_value if not isinstance(r,str)]))
 
-        self.__dict__[attr_name] = attr_value
+        # compartment 
+        if attr_name == 'compartments' and not isinstance(attr_value,list):
+            raise TypeError("Invalid 'compartments' format for reaction " + self.id + "! compartments for a model must be a list of objects of type compartment. A " + str(attr_value) + " type object was entered instead")
+        if attr_name == 'compartments' and len([n for n in attr_value if not isinstance(n,compartment)]) > 0:
+            raise TypeError("Invalid 'compartments' format for reaction " + self.id + "! compartments for a model must be a list of objects of type compartment. Objects that are not of type compartment found in the list: " + str([r for r in attr_value if not isinstance(n,compartment)]))
+
+        if attr_name == 'reactions':
+            self.set_reactions(reactions = attr_value)
+        else:
+            self.__dict__[attr_name] = attr_value
+
+    def set_reactions(self,reactions):
+        """
+        Sets reactions attribute
+        """
+        if reactions is not None and not isinstance(reactions,list):
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
+        if len([n for n in reactions if not isinstance(n,reaction.reaction)]) > 0:
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type 'reaction'.  Objects that are not of type reaction found in the list:" + str([n for n in reactions if not isinstance(n,reaction.reaction)]))
+
+        problem_rxns = [r.id for r in reactions if self not in r.genes]
+        if len(problem_rxns) > 0:
+            raise userError('The folloiwng reactions appear in reactions of gene {} but they do not appear in reaction.genes: {}'.format(self.id, problem_rxns))
+
+        self.__dict__['reactions'] = customList(reactions)
 
    

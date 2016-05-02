@@ -1,4 +1,4 @@
-__all__ = ["read_gams_model","read_sbml_file"]
+__all__ = ["read_gams_model","read_sbml_model", "read_pydict_model", "create_model"]
 
 # Add Directories to PYTHONPATH
 import sys, os

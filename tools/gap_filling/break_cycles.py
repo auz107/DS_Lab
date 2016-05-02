@@ -3,6 +3,7 @@ import sys, time
 sys.path.append('../../')
 from coopr.pyomo import *
 from coopr.opt import *
+from tools.globalVariables import *
 from tools.pyomoSolverCreator import *
 from tools.userError import userError
 from tools.core.compound import compound
@@ -21,7 +22,7 @@ class break_cycles(object):
     Last updated: 10-23-2015 
     """   
 
-    def __init__(self,model, max_modification_num = 1, max_solution_num = 1, max_biomass_thr = 1e-6, penalties = {'zeroLB_fwdProb':0,'zeroUB_fwdProb':2,'zeroLB_bwdProb':2,'zeroUB_bwdProb':0,'zeroLB_revProb':2,'zeroUB_revProb':2,'zeroLB_noProb':1,'zeroUB_noProb':1},optimization_solver = 'gurobi', build_new_optModel = True, stdout_msgs = True, warnings = True,  **additional_args): 
+    def __init__(self,model, max_modification_num = 1, max_solution_num = 1, max_biomass_thr = 1e-6, penalties = {'zeroLB_fwdProb':0,'zeroUB_fwdProb':2,'zeroLB_bwdProb':2,'zeroUB_bwdProb':0,'zeroLB_revProb':2,'zeroUB_revProb':2,'zeroLB_noProb':1,'zeroUB_noProb':1},optimization_solver = default_optim_solver, build_new_optModel = True, stdout_msgs = True, warnings = True,  **additional_args): 
         """
         INPUTS (required):
         ------
@@ -210,7 +211,7 @@ class break_cycles(object):
             if not hasattr(rxn,'ignoreUB'):
                 rxn.ignoreUB = False
 
-            # If this ia blocked rxn under the examined condition
+            # If this is a blocked rxn under the examined condition
             if hasattr(rxn,'blocked') and rxn.blocked:
                 rxn.ignoreLB = True
                 rxn.ignoreUB = True
@@ -327,7 +328,7 @@ class break_cycles(object):
 
     def dual_const_rule(self,optModel,j):
         """
-        Constraints of the dual problem
+        Strong duality constraint: primal objecitve = dual objective 
         """
         return sum(j.stoichiometry[i]*optModel.Lambda[i] for i in j.compounds) + optModel.muUB[j] - optModel.muLB[j] == j.objective_coefficient 
 
