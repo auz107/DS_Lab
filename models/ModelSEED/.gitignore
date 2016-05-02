@@ -1,0 +1,17 @@
+archive
+results
+jobs
+alizom_code
+*.pyc
+*.txt
+*.pdf
+*.log
+*.out
+*test*.*
+[a-z].py
+core.*
+.nfs*
+1
+2
+3
+4

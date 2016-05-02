@@ -5,6 +5,7 @@ archive
 .nfs*
 .*.swp
 t.py
+*test*.py
 1
 2
 3
