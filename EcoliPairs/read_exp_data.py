@@ -3,7 +3,7 @@ import sys
 sys.path.append('../')
 sys.path.append('results/')
 import itertools
-from tools.ancillary.importData import importData
+from tools.utilities.importData import importData
 import re
 
 def read_exp_data():

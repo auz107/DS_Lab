@@ -45,5 +45,8 @@ Processes the results of mutants_mortality.py
 read_exp_data.py
 Read the experimental data for E. coli pairs and returns the results as a python dictionary
 
-coopr_level.py
-Investigates the level of cooperaiton in mutant pairs
+coopr_level_dynamics.py
+Investigates the level of cooperaiton in mutant pairs using dynamic FBA
+
+leakiness_ss.py
+Identifies various types of games when using various capture efficiency of the amino acids
