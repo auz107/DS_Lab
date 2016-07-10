@@ -35,6 +35,12 @@ def pyomoSolverCreator(optSolverName, **solver_options):
         # Integrality tolerance (epint). Default = 1e-5
         pymoSolverObject.options["mip_tolerances_integrality"] = mip_integrality_tol
 
+        # Relative MIP optimality gap, Default = 1e-4
+        pymoSolverObject.options["mip_tolerances_mipgap"] = 1e-9
+
+        # Absolute MIP optimality gap, Default = 1e-6
+        pymoSolverObject.options["mip_tolerances_absmipgap"] = 1e-10
+
         # MIP strategy variable select (varsel). Default = 0
         pymoSolverObject.options["mip_strategy_variableselect"]=3
 
@@ -50,6 +56,12 @@ def pyomoSolverCreator(optSolverName, **solver_options):
 
         # Optimality tolerance. Defaul = 1e-6
         pymoSolverObject.options["OptimalityTol"]=1e-9
+
+        # Relative MIP optimality gap, Default = 1e-4
+        pymoSolverObject.options["MIPGap"]=1e-9
+
+        # Absolute MIP optimality gap, Default = 1e-10
+        pymoSolverObject.options["MIPGapAbs"]=1e-10
 
         # Integrality tolerance (epint). Default = 1e-5
         pymoSolverObject.options["IntFeasTol"]= mip_integrality_tol

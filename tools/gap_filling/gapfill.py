@@ -8,11 +8,7 @@ from tools.pyomoSolverCreator import *
 from tools.userError import userError
 from tools.core.compound import compound
 from tools.core.reaction import reaction
-from tool.ancillary.get_ModelSEED_ids import get_ModelSEED_ids
-
-# The following lines change the temporary directory for pyomo
-#from pyutilib.services import TempfileManager
-#TempfileManager.tempdir = '/data/alizom/tmp/'
+from tools.utilities.get_ModelSEED_ids import get_ModelSEED_ids
 
 class gapfill(object):
     """
@@ -21,53 +17,78 @@ class gapfill(object):
     Ali R. Zomorrodi - Segre Lab @ Boston University
     Last updated: 04-22-2016 
     """   
-    def __init__(self, model, super_model = None, gapfilling_method = 'parsimony_based', penalties = {}, obtain_ModelSEED_ids = False, viability_thr = 0.01, max_soln_num = 5, 
+    def __init__(self, model, super_model = None, gapfilling_method = 'parsimony_based', penalties = {}, viability_thr = 0.01, max_soln_num = 5, 
                  growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, standard_to_model_compartID_map = {'c':'c','e':'e','p':'p'}, 
                  fixed_external_rxns = {}, validate_results = True, results_filename = '',
-                 optimization_solver = default_optim_solver, build_new_optModel = True, warnings = True, stdout_msgs = True, stdout_msgs_details = True, **additional_args): 
+                 optimization_solver = default_optim_solver, build_new_optModel = True, obtain_ModelSEED_ids = False, warnings = True, stdout_msgs = True, stdout_msgs_details = True, **additional_args): 
         """
         INPUTS (required):
         ------
-                       model: Original metabolic model to be gap filled. An instance of class model 
-                 super_model: The super model integrating the original model and external reactions form ModelSEED and 
-                              missing exchange and transport reactoins in the model. If no input is provided, super_model
-                              is created
-        standard_to_model_compartID_map: This input is needed only if super_model = None. It is a dictionary where keys are 
-                              one of the letters below (standard compartment ids and values are the corresponding 
-                              compartment ids in the model id in the original model. 
-                              c: Cytosol (cytoplasm), e: Extracellular, g: Golgi, m: Mitochondria, n: Nucleus
-                              p: Periplasm, r: Endoplasmic reticulum, x: Peroxisome
-                              For example, if a model has two compartments c and e, one can provide 
-                              {'c':'c id in the model', 'e':'e id in the model'}. One can also provide
-                              {'c':'', 'e': ''} in which the code searches for these two compartments 
-                              in the model
-           gapfilling_method: The method to perform gap filling. The default is parsimony-based gap filling, where the
-                              aim is to minimally perturb the model.
-                   penalties: Penalties associated with performing each modification to the model
-               viability_thr: Viability threshold, i.e., the min biomass flux above which we assuem growth
-                max_soln_num: Maximum number of solution to obtain
-        obtain_ModelSEED_ids: If True ModelSEED ids of reactions and compounds are obtained
-         fixed_external_rxns: External reactions that have to be fixed (added) to the model. This is a dictionary with 
-                              keys being reaction ids and vlaues being either 'forward', 'backward' or 'reversible'
-                              meaning to add the reaction in the forward direction, backward direction or as a 
-                              reversible reaction (both directions)
-            validate_results: If True, each obtained results is validated
-            results_filename: A string containing the path and name of the file to store the results
-         optimization_solver: Name of the LP solver to be used to solve the LP. Current 
-                              allowable choices are cplex and gurobi
-          build_new_optModel: If True a new pyomo optimization model is constructed
-                 stdout_msgs: If True writes a summary of the run in the output 
-                    warnings: If True prints the warnings in the output 
-             additional_args: Additional arguments should be entered as normal but they are 
-                              converted to a dictionary whose keys are the names of the arguments and 
-                              values are the values of  those arguments
+        model: 
+        Original metabolic model to be gap filled. An instance of class model 
+
+        super_model: 
+        The super model integrating the original model and external reactions form ModelSEED 
+        and  exchange and transport reactoins in the model. If no input is provided, super_model
+        is created
+
+        standard_to_model_compartID_map: 
+        This input is needed only if super_model = None. It is a dictionary where keys are 
+        one of the letters below (standard compartment ids and values are the corresponding 
+        compartment ids in the model id in the original model. 
+        c: Cytosol (cytoplasm), e: Extracellular, g: Golgi, m: Mitochondria, n: Nucleus
+        p: Periplasm, r: Endoplasmic reticulum, x: Peroxisome
+        For example, if a model has two compartments c and e, one can provide 
+        {'c':'c id in the model', 'e':'e id in the model'}. One can also provide
+        {'c':'', 'e': ''} in which the code searches for these two compartments 
+        in the model
+
+        gapfilling_method: 
+        The method to perform gap filling. The default is parsimony-based gap filling, where the
+        aim is to minimally perturb the model.
+
+        penalties: 
+        Penalties associated with performing each modification to the model
+
+        viability_thr: 
+        Viability threshold, i.e., the min biomass flux above which we assuem growth
+
+        max_soln_num: 
+        Maximum number of solution to obtain
+
+        obtain_ModelSEED_ids: 
+        If True ModelSEED ids of reactions and compounds are obtained
+
+        fixed_external_rxns: 
+        External reactions that have to be fixed (added) to the model. This is a dictionary with
+        keys being reaction ids and values being either 'forward', 'backward' or 'reversible'
+        meaning to add the reaction in the forward direction, backward direction or as a 
+        reversible reaction (both directions)
+
+        validate_results: 
+        If True, each obtained results is validated
+
+        results_filename: 
+        A string containing the path and name of the file to store the results
+
+        optimization_solver: 
+        Name of the LP solver to be used to solve the LP. Current 
+        allowable choices are cplex and gurobi
+
+        build_new_optModel: 
+        If True a new pyomo optimization model is constructed
+
+        stdout_msgs: 
+        If True writes a summary of the run in the output 
+
 
         OUTPUTS:
         ---------
-        solution: A dictionary with the following keys:
-                  exit_flag: A string, which can be 'globallyOptimal', 'solverError'
-                             or what is stored in OptSoln.solver.termination_condition
-                   objValue: Optimal objective funtion value
+        solution: 
+        A dictionary with the following keys:
+            exit_flag: A string, which can be 'globallyOptimal', 'solverError'
+                       or what is stored in OptSoln.solver.termination_condition
+             objValue: Optimal objective funtion value
 
         These are the outputs of the method 'run'
         """
@@ -84,7 +105,7 @@ class gapfill(object):
         self.penalties = penalties
 
         # Obtain ModelSEED ids
-        self.obtain_ModelSEED_ids = ModelSEED_ids
+        self.obtain_ModelSEED_ids = obtain_ModelSEED_ids
 
         # growthMedium_flux_bounds
         self.growthMedium_flux_bounds = growthMedium_flux_bounds
@@ -124,27 +145,27 @@ class gapfill(object):
            exec "self." + argname + " = " +"additional_args['" + argname + "']"
 
     def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name.lower() == 'gapfilling_method' and not isinstance(attr_value,str):
-           raise TypeError('gapfilling_method must be a string')
-       elif attr_name.lower() == 'gapfilling_method' and attr_value.lower() not in ['parsimony_based']: 
-           raise ValueError('Invalid gapfilling_method value! Allowed choices are: parsimony_based')
+        """
+        Redefines funciton __setattr__
+        INPUTS:
+        -------
+        attr_name: Attribute name
+        attr_value: Attribute value
+        """
+        if attr_name.lower() == 'gapfilling_method' and not isinstance(attr_value,str):
+            raise TypeError('gapfilling_method must be a string')
+        elif attr_name.lower() == 'gapfilling_method' and attr_value.lower() not in ['parsimony_based']: 
+            raise ValueError('Invalid gapfilling_method value! Allowed choices are: parsimony_based')
 
-       if attr_name.lower() == 'gapfilling_method' and not isinstance(attr_value,str):
-           raise TypeError('gapfilling_method must be a string')
-       elif attr_name.lower() == 'gapfilling_method' and attr_value.lower() not in ['cplex','gurobi']: 
-           raise ValueError('Invalid gapfilling_method value! Allowed choices are: [cplex,gurobi]')
+        if attr_name.lower() == 'gapfilling_method' and not isinstance(attr_value,str):
+            raise TypeError('gapfilling_method must be a string')
+        elif attr_name.lower() == 'gapfilling_method' and attr_value.lower() not in ['parsimony_based']: 
+            raise ValueError('Invalid gapfilling_method value! Allowed choices are: parsimony_based')
 
-       if attr_name.lower() == 'penalties' and not isinstance(attr_value,dict):
-           raise TypeError('penalties must be a dictionary')
-       elif attr_name.lower() == 'penalties' and len(attr_value.keys)) > 0 and len([k for k in attr_value.keys() if v not in ['exchange_rxns']]) > 0:
-           raise ValuesError('Invalid key for penalties: {}. Allowed keys are [exchange_rxns]'.format([k for k in attr_value.keys() if v not in ['exchange_rxns']]))
+        if attr_name.lower() == 'penalties' and not isinstance(attr_value,dict):
+            raise TypeError('penalties must be a dictionary')
+        elif attr_name.lower() == 'penalties' and len(attr_value.keys()) > 0 and len([k for k in attr_value.keys() if v not in ['exchange_rxns']]) > 0:
+            raise ValuesError('Invalid key for penalties: {}. Allowed keys are [exchange_rxns]'.format([k for k in attr_value.keys() if v not in ['exchange_rxns']]))
 
         if attr_name.lower() == 'viability_thr' and not isinstance(attr_value,int) and not isinstance(attr_value,float):
             raise TypeError('viability_thr must be an interger or float')
@@ -156,18 +177,18 @@ class gapfill(object):
         if attr_name == 'growthMedium_flux_bounds' and len([k for k in attr_value.keys() if k.lower() not in ['flux_bounds_filename','flux_bounds_dict']]) > 0:
             raise ValueError('Invalid key for growthMedium_flux_bounds. Allowed keys are flux_bounds_filename and flux_bounds_dict')
 
-       if attr_name.lower() == 'max_soln_num' and not isinstance(attr_value,int):
-           raise TypeError('max_soln_num must be an integer')
-       elif attr_name.lower() == 'max_soln_num' and attr_value < 0: 
-           raise TypeError('max_soln_num must be a non-negative integer')
+        if attr_name.lower() == 'max_soln_num' and not isinstance(attr_value,int):
+            raise TypeError('max_soln_num must be an integer')
+        elif attr_name.lower() == 'max_soln_num' and attr_value < 0: 
+            raise TypeError('max_soln_num must be a non-negative integer')
 
-       if attr_name.lower() == 'results_filename' and not isinstance(attr_value,str):
-           raise TypeError('results_filename must be a string')
+        if attr_name.lower() == 'results_filename' and not isinstance(attr_value,str):
+            raise TypeError('results_filename must be a string')
 
-       if attr_name.lower() in ['validate_results','build_new_optModel','obtain_ModelSEED_ids','warnings', 'stdout_msgs', 'stdout_msgs_details'] and not isinstance(attr_value,bool):
-           raise TypeError('{} must be either True or False'.format(attr_name))
+        if attr_name.lower() in ['validate_results','build_new_optModel','obtain_ModelSEED_ids','warnings', 'stdout_msgs', 'stdout_msgs_details'] and not isinstance(attr_value,bool):
+            raise TypeError('{} must be either True or False'.format(attr_name))
 
-       self.__dict__[attr_name] = attr_value
+        self.__dict__[attr_name] = attr_value
 
     #------------------------------------------------------------------------
     #--- Define parameters needed for the optimization problem ---
@@ -179,27 +200,28 @@ class gapfill(object):
         """
         self.super_model.reset_flux_bounds()
 
-        # Set the lower bound of all irreversible reactions in the original model to zero in order to allow
-        # them to go in the backward direction as well
+        # Set the lower bound of all irreversible reactions in the original model to -1000 
+        # in order to allow them to go in the backward direction as well
         for rxn in [r for r in self.super_model.reactions if not r.external and r.reversibility.lower() == 'irreversible']:
             rxn.flux_bounds[0] = -1000
 
-        # Set the flux bounds for all non-exchange exteranl reactions to [-1000,1000], irrespective of what their 
-        # reversbility is to consider adding them both in the forward and backward directions
-        for rxn in [r for r in self.super_model if r.external and 'exchange' not in r.reversibility]:
+        # Set the flux bounds for all non-exchange exteranl reactions to [-1000,1000], 
+        # irrespective of what their reversbility is to consider adding them both in the 
+        # forward and backward directions
+        for rxn in [r for r in self.super_model if r.external and (not r.is_exchange or 'exchange' not in r.reversibility)]:
             rxn.flux_bounds = [-1000,1000]        
 
-        # Set the flux bounds for the model. **Do not reset flux bounds here!
+        # Set the flux bounds for the model. NOTE: Do NOT reset flux bounds here!
         set_specific_bounds(model = self.super_model, file_name = self.growthMedium_flux_bounds['flux_bounds_filename'], flux_bounds = self.growthMedium_flux_bounds['flux_bounds_dict'], reset_flux_bounds = False)
 
-        # Impost constraints on min biomass formation flux
+        # Impose constraints on the min biomass formation flux
         set_specific_bounds(model = self.super_model, flux_bounds = {self.model.biomass_reaction.id:[self.viability_thr,None]}, reset_flux_bounds = False)
 
 
     def preproc(self):
         """
         Performs a number of preprocessing before the gap filling procedure. These include:
-        - get ModelSEED ids for reactions and metabolites int he model
+        - get ModelSEED ids for reactions and metabolites in the model
         - Create super_model if it is not provided in the input
         """
         # Get ModelSEED ids
@@ -208,16 +230,29 @@ class gapfill(object):
 
         # Create super_model
         if self.super_model == None:
-            self.super_model = create_super_model(original_model = model, standard_to_model_compartID_map = standard_to_model_compartID_map)
+            self.super_model = create_super_model(original_model = model, standard_to_model_compartID_map = standard_to_model_compartID_map, dd_c_cpds_to_otherComparts = False)
 
         # Set the flux bounds
         self.set_model_flux_bounds()
 
-
     def fix_known_variables(self):
         """
-        Fix a number of known variables
+        Fixes a number of known variables
         """
+        for rxn_id in self.fixed_external_rxns.keys():
+            if self.fixed_external_rxns[rxn_id].lower() == 'forward':
+                self.optModel.yf[rxn_id] = 1
+                self.optModel.yf[rxn_id] = True
+            elif self.fixed_external_rxns[rxn_id].lower() == 'backward':
+                self.optModel.yb[rxn_id] = 1
+                self.optModel.yb[rxn_id] = True
+            elif self.fixed_external_rxns[rxn_id].lower() == 'reversible':
+                self.optModel.yf[rxn_id] = 1
+                self.optModel.yf[rxn_id] = True
+                self.optModel.yb[rxn_id] = 1
+                self.optModel.yb[rxn_id] = True
+            else:
+                raise ValueError('Unknonw value for fixed_external_rxns for rxn {}: {}'.format(rxn_id, fixed_external_rxns[rxn_id]))
 
     #--------------------------------------------------------
     #---------------- Create optimization models ------------        
@@ -266,10 +301,10 @@ class gapfill(object):
 
         # v(j) >= (-1000)*yb(j)). This constraint is written for both reactions in the external database and 
         # irreversible reactions int he original model to allow the relaxation of the irreversibility constraints
-        optModel.LB_const = Constraint([j for j in optModel.J if self.super_model.reactions_by_id[j].external or (not self.super_model.reactions_by_id[j].external and self.super_model.reactions_by_id.reversibility.lower() == 'irreversible')], rule = lambda optModel, j: optModel.v[j] >= -1000.flux_bounds[0]*optModel.yX[j])
+        optModel.LB_const = Constraint([j for j in optModel.J if self.super_model.reactions_by_id[j].external or (not self.super_model.reactions_by_id[j].external and self.super_model.reactions_by_id[j].reversibility.lower() == 'irreversible')], rule = lambda optModel, j: optModel.v[j] >= -1000*optModel.yb[j])
 
         # v(j) <= 1000*yf(j). This constraint is written only for reactions in the external database
-        optModel.UB_const = Constraint([j for j in optModel.J if self.super_model.reactions_by_id[j].external], rule = lambda optModel, j: optModel.v[j] <= 1000*optModel.yX[j])
+        optModel.UB_const = Constraint([j for j in optModel.J if self.super_model.reactions_by_id[j].external], rule = lambda optModel, j: optModel.v[j] <= 1000*optModel.yf[j])
 
         # Constraints for y(j). In fact, y(j) = yf(j) OR yb(j)
         optModel.const1_y = Constraint(optModel.J, rule = lambda optModel, j: optModel.y[j] >= optModel.yf[j])
@@ -503,7 +538,7 @@ class gapfill(object):
                 if self.stdout_msgs:
                     print '\n{})\n'.format(found_solutions_num)
                     print 'Total # of added reactions = {}'.format(len(self._curr_soln['y_one_rxns']))
-                    print 'Objective value: {}'.format(self._curr_soln['objective_value'])i
+                    print 'Objective value: {}'.format(self._curr_soln['objective_value'])
 
                     # Reactions added only in forward direction
                     print '\nReactions added in the forward direction only:'

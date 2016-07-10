@@ -11,7 +11,7 @@ class fba(fbaTools):
     Ali R. Zomorrodi - Segre Lab @ Boston University
     Last updated: 10-27-2015 
     """   
-    def objectiveFunc_rule(self,fba_optModel):
+    def objectiveFunc_rule(self,optModel):
         """
         Objective function
         """
@@ -22,5 +22,6 @@ class fba(fbaTools):
                 raise userError("'objective_coefficient' has not been defined for the following reactions: {}".format(non_objcoeff_rxns[:10]))
             else:
                 raise userError("'objective_coefficient' has not been defined for the following reactions: {} and {} more.".format(non_objcoeff_rxns[:10],len(non_objcoeff_rxns) - 10))
-        return sum(j.objective_coefficient*fba_optModel.v[j.id] for j in self.model.reactions)
+
+        return sum([j.objective_coefficient*optModel.v[j.id] for j in self.model.reactions])
 

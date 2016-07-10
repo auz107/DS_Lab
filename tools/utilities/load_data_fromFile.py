@@ -1,8 +1,9 @@
 import os, sys, csv
 sys.path.append('../../')
 from tools.userError import userError
+from imp import load_source
 
-def importData(inputFile,delType,dataType):
+def load_data_from_tabDelimited_file(inputFile,delType,dataType):
     """
     Imports the data from tab or comma delimited files into a python dictionary 
 
@@ -56,4 +57,52 @@ def importData(inputFile,delType,dataType):
         raise userError('**Error! Invalid dataType even after initial check. Check the code for possible errors')
 
     return data
+
+
+def load_data_from_python_file(file_name, var_names):
+    """
+    Loads data from a file
+
+    INPUTS:
+    -------
+    file_nmae: 
+    Name and paths of the file
+
+    var_names: 
+    A list of striings containing the names of the variable in the data filename that must be loaded 
+
+    OUTPUTS:
+    --------
+    loaded_vars:
+    A dictionary where the keys are variables names (those stored in var_names) and values are
+    the corresponding loaded variables
+
+    Ali R. Zomorrodi - Segre Lab @ BU
+    Last updated: 06/10/2016
+    """
+    if not isinstance(var_names, list):
+        raise TypeError('var_names must be a list')
+    elif len([vn for vn in var_names if not isinstance(vn,str)]) > 0:
+        raise TypeError('var_names must be a list of string, but non-string objects of type {} were observed in the list'.format(list(set([type(vn) for vn in var_names if not isinstance(vn,str)]))))
+
+    if type(file_name) == str:
+        if not os.path.isfile(file_name):
+            raise IOError("No such file was found :'" + file_name + "'")
+        else:
+            # First delete the model dataFile if it already exists. If it is not deleted
+            # the new module data is merged with the previous ones
+            try:
+                del sys.modules['dataFile']
+            except:
+                pass
+            load_source('dataFile',file_name)
+            import dataFile
+    
+    # Loaded variables
+    loaded_vars = dict([(var_name, None) for var_name in var_names])
+    for var_name in var_names:
+        exec("loaded_vars['" + var_name + "'] = dataFile." + var_name)
+
+    return loaded_vars
+
 

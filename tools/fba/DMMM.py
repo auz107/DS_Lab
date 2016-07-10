@@ -279,6 +279,15 @@ class DMMM(object):
             if len(no_model_rxns) > 0:
                 raise userError('No "model" has been assigned to reactions ' + str([r.id for r in no_model_rxns]) + ' related to community member ' + member.id)
 
+        # Make sure that each community member has a unique model id
+        model_ids = [m.id for m in self.community_members]
+        if len(set(model_ids)) < len(model_ids):
+            raise userError('models in community_members do not have unique ids: {}'.format([(id, model_ids.count(id)) for id in model_ids if model_ids.count(id) > 1]))
+        else:
+            self.models_by_id = {}
+            for m in self.community_members:
+                self.models_by_id[m.id] = m
+
         # Additoinal arguments. Additional arguments should be entered as normal but they are 
         # converted to a dictionary whose keys are the names of the arguments and values are 
         # the values of  those arguments
@@ -417,7 +426,7 @@ class DMMM(object):
         self._logisticG_factor_cmps = 1 - total_cmps_conc/self.carrying_capacity['compounds_mM']
         self._f = dict([(cmp,None) for cmp in self.shared_compounds])
         for shared_cmp in self.shared_compounds:
-            f = sum([r.flux[self._t]*1000*r.model.organism.gDW_per_ml[self._t] for r in shared_cmp.reactions])
+            f = sum([r.flux[self._t]*1000*self.models_by_id[r.model_id].organism.gDW_per_ml[self._t] for r in shared_cmp.reactions])
             self._f[shared_cmp] = f
 
             conc = f*self._logisticG_factor_cmps*self._dt + shared_cmp.concentration[self._t]

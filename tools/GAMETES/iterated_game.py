@@ -339,7 +339,7 @@ class iteratedGame(object):
         for player_strategy in self.x_init.keys():
             self.x[player_strategy] = {0:self.x_init[player_strategy]}        
 
-        while self.t <= self.sim_time:
+        while self.t <= self.tf:
             # Update frequencies using the replicator dynamics  
             self.replicatorDynamics()          
 

@@ -1,4 +1,4 @@
-__all__ = ['compare_models','get_ModelSeed_ids','remove_non_alphanumeric','importData']
+__all__ = ['compare_models','get_ModelSeed_ids','remove_non_alphanumeric','load_data_fromFile']
 
 # Add Directories to PYTHONPATH
 import sys, os

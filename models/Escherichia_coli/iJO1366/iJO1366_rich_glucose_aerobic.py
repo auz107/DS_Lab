@@ -214,5 +214,7 @@ ngam_atp = {
 }
 
 others = {
+'ALAt2pp':[0,0],    # Creates a thermodynamically infeasible loop with ALAt2rpp 
+'GLYt2pp':[0,0]    # Creates a thermodynamically infeasible loop with GLYt2rpp
 }
 

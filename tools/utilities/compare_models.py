@@ -10,7 +10,7 @@ from remove_non_alphanumeric import remove_non_alphanumeric
 
 #--------------------------------------
 # Ali R. Zomorrodi - Segre lab @ BU
-# Last updated: 04-28-2016
+# Last updated: 06-01-2016
 #--------------------------------------
 
 #--------------------------------------
@@ -28,7 +28,7 @@ def create_ModelSEED_id_map(obj_list):
     OUTPUTS:
     -------
     ModelSEED_id_map: A dictionary where keys are ModelSEED ids and values are 
-                      objects of type compounds or reactions   
+                      a list of objects of type compounds or reactions   
     """ 
     ModelSEED_id_map = {}
     for obj in [o for o in obj_list if o.ModelSEED_id != []]:
@@ -51,7 +51,7 @@ def create_KEGG_id_map(obj_list):
     OUTPUTS:
     -------
     KEGG_id_map: A dictionary where keys are KEGG ids and values are 
-                 objects of type compound or reaction   
+                 a list of objects of type compound or reaction   
     """ 
     KEGG_id_map = {}
     for obj in [o for o in obj_list if o.KEGG_id != []]:
@@ -74,7 +74,7 @@ def create_BiGG_id_map(obj_list):
     OUTPUTS:
     -------
     BiGG_id_map: A dictionary where keys are BiGG ids and values are 
-                      objects of type compounds or reactions   
+                 a list of objects of type compounds or reactions   
     """ 
     BiGG_id_map = {}
     for obj in [o for o in obj_list if o.BiGG_id != []]:
@@ -98,6 +98,7 @@ def create_cleanNames_map(obj_list,compart_list):
     OUTPUTS:
     -------
     clean_names_map: A dictionary where keys are non-alphanumeric names and values are 
+                     a list of objects of type compounds or reactions   
     """ 
     clean_names_map = {}
     for obj in obj_list:
@@ -141,39 +142,49 @@ def compare_compounds(cpds_list1,cpds_list2, standard_to_cpds_list1_cpt_ids_map,
 
     INPUTS:
     -------
-                cpds_list1: An instance of object compound or a list of such objects
-                cpds_list2: An instance of object compound or a list of such objects
-             cpds_list1_id: An id for cpds_list1. This is requried if not all compounds in 
-                            cpds_list1 belong to the same model or if no model is assigned 
-                            to all reactions of list 1
-             cpds_list2_id: An id for cpds_list2. This is requried if not all compounds in 
-                            cpds_list1 belong to the same model or if no model is assigned 
-                            to all reactions of list 2
-    standard_to_cpds_list1_cpt_ids_map:
-    standard_to_cpds_list2_cpt_ids_map: 
-                            A dictionary where keys are standard compartment ids as follows:
-                            c: Cytosol (cytoplasm),   e: Extracellular,   g: Golgi,     m: Mitochondria
-                            n: Nucleus,   p: Periplasm,    r: Endoplasmic reticulum,    x: Peroxisome
-                            and values are corresponding compartment ids in cpds_list1 and cpds_list2
+    cpds_list1: 
+    An instance of object compound or a list of such objects
+
+    cpds_list2: 
+    An instance of object compound or a list of such objects
+
+    cpds_list1_id: 
+    An id for cpds_list1. This is requried if not all compounds in 
+    cpds_list1 belong to the same model or if no model is assigned 
+    to all reactions of list 1
+
+    cpds_list2_id: 
+    An id for cpds_list2. This is requried if not all compounds in 
+    cpds_list1 belong to the same model or if no model is assigned 
+    to all reactions of list 2
+
+    standard_to_cpds_list1_cpt_ids_map & standard_to_cpds_list2_cpt_ids_map: 
+    A dictionary where keys are standard compartment ids as follows:
+    c: Cytosol (cytoplasm),   e: Extracellular,   g: Golgi,     m: Mitochondria
+    n: Nucleus,   p: Periplasm,    r: Endoplasmic reticulum,    x: Peroxisome
+    and values are corresponding compartment ids in cpds_list1 and cpds_list2
 
     OUTPUTS:
     --------
-    cpd1_to_cpd2_map: A dictionary where the keys are the compounds objects from cpds_list1 and values 
-                      are a list of compound objects corresponding to this compound from cpds_list2 
-    cpd2_to_cpd1_map: A dictionary where the keys are the compounds objects from cpds_list2 and values 
-                      are a list of compound objects corresponding to this compound from cpds_list1 
-    cpd1_to_cpd2_noCopart_map:
-    cpd2_to_cpd1_noCopart_map:
-                      Same as cpd1_to_cpd2_map and cpd2_to_cpd1_map except that the mataches here are found
-                      without considering the compartments
-    cpd1_to_cpd2_match_found_by:
-    cpd2_to_cpd1_match_found_by:
-                      A dictionary with keys being ids of compounds in cpds_list1 or cpds_list2 and values being a 
-                      string showing how the matches in cpd1_to_cpd2_map and cpd2_to_cpd1_map were found 
-    cpd1_to_cpd2_noCompart_match_found_by:
-    cpd2_to_cpd1_noCompart_match_found_by:
-                      Same cpd1_to_cpd2_match_found_by and cpd2_to_cpd1_match_found_by for cpd1_to_cpd2_noCopart_map 
-                      and cpd2_to_cpd1_noCopart_map
+    cpd1_to_cpd2_map: 
+    A dictionary where the keys are the compounds objects from cpds_list1 and values 
+    are a list of compound objects corresponding to this compound from cpds_list2 
+
+    cpd2_to_cpd1_map: 
+    A dictionary where the keys are the compounds objects from cpds_list2 and values 
+    are a list of compound objects corresponding to this compound from cpds_list1 
+
+    cpd1_to_cpd2_noCompart_map & cpd2_to_cpd1_noCompart_map:
+    Same as cpd1_to_cpd2_map and cpd2_to_cpd1_map except that the mataches here are found
+    without considering the compartments
+
+    cpd1_to_cpd2_match_found_by & cpd2_to_cpd1_match_found_by:
+    A dictionary with keys being ids of compounds in cpds_list1 or cpds_list2 and values being a 
+    string showing how the matches in cpd1_to_cpd2_map and cpd2_to_cpd1_map were found 
+
+    cpd1_to_cpd2_noCompart_match_found_by & cpd2_to_cpd1_noCompart_match_found_by:
+    Same cpd1_to_cpd2_match_found_by and cpd2_to_cpd1_match_found_by for 
+    cpd1_to_cpd2_noCompart_map and cpd2_to_cpd1_noCompart_map
     """
     if not isinstance(strdout_msgs,bool):
         raise TypeError('stdout_msgs must be True or False')
@@ -230,7 +241,7 @@ def compare_compounds(cpds_list1,cpds_list2, standard_to_cpds_list1_cpt_ids_map,
     # Names of compounds in model2 where all non-alpahnumeric characters are removed 
     cpds_list2_clean_names = cpds_list2_clean_names_map.keys()
 
-    # Create a dictionary which maps the non-alphanumeric formul of the compounds and 
+    # Create a dictionary which maps the non-alphanumeric formula of the compounds and 
     # their ids in model2 
     cpds_list2_formulas_map = create_cpd_formulas_map(cpds_list2)
     # Formulas of compounds in model2 where all non-alpahnumeric characters are removed 
@@ -241,7 +252,7 @@ def compare_compounds(cpds_list1,cpds_list2, standard_to_cpds_list1_cpt_ids_map,
         print 'Checking for common compounds ...'
 
     cpd1_to_cpd2_map = dict((cpd1,[]) for cpd1 in cpds_list1) 
-    cpd1_to_cpd2_noCopart_map = dict((cpd1,[]) for cpd1 in cpds_list1) 
+    cpd1_to_cpd2_noCompart_map = dict((cpd1,[]) for cpd1 in cpds_list1) 
     cpd1_to_cpd2_match_found_by = dict((cpd1.id,'No match') for cpd1 in cpds_list1) 
     cpd1_to_cpd2_noCompart_match_found_by = dict((cpd1.id,'No match') for cpd1 in cpds_list1) 
 
@@ -300,7 +311,7 @@ def compare_compounds(cpds_list1,cpds_list2, standard_to_cpds_list1_cpt_ids_map,
                 clean_names_intersect = list(set(clean_names).intersection(set(cpds_list2_clean_names)): 
                 if len(clean_names_intersect) > 0:
                     clean_name_counter += 1
-                    match_byName += clean_names_intersect 
+                    match_byName += [c for n in clean_names_intersect for c in cpds_list2_clean_names_map[n]]
                 match_byName = list(set(match_byName))    
 
             # Compare formula
@@ -397,51 +408,63 @@ def compare_compounds(cpds_list1,cpds_list2, standard_to_cpds_list1_cpt_ids_map,
         print '\t\t# of compounds with matches found by intersecton of ModelSEED ids matching their KEGG id, BiGG id and names = ',len([c for c in cpd1_to_cpd2_match_found_by.keys() if cpd1_to_cpd2_match_found_by[c] == 'intersection'])
         print '\t\t# of compounds with matches found by union of ModelSEED ids matching their KEGG id, BiGG id and names = ',len([c for c in cpd1_to_cpd2_match_found_by.keys() if cpd1_to_cpd2_match_found_by[c] == 'union'])
 
-    return cpd1_to_cpd2_map, cpd2_to_cpd1_map, cpd1_to_cpd2_noCopart_map, cpd2_to_cpd1_noCopart_map, cpd1_to_cpd2_match_found_by, cpd2_to_cpd1_match_found_by, cpd1_to_cpd2_noCompart_match_found_by, cpd2_to_cpd1_noCompart_match_found_by
+    return cpd1_to_cpd2_map, cpd2_to_cpd1_map, cpd1_to_cpd2_noCompart_map, cpd2_to_cpd1_noCompart_map, cpd1_to_cpd2_match_found_by, cpd2_to_cpd1_match_found_by, cpd1_to_cpd2_noCompart_match_found_by, cpd2_to_cpd1_noCompart_match_found_by
 
 
-def compare_reactions(rxns_list1, rxns_list2, standard_to_cpds_list1_cpt_ids_map, standard_to_cpds_list2_cpt_ids_map, rxns_list1_id = None, rxns_list2_id = None, cpd1_to_cpd2_map = None, warnings = True, stdout_msgs = True):
+def compare_reactions(rxns_list1, rxns_list2, standard_to_rxns_list1_cpt_ids_map, standard_to_rxns_list2_cpt_ids_map, rxns_list1_id = None, rxns_list2_id = None, cpd1_to_cpd2_map = None, warnings = True, stdout_msgs = True):
     """
     Find common reactions in two given list of reactions
 
     INPUTS:
     -------
-        rxns_list1: A list of reaction objects 
-        rxns_list2: A list of reaction objects
-     rxns_list1_id: An id for rxns_list1. This is requried if not all reactions in 
-                   rxns_list1 belong to the same model or if not model is assigned 
-                   to all reactions of list 1
-     rxns_list2_id: An id for rxns_list2. This is requried if not all reactions in 
-                   rxns_list1 belong to the same model or if not model is assigned 
-                   to all reactions of list 2
-    standard_to_rxns_list1_cpt_ids_map:
-    standard_to_rxns_list2_cpt_ids_map: 
-                            A dictionary where keys are standard compartment ids as follows:
-                            c: Cytosol (cytoplasm),   e: Extracellular,   g: Golgi,     m: Mitochondria
-                            n: Nucleus,   p: Periplasm,    r: Endoplasmic reticulum,    x: Peroxisome
-                            and values are corresponding compartment ids in rxns_list1 and rxns_list2
-    cpd1_to_cpd2_map: The output from compare compounds, which is a dictionary mapping compounds participating 
-                      in rxns_list1 to those in rxns_list2. If this input is provided it can be used to 
-                      compare reactions by matching their stoichiometries
+    rxns_list1: 
+    A list of reaction objects 
+
+    rxns_list2: 
+    A list of reaction objects
+
+    rxns_list1_id: 
+    An id for rxns_list1. This is requried if not all reactions in 
+    rxns_list1 belong to the same model or if not model is assigned 
+    to all reactions of list 1
+
+    rxns_list2_id: 
+    An id for rxns_list2. This is requried if not all reactions in 
+    rxns_list1 belong to the same model or if not model is assigned 
+    to all reactions of list 2
+
+    standard_to_rxns_list1_cpt_ids_map & standard_to_rxns_list2_cpt_ids_map: 
+    A dictionary where keys are standard compartment ids as follows:
+    c: Cytosol (cytoplasm),   e: Extracellular,   g: Golgi,     m: Mitochondria
+    n: Nucleus,   p: Periplasm,    r: Endoplasmic reticulum,    x: Peroxisome
+    and values are corresponding compartment ids in rxns_list1 and rxns_list2
+
+    cpd1_to_cpd2_map: 
+    The output from compare compounds, which is a dictionary mapping compounds participating 
+    in rxns_list1 to those in rxns_list2. If this input is provided it can be used to 
+    compare reactions by matching their stoichiometries
 
     OUTPUTS:
     --------
-    rxn1_to_rxn2_map: A dictionary where the keys are the reactions objects from rxns_list1 and values 
-                      are a list of reaction objects corresponding to this reaction from rxns_list2 
-    rxn2_to_rxn1_map: A dictionary where the keys are the reactions objects from rxns_list2 and values 
-                      are a list of reaction objects corresponding to this reaction from rxns_list1 
-    rxn1_to_rxn2_noCopart_map:
-    rxn2_to_rxn1_noCopart_map:
-                      Same as rxn1_to_rxn2_map and rxn2_to_rxn1_map except that the mataches here are found
-                      without considering the compartments
-    rxn1_to_rxn2_match_found_by:
-    rxn2_to_rxn1_match_found_by:
-                      A dictionary with keys being ids of reactions in rxns_list1 or rxns_list2 and values being a 
-                      string showing how the matches in rxn1_to_rxn2_map and rxn2_to_rxn1_map were found 
-    rxn1_to_rxn2_noCompart_match_found_by:
-    rxn2_to_rxn1_noCompart_match_found_by:
-                      Same rxn1_to_rxn2_match_found_by and rxn2_to_rxn1_match_found_by for rxn1_to_rxn2_noCopart_map 
-                      and rxn2_to_rxn1_noCopart_map
+    rxn1_to_rxn2_map: 
+    A dictionary where the keys are the reactions objects from rxns_list1 and values 
+    are a list of reaction objects corresponding to this reaction from rxns_list2 
+
+    rxn2_to_rxn1_map: 
+    A dictionary where the keys are the reactions objects from rxns_list2 and values 
+    are a list of reaction objects corresponding to this reaction from rxns_list1 
+
+    rxn1_to_rxn2_noCompart_map & rxn2_to_rxn1_noCompart_map:
+    Same as rxn1_to_rxn2_map and rxn2_to_rxn1_map except that the mataches here are found
+    without considering the compartments
+
+    rxn1_to_rxn2_match_found_by & rxn2_to_rxn1_match_found_by:
+    A dictionary with keys being ids of reactions in rxns_list1 or rxns_list2 and values being a 
+    string showing how the matches in rxn1_to_rxn2_map and rxn2_to_rxn1_map were found 
+
+    rxn1_to_rxn2_noCompart_match_found_by & rxn2_to_rxn1_noCompart_match_found_by:
+    Same rxn1_to_rxn2_match_found_by and rxn2_to_rxn1_match_found_by for 
+    rxn1_to_rxn2_noCompart_map and rxn2_to_rxn1_noCompart_map
     """
     if not isinstance(strdout_msgs,bool):
         raise TypeError('stdout_msgs must be True or False')
@@ -502,7 +525,7 @@ def compare_reactions(rxns_list1, rxns_list2, standard_to_cpds_list1_cpt_ids_map
     rxns_list2_stoics = rxns_list2_stoic_map.keys()
 
     rxn1_to_rxn2_map = dict((rxn1,[]) for rxn1 in rxns_list1)
-    rxn1_to_rxn2_noCopart_map = dict((rxn1,[]) for rxn1 in rxns_list1)
+    rxn1_to_rxn2_noCompart_map = dict((rxn1,[]) for rxn1 in rxns_list1)
     rxn1_to_rxn2_match_found_by = dict((rxn1.id,'No match') for rxn1 in rxns_list1)
     rxn1_to_rxn2_noCompart_match_found_by = dict((rxn1.id,'No match') for rxn1 in rxns_list1)
 
@@ -559,7 +582,7 @@ def compare_reactions(rxns_list1, rxns_list2, standard_to_cpds_list1_cpt_ids_map
                 clean_names_intersect = list(set(clean_names).intersection(set(rxns_list2_clean_names)): 
                 if len(clean_names_intersect) > 0:
                     clean_name_counter += 1
-                    match_byName += clean_names_intersect 
+                    match_byName += [r for n in clean_names_intersect for r in rxns_list2_clean_names_map[n]]
                 match_byName = list(set(match_byName))    
 
             # Compare stoic only if all compoudns participating in rxns have at least one match in reactions
@@ -664,7 +687,138 @@ def compare_reactions(rxns_list1, rxns_list2, standard_to_cpds_list1_cpt_ids_map
         print '\t\t# of reactions with matches found by intersecton of ModelSEED ids matching their KEGG id, BiGG id and names = ',len([r for r in rxn1_to_rxn2_match_found_by.keys() if rxn1_to_rxn2_match_found_by[c] == 'intersection'])
         print '\t\t# of reactions with matches found by union of ModelSEED ids matching their KEGG id, BiGG id and names = ',len([r for r in rxn1_to_rxn2_match_found_by.keys() if rxn1_to_rxn2_match_found_by[c] == 'union'])
 
-    return rxn1_to_rxn2_map, rxn2_to_rxn1_map, rxn1_to_rxn2_noCopart_map, rxn2_to_rxn1_noCopart_map, rxn1_to_rxn2_match_found_by, rxn2_to_rxn1_match_found_by, rxn1_to_rxn2_noCompart_match_found_by, rxn2_to_rxn1_noCompart_match_found_by
+    return rxn1_to_rxn2_map, rxn2_to_rxn1_map, rxn1_to_rxn2_noCompart_map, rxn2_to_rxn1_noCompart_map, rxn1_to_rxn2_match_found_by, rxn2_to_rxn1_match_found_by, rxn1_to_rxn2_noCompart_match_found_by, rxn2_to_rxn1_noCompart_match_found_by
+
+
+def compare_genes(genes_list1, genes_list2, genes_list1_id = None, genes_list2_id = None, warnings = True, stdout_msgs = True):
+    """
+    Find common genes in two given list of genes
+
+    INPUTS:
+    -------
+    genes_list1: 
+    genes_list2: 
+    A gene object or a list of gene objects 
+
+    genes_list1_id: 
+    genes_list2_id: 
+    An id for genes_list1 or genes_list2. This is requried if not all genes in genes_list1 or 
+    genes_list2  belong to the same model or if no model is assigned to all genes of this list
+
+    OUTPUTS:
+    -------
+    gen1_to_gen2_map: 
+    A dictionary where the keys are the genes objects from gens_list1 and values 
+    are a list of gene objects corresponding to this gene from gens_list2 
+
+    gen2_to_gen1_map: 
+    A dictionary where the keys are the genes objects from gens_list2 and values 
+    are a list of gene objects corresponding to this gene from gens_list1 
+
+    gen1_to_gen2_match_found_by & gen2_to_gen1_match_found_by:
+    A dictionary with keys being ids of genes in gens_list1 or gens_list2 and values being a 
+    string showing how the matches in gen1_to_gen2_map and gen2_to_gen1_map were found 
+    """
+    if not isinstance(strdout_msgs,bool):
+        raise TypeError('stdout_msgs must be True or False')
+    if not isinstance(warnings,bool):
+        raise TypeError('warnings must be True or False')
+
+    if genes_list1_id == None:
+        model1_id = list(set([c.model.id for c in gens_list1 if 'model' in dir(c)]))
+        if len(model1_id) == 1:
+            gens_list1_id = model1_id[0]
+        else:
+            raise userError('gens_list1_id is needed because not all compounds in gens_list1 have the same model id (' + str(model1_id) + ')')
+
+    if genes_list2_id == None:
+        model2_id = list(set([c.model.id for c in gens_list2 if 'model' in dir(c)]))
+        if len(model2_id) == 1:
+            gens_list2_id = model2_id[0]
+        else:
+            raise userError('gens_list2_id is needed because not all compounds in gens_list2 have the same model id (' + str(model2_id) + ')')
+
+    # comaprtment ids
+    if standard_to_genes_list1_cpt_ids_map.values 1= {}:
+        genes_list1_cpt_ids_to_standard_map = {}
+        for cpt_id in standard_to_genes_list1_cpt_ids_map.values():
+            genes_list1_cpt_ids_to_standard_map[cpt_id] = [sid for sid in standard_to_gens_list1_cpt_ids_map.keys() if standard_to_genes_list1_cpt_ids_map[sid] == cpt_id][0]
+
+    if standard_to_genes_list2_cpt_ids_map.values != {}:
+        genes_list2_cpt_ids_to_standard_map = {}
+        for cpt_id in standard_to_genes_list2_cpt_ids_map.values():
+            genes_list2_cpt_ids_to_standard_map[cpt_id] = [sid for sid in standard_to_gens_list2_cpt_ids_map.keys() if standard_to_genes_list2_cpt_ids_map[sid] == cpt_id][0]
+
+
+    # A dictionary mapping the ids of componds in genes_list2 to compound objects
+    genes_list2_id_map = dict([(c.id,c) for c in genes_list2]) 
+    # ModelSEED ids for compounds in model2
+    genes_list2_ids = genes_list2_id_map.keys()
+
+    # A dictionary, which maps the non-alphanumeric names of the compounds to 
+    # compounds in model2 
+    genes_list2_clean_names_map = create_cleanNames_map(genes_list2,compart_list = genes_list2_cpt_ids_to_standard_map.keys())
+    # Names of genes in model2 where all non-alpahnumeric characters are removed 
+    genes_list2_clean_names = genes_list2_clean_names_map.keys()
+
+    #-------- Find common genes ----
+    if stdout_msgs:
+        print 'Checking for common genes ...'
+
+    gen1_to_gen2_map = dict((gen1,[]) for gen1 in genes_list1) 
+    gen1_to_gen2_match_found_by = dict((gen1.id,'No match') for gen1 in genes_list1) 
+
+    # counters showing how many of common reactions were found by comparing their
+    # id or name 
+    id_counter = 0
+    name_counter = 0
+
+    for gen1 in gens_list1:
+
+        # Search by id, If a match found by id no need to search by other criteria
+        if gen1.id in genes_list2_ids:
+            gen1_to_gen2_map[gen1] = genes_list2_id_map[gen1.id]
+            gen1_to_gen2_match_found_by[gen1.id] = 'id'
+            id_counter += 1
+
+        # Compare names
+        elif gen1.name != '':
+            clean_names = [remove_non_alphanumeric(en1.name.lower()] + [remove_non_alphanumeric(n).lower() for n in gen1.name_aliases]
+            clean_names_intersect = list(set(clean_names).intersection(set(genes_list2_clean_names)): 
+            if len(clean_names_intersect) > 0:
+                clean_name_counter += 1
+                gen1_to_gen2_map[gen1] = list(set([g for n in clean_names_intersect for g in genes_list2_clean_names_map[n]])) 
+                gen1_to_gen2_match_found_by[gen1.id] = 'name'
+
+    gen2_to_gen1_map = dict((gen2,[]) for gen2 in genes_list2) 
+    gen2_to_gen1_match_found_by = dict((gen2.id,'No match') for gen2 in genes_list1) 
+    for gen1 in [g for g in genes_list1 if len(gen1_to_gen2_map[g]) > 0]:
+        for gen2 in gen1_to_gen2_map[gen1]
+            gen2_to_gen1_map[gen2].append(gen1)
+        gen2_to_gen1_match_found_by[gen2.id] = gen1_to_gen2_match_found_by[gen1]
+
+    #--- Checks and reports ---
+    # Compounds with no match
+    no_match_genes_list1 = [g for g in genes_list1 if len(gen1_to_gen2_map) == 0] 
+    no_match_genes_list2 = [g for g in genes_list2 if len(gen2_to_gen1_map) == 0] 
+
+    # Compounds with more than one match
+    more_than_one_match_genes_list1 = [(g1.id,[g2.id for g2 in gen1_to_gen2_map[g1]]) for g1 in genes_list1 if len(gen1_to_gen2_map) > 1] 
+    more_than_one_match_genes_list2 = [(g2.id,[g1.id for g1 in gen2_to_gen1_map[g2]]) for g2 in genes_list2 if len(gen2_to_gen1_map) > 1] 
+
+    if warnings:
+        print '\n**WARNING! No match found for {} genes in genes_list1 and for {} genes in genes_list2'.format(len(no_match_genes_list1),len(no_match_genes_list2))
+        print '\n**WARNING! More than one match found for the following {} genes in genes_list1: {}'.format(len(more_than_one_match_genes_list1.keys()1),more_than_one_match_genes_list1)
+        print '\n**WARNING! More than one match found for the following {} genes in genes_list2: {}'.format(len(more_than_one_match_genes_list2.keys()1),more_than_one_match_genes_list2)
+ 
+    if stdout_msgs:
+        print '\nSummary of the compare_genes:'
+        print '\tTotal # of genes in genes_list1 with a match = {} (out of {})'.format(len([g for g in genes_list1 if  gen1_to_gen2_map[c] != []]), len(genes_list1))
+        print '\tTotal # of genes in genes_list2 with a match = {} (out of {})'.format(len([g for g in genes_list2 if  gen2_to_gen1_map[c] != []]), len(genes_list2))
+        print '\t\t# of genes with a matched model id = ',id_counter
+        print '\t\t# of genes with a matched name = ',name_counter
+
+    return gen1_to_gen2_map, gen2_to_gen1_map, gen1_to_gen2_match_found_by, gen2_to_gen1_match_found_by
 
 
 def compare_models(model1, model2, standard_to_model1_cpt_ids_map, standard_to_model2_cpt_ids_map, obtain_ModelSEED_ids = True, warnings = True, stdout_msgs = True):
@@ -697,14 +851,18 @@ def compare_models(model1, model2, standard_to_model1_cpt_ids_map, standard_to_m
 
     # Get ModelSEED ids for reactions and metabolites
     if obtain_ModelSEED_ids:
-        get_ModelSEED_ids(model1, warnings = warnings, stdout_msgs = stdout_msgs)
-        get_ModelSEED_ids(model2, warnings = warnings, stdout_msgs = stdout_msgs)
+        get_ModelSEED_ids(model = model1, warnings = warnings, stdout_msgs = stdout_msgs)
+        get_ModelSEED_ids(model = model2, warnings = warnings, stdout_msgs = stdout_msgs)
 
     # Compare compounds
     cpd1_to_cpd2_map, cpd2_to_cpd1_map = compare_compounds(cpds_list1i = model1.compounds, cpds_list2 = model2.compounds, standard_to_model1_cpt_ids_map, standard_to_model2_cpt_ids_map, cpds_list1_id = model1.id, cpds_list2_id = model2.id, warnings = warnings, stdout_msgs = stdout_msgs)[0:2]
 
     # Compare reactions
     rxn1_to_rxn2_map, rxn2_to_rxn1_map = compare_reactions(rxns_list1 = model1.reactions, rxns_list2 = model2.reactions, standard_to_cpds_list1_cpt_ids_map = standard_to_model1_cpt_ids_map, standard_to_cpds_list2_cpt_ids_map = standard_to_model2_cpt_ids_map, rxns_list1_id = model1.id, rxns_list2_id = model2.id, cpd1_to_cpd2_map = cpd1_to_cpd2_map, warnings = warnings, stdout_msgs = stdout_msgs)[0:2]
+
+    # Compare genes
+    gen1_to_gen2_map, gen2_to_gen1_map, gen1_to_gen2_match_found_by, gen2_to_gen1_match_found_by = compare_genes(genes_list1 = model1.genes, genes_list2 = model2.genes, genes_list1_id = model1.id, genes_list2_id = model2.id, warnings = warnings, stdout_msgs = stdout_msgs)
+
 
     if stdout_msgs:
         print '\n---------- Done with comparing models -----------\n'

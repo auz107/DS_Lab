@@ -51374,6 +51374,36 @@
           </listOfParameters>
         </kineticLaw>
       </reaction>
+
+      <reaction id="R_GLNt2rpp" name="L-glutamine reversible transport via proton symport (periplasm) **manually added **">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: </p>
+            <p>SUBSYSTEM: Transport, Inner Membrane</p>
+            <p>EC Number: </p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_gln_L_p"/>
+          <speciesReference species="M_h_p"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_gln_L_c"/>
+          <speciesReference species="M_h_c"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+
       <reaction id="R_GLTPD" name="Galactitol-1-phosphate dehydrogenase">
         <notes>
           <body xmlns="http://www.w3.org/1999/xhtml">
@@ -63345,6 +63375,37 @@
           </listOfParameters>
         </kineticLaw>
       </reaction>
+
+      <reaction id="R_METt2rpp" name="L-methionine reversible transport via proton symport (periplasm) * manually added *">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>GENE_ASSOCIATION: </p>
+            <p>SUBSYSTEM: Transport, Inner Membrane</p>
+            <p>EC Number: </p>
+          </body>
+        </notes>
+        <listOfReactants>
+          <speciesReference species="M_met_L_p"/>
+          <speciesReference species="M_h_p"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="M_met_L_c"/>
+          <speciesReference species="M_h_c"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <ci> FLUX_VALUE </ci>
+          </math>
+          <listOfParameters>
+            <parameter id="LOWER_BOUND" value="-1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="UPPER_BOUND" value="1000" units="mmol_per_gDW_per_hr"/>
+            <parameter id="FLUX_VALUE" value="0" units="mmol_per_gDW_per_hr"/>
+            <parameter id="OBJECTIVE_COEFFICIENT" value="0" units="mmol_per_gDW_per_hr"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+
+
       <reaction id="R_MG2t3_2pp" name="magnesium (Mg+2) transport in/out via proton antiport (periplasm)">
         <notes>
           <body xmlns="http://www.w3.org/1999/xhtml">

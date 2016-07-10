@@ -1,1 +1,1 @@
-__all__ = ["findNashEq","game"]
+__all__ = ["findNashEq","game", "replicator_dynamics"]

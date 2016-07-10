@@ -108,9 +108,12 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
     
         #-- Reactions --
         for rxn in sorted(cobra_model.reactions, key = lambda x:x.id):
+            r_is_exchange = False
             # Reaction reversibility
+            #** Fix this after removing 'exchange' from reaction reversiblities
             if rxn.id.find('EX_') == 0 or 'exchange' in rxn.name.lower():
                 rxn_rev = 'exchange'
+                r_is_exchange = True
             elif rxn.reversibility == False: 
                 rxn_rev = 'irreversible'
             elif rxn.reversibility == True: 
@@ -123,11 +126,6 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
     
             if len(stoichiometry) == 0 and warnings:
                 print "WARNING! The field 'stoichiometry' was not assigned for reaction " + rxn.id
-    
-            # List of compartments for the reaction
-            r_comparts = []
-            for comp_id in rxn.get_compartments():
-                r_comparts.append(compartments_by_id[comp_id])
     
             # Genes for this reaction 
             r_genes = []
@@ -143,7 +141,7 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
                 r_obj_coeff = None
                 r_notes = ''
 
-            r = reaction(id = rxn.id, stoichiometry = dict(stoichiometry), reversibility = rxn_rev, name = rxn.name, subsystem = rxn.subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = rxn.gene_reaction_rule, objective_coefficient = r_obj_coeff, flux_bounds = r_flux_bounds, notes = r_notes)
+            r = reaction(id = rxn.id, stoichiometry = dict(stoichiometry), reversibility = rxn_rev, name = rxn.name, subsystem = rxn.subsystem, genes = r_genes, gene_reaction_rule = rxn.gene_reaction_rule, is_exchange = r_is_exchange, objective_coefficient = r_obj_coeff, flux_bounds = r_flux_bounds, notes = r_notes)
             reactions.append(r)
     
     #--------- Do not use cobra parser ------
@@ -229,8 +227,11 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
                 rxn_id = rxn.getId()
 
             # Reaction type
+            #** Fix this after removing 'exchange' from reaction reversiblities
+            r_is_exchange = False
             if 'EX_' in rxn_id or 'EX_' in rxn.getName() or 'exchange' in rxn.getName().lower():
                 r_rev = 'exchange'
+                r_is_exchange = True
             elif rxn.reversible == False: 
                 r_rev = 'irreversible'
             elif rxn.reversible == True: 
@@ -344,7 +345,7 @@ def read_sbml_model(file_name,model_organism, model_id = '', model_type = 'cmpol
             else:
                 r_confidence = None
 
-            r = reaction(id = rxn_id, stoichiometry = r_stoichiometry, reversibility = r_rev, name = r_name, EC_number = r_EC_num, subsystem = r_subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = r_gene_rxn_rule, objective_coefficient = r_obj_coeff, flux_bounds = [r_LB,r_UB])
+            r = reaction(id = rxn_id, stoichiometry = r_stoichiometry, reversibility = r_rev, is_exchange = r_is_exchange, name = r_name, EC_number = r_EC_num, subsystem = r_subsystem, compartment = r_comparts, genes = r_genes, gene_reaction_rule = r_gene_rxn_rule, objective_coefficient = r_obj_coeff, flux_bounds = [r_LB,r_UB])
             reactions.append(r)
 
     #--- Biomass and ATPM ---

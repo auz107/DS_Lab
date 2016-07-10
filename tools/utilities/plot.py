@@ -12,7 +12,7 @@ import numpy as np
 
 #------------------------------------------
 # Ali R. Zomorrodi - Segre Lab @ BU
-# Last updated: 03-01-2016
+# Last updated: 06-15-2016
 #------------------------------------------
 
 """
@@ -67,23 +67,53 @@ class axis(object):
     """
     A class holding the axes properties
     """
-    def __init__(self,label = '', label_format = {'fontname': axes_label_default_fontname,'fontweight':figure_default_fontweight,'fontsize':axes_label_default_fontsize, 'distance_from_ticklabels':None, 'position': None}, limits = None, set_minorticks = False, minorticks_spacing = None, majorticks_spacing = None, custom_ticks = None, custom_ticklabels = None, ticklabels_format = {'fontname':ticklabels_default_fontname, 'fontweight':figure_default_fontweight,'fontsize':ticklabels_default_fontsize,'rotation':0, 'string_format':None, 'position':None,'horizontalalignment': None, 'verticalalignment':None}, spines_format = {}, invert = False, scale = None):
+    def __init__(self,label = '', label_format = {'fontname': axes_label_default_fontname,'fontweight':figure_default_fontweight,'fontsize':axes_label_default_fontsize, 'distance_from_ticklabels':None, 'position': None}, limits = None, set_minorticks = False, minorticks_spacing = None, majorticks_spacing = None, custom_ticks = None, custom_ticklabels = None, ticklabels_format = {'fontname':ticklabels_default_fontname, 'fontweight':figure_default_fontweight,'fontsize':ticklabels_default_fontsize,'rotation':0, 'string_format':None, 'position':None,'horizontalalignment': None, 'verticalalignment':None}, plot_gridlines = False, gridlines_format = {'color':'black', 'linestyle':'dashed', 'linewidth':1}, spines_format = {}, invert = False, scale = None):
         """
         INPUTS:
-                     label: Axis label (a string)
-              label_format: A dictionary showing the format of the axis label
-                    limits: Axis limits. A tuple in the form of (min,max)
-            set_minorticks: Showing whether to set the minor ticks (True) or nor (False)
-        minorticks_spacing: Space between minor ticks
-        majorticks_spacing: Space between major ticks
-              custom_ticks: Custom ticks
-         custom_ticklabels: Custom tick labels
-         ticklabels_format: Format of the tick labels
-             spines_format: Format of the axis lines. This a dictionary with allowed keys being 'top', 'bottom', 
-                            'left', 'right'. The values must be another dictionary with either of these three keys: 
-                            'linewidth', 'linestyle' and 'linecolor'
-                    invert: Shows whether to invert an axis (True) or not (False)
-                     scale: The scale of the axis. Allowed choices are 'linear', 'log', 'logit', 'symlog'
+        -------
+        label: 
+        Axis label (a string)
+
+        label_format: 
+        A dictionary showing the format of the axis label
+
+        limits: 
+        Axis limits. A tuple in the form of (min,max)
+
+        set_minorticks: 
+        Showing whether to set the minor ticks (True) or nor (False)
+
+        minorticks_spacing: 
+        Space between minor ticks
+
+        majorticks_spacing: 
+        Space between major ticks
+
+         custom_ticks: 
+         Custom ticks
+
+         custom_ticklabels: 
+         Custom tick labels
+
+         ticklabels_format: 
+         Format of the tick labels
+
+         plot_gridlines: 
+         Showing whether to plot the grid lines (True) or not (False)
+            gridlines_fomrat: A dictionary containing the gridlines properties
+                 show_legend: Whether to show the legend (True) or not (False)
+               legend_format: A dictionary containing the legend properties
+
+        spines_format: 
+        Format of the axis lines. This a dictionary with allowed keys being 'top', 'bottom', 
+        'left', 'right'. The values must be another dictionary with either of these three keys: 
+       'linewidth', 'linestyle' and 'linecolor'
+
+        invert: 
+        Shows whether to invert an axis (True) or not (False)
+
+        scale: 
+        The scale of the axis. Allowed choices are 'linear', 'log', 'logit', 'symlog'
         """
         # Axis label
         self.label = label
@@ -139,6 +169,20 @@ class axis(object):
 
         # Custom tick labels (must be an array of strings) 
         self.custom_ticklabels = custom_ticklabels
+
+        # Grid lines
+        self.plot_gridlines = plot_gridlines 
+    
+        # gridlines format
+        if self.plot_gridlines:
+            self.gridlines_format = gridlines_format
+            gridlines_format_keys = [k.lower() for k in gridlines_format.keys()]
+            if 'color' not in gridlines_format_keys:
+                self.gridlines_format['color'] = 'k' 
+            if 'linestyle' not in gridlines_format_keys:
+                self.gridlines_format['linestyle'] = 'dashed' 
+            if 'linewidth' not in gridlines_format_keys:
+                self.gridlines_format['linewidth'] = 2 
 
         # Spines (axes and graph's border lines) format
         # Here main and opposite are the main axis spine and the one opoosite to it. For example, for 
@@ -207,6 +251,16 @@ class axis(object):
         elif attr_name.lower() == 'scale' and attr_value != None and attr_value not in ['linear', 'log', 'logit', 'symlog']: 
            raise ValueError('Invalid value for scale! Allowed choices are: linear, log, logit, symlog')
 
+        # Gridlines
+        if attr_name.lower() == 'plot_gridlines' and not isinstance(attr_value,bool):
+            raise TypeError('plot_gridlines must be either True or False')
+ 
+        if attr_name.lower() == 'gridlines_format' and not isinstance(attr_value,dict):
+            raise TypeError('gridlines_format must be a dictionary')
+        elif attr_name.lower() == 'gridlines_format' and len([k for k in attr_value.keys() if k.lower() not in ['color', 'linestyle', 'linewidth']]) > 0: 
+            raise ValueError('Unknown key(s) for label_format: {}'.format([k for k in attr_value.keys() if k.lower() not in ['color', 'linestyle', 'linewidth']]))
+
+
         # Spines (axes and graph's border lines)
         if attr_name.lower() == 'spines_format':
             if  not isinstance(attr_value,dict):
@@ -227,14 +281,13 @@ class color_bar(object):
     """
     A class holding the properties of the color bar (for related graphs)
     """
-    def __init__(self, colormap = None, colorlimits = None, label = '', label_format = {'fontweight':figure_default_fontweight,'fontsize':axes_label_default_fontsize,'rotation':270,'distance_from_ticklabels':None, 'string_format': None}, ticklabels = None, ticklabels_format = {'fontweight':figure_default_fontweight,'fontsize':ticklabels_default_fontsize,'rotation':0, 'string_format': None,'location':None}):
+    def __init__(self, colormap = None, colorlimits = None, label = '', label_format = {'fontweight':figure_default_fontweight,'fontsize':axes_label_default_fontsize,'rotation':270,'distance_from_ticklabels':None, 'string_format': None}, set_minorticks = False, minorticks_spacing = None, majorticks_spacing = None, custom_ticks = None, custom_ticklabels = None, ticklabels_format = {'fontname':ticklabels_default_fontname, 'fontweight':figure_default_fontweight,'fontsize':ticklabels_default_fontsize,'rotation':0, 'string_format':None, 'axis_position':None, 'ticks_position':None, 'horizontalalignment': None, 'verticalalignment':None}):
 
         # colorbar
         if colormap != None:
             self.colormap = colormap
         else:
             self.colormap = colormap_default
-
         
         # colorlimits: A tuple in the form (min,max) indicating the Color range for the colormap. These values are 
         # used as vmin and vmax for pcolor, pcolormesh, matshow or imshow.  
@@ -260,53 +313,88 @@ class color_bar(object):
         if 'string_format' not in self.label_format.keys():
             self.label_format['string_format'] = None 
 
-        # ticklabels
-        self.ticklabels = ticklabels
-    
+        # Set minor ticks (True or False)
+        self.set_minorticks = set_minorticks
+
+        # Specify minor tick spacing
+        self.minorticks_spacing = minorticks_spacing
+
+        # Specify major tack spacing
+        self.majorticks_spacing = majorticks_spacing
+
+        # Custom ticks (must be an array of integers or float) 
+        self.custom_ticks = custom_ticks
+
+        # Custom tick labels (must be an array of strings) 
+        self.custom_ticklabels = custom_ticklabels
+
         # ticklabels_format
-        self.ticklabels_format = ticklabels_format
+        self.ticklabels_format = ticklabels_format 
+        if 'fontname' not in self.ticklabels_format.keys():
+            self.ticklabels_format['fontname'] = ticklabels_default_fontname
         if 'fontsize' not in self.ticklabels_format.keys():
-            self.ticklabels_format['fontsize'] = ticklabels_default_fontsize 
+            self.ticklabels_format['fontsize'] = ticklabels_default_fontsize
         if 'fontweight' not in self.ticklabels_format.keys():
             self.ticklabels_format['fontweight'] = figure_default_fontweight 
         if 'rotation' not in self.ticklabels_format.keys():
             self.ticklabels_format['rotation'] = 0 
         if 'string_format' not in self.ticklabels_format.keys():  # string_format is like %1.2f or %d
             self.ticklabels_format['string_format'] = None 
-        # If location is None it is defaule by default. Otherwise one can choose 'middle' to put the ticklables
-        # in the middle of ticks
-        if 'location' not in self.ticklabels_format.keys():  # string_format is like %1.2f or %d
-            self.ticklabels_format['location'] = None 
+        if 'axis_position' not in self.ticklabels_format.keys(): # Tick labels on top/bottom/left/right acis 
+            self.ticklabels_format['axis_position'] = None 
+        if 'ticks_position' not in self.ticklabels_format.keys(): # Tick labels position w.r.t. to ticks. The only aalowed choice is 'middle' 
+            self.ticklabels_format['ticks_position'] = None 
+        if 'horizontalalignment' not in self.ticklabels_format.keys(): 
+            self.ticklabels_format['horizontalalignment'] = None 
+        if 'verticalalignment' not in self.ticklabels_format.keys(): 
+            self.ticklabels_format['verticalalignment'] = None 
+
 
     def __setattr__(self,attr_name,attr_value):
-       """
-       Redefines funciton __setattr__
-       INPUTS:
-       -------
-       attr_name: Attribute name
-       attr_value: Attribute value
-       """
-       if attr_name.lower() == 'label' and not isinstance(attr_value,str):
-           raise TypeError('label must be a string')
+        """
+        Redefines funciton __setattr__
+        INPUTS:
+        -------
+        attr_name: Attribute name
+        attr_value: Attribute value
+        """
+        if attr_name.lower() == 'label' and not isinstance(attr_value,str):
+            raise TypeError('label must be a string')
 
-       if attr_name.lower() == 'colorlimits' and attr_value != None and not isinstance(attr_value,tuple):
-           raise TypeError('colorlimits must be a tuple of form (min,max)')
-       if attr_name.lower() == 'colorlimits' and attr_value != None and len(attr_value) != 2:
-           raise TypeError('colorlimits must be a tuple of size two (min,max)')
-       elif attr_name.lower() == 'colorlimits' and attr_value != None and not attr_value[1] > attr_value[0]:
-           raise TypeError('min value in colorlimits is greater than its max: {}'.format(attr_value))
+        if attr_name.lower() == 'colorlimits' and attr_value != None and not isinstance(attr_value,tuple):
+            raise TypeError('colorlimits must be a tuple of form (min,max)')
+        if attr_name.lower() == 'colorlimits' and attr_value != None and len(attr_value) != 2:
+            raise TypeError('colorlimits must be a tuple of size two (min,max)')
+        elif attr_name.lower() == 'colorlimits' and attr_value != None and not attr_value[1] > attr_value[0]:
+            raise TypeError('min value in colorlimits is greater than its max: {}'.format(attr_value))
 
-       if attr_name.lower() == 'label_format' and not isinstance(attr_value,dict):
-           raise TypeError('label_format must be a dictionary')
-       elif attr_name.lower() == 'label_format' and len([k for k in attr_value.keys() if k.lower() not in ['fontweight','fontsize','rotation','distance_from_ticklabels','string_format']]) > 0: 
-           raise ValueError('Unknown key(s) for label_format: {}'.format([k for k in attr_value.keys() if k.lower() not in ['fontweight','fontsize','rotation','distance_from_ticklabels','string_format']]))
+        if attr_name.lower() == 'label_format' and not isinstance(attr_value,dict):
+            raise TypeError('label_format must be a dictionary')
+        elif attr_name.lower() == 'label_format' and len([k for k in attr_value.keys() if k.lower() not in ['fontweight','fontsize','rotation','distance_from_ticklabels','string_format']]) > 0: 
+            raise ValueError('Unknown key(s) for label_format: {}'.format([k for k in attr_value.keys() if k.lower() not in ['fontweight','fontsize','rotation','distance_from_ticklabels','string_format']]))
 
-       if attr_name.lower() == 'ticklabels_format' and not isinstance(attr_value,dict):
-           raise TypeError('ticklabels_format must be a dictionary')
-       elif attr_name.lower() == 'ticklabels_format' and len([k for k in attr_value.keys() if k.lower() not in ['fontweight','fontsize','rotation','string_format','location']]) > 0: 
-           raise ValueError('Unknown key(s) for label_format: {}'.format([k for k in attr_value.keys() if k.lower() not in ['fontweight','fontsize','rotation','string_format','location']]))
+        if attr_name.lower() == 'ticklabels_format' and not isinstance(attr_value,dict):
+            raise TypeError('ticklabels_format must be a dictionary')
+        elif attr_name.lower() == 'ticklabels_format' and len([k for k in attr_value.keys() if k.lower() not in ['fontname','fontweight','fontsize','rotation','string_format','axis_position', 'ticks_position','horizontalalignment','verticalalignment','distance_from_ticklabels']]) > 0: 
+            raise ValueError('Unknown key(s) for label_format: {}'.format([k for k in attr_value.keys() if k.lower() not in ['fontname','fontweight','fontsize','rotation','string_format','axis_position', 'ticks_position','horizontalalignment','verticalalignment','distance_from_ticklabels']]))
 
-       self.__dict__[attr_name] = attr_value
+        if attr_name.lower() == 'set_minorticks' and not isinstance(attr_value,bool):
+            raise TypeError('set_minorticks must be either True or False')
+ 
+        if attr_name.lower() == 'set_majorticks' and not isinstance(attr_value,bool):
+            raise TypeError('set_majorticks must be either True or False')
+ 
+        if attr_name.lower() == 'custom_ticks' and attr_value != None and not isinstance(attr_value,list) and not isinstance(attr_value, np.ndarray):
+            raise TypeError('custom_ticks must be an array of integers or floats or a numpy ndarray')
+        elif attr_name.lower() == 'custom_ticks' and attr_value != None and len([k for k in attr_value if not isinstance(k,int) and not isinstance(k,float)]): 
+            raise ValueError('custom_ticks must be an array of integers or floats or a numpy ndarray. Non-integer and non-float values were entered: {}'.format([k for k in attr_value if not isinstance(k,int) and not isinstance(k,float)]))
+ 
+        if attr_name.lower() == 'custom_ticklabels' and attr_value != None and not isinstance(attr_value,list):
+            raise TypeError('custom_ticklabels must be an array of strings')
+        elif attr_name.lower() == 'custom_ticklabels' and attr_value != None and len([k for k in attr_value if not isinstance(k,str)]) > 0: 
+            raise ValueError('custom_ticklabels must be an array of strings. Non-string values were entered: {}'.format([k for k in attr_value if not isinstance(k,str)]))
+
+        self.__dict__[attr_name] = attr_value
 
 class plot(object):
     """
@@ -325,8 +413,13 @@ class plot(object):
                    xaxis: An instance of class axis
                    yaxis: An instance of class axis
                    zaxis: An instance of class axis
-          plot_gridlines: Showing whether to plot the grid lines (True) or not (False)
-        gridlines_fomrat: A dictionary containing the gridlines properties
+          plot_gridlines: Showing whether to plot the grid lines (True) or not (False). If True,
+                          gridlines are plotted for ALL axes by setting their plot_gridlines to True.
+                          To plot gridlines only for specific axes, set this parameter to False here,
+                          but set it to True for the desired axis.
+        gridlines_fomrat: A dictionary containing the gridlines properties. This format is used for 
+                          ALL axes. To choose different formats for different axes, set this parameter
+                          for each axis separately (see class axis for details)
              show_legend: Whether to show the legend (True) or not (False)
            legend_format: A dictionary containing the legend properties
               fig_format: Figure format. Keys include:
@@ -371,19 +464,25 @@ class plot(object):
         if zaxis != None:
             self.zaxis = zaxis
     
-        # Grid lines
-        self.plot_gridlines = plot_gridlines 
-    
-        # gridlines format
-        if self.plot_gridlines:
-            self.gridlines_format = gridlines_format
+        # Grid lines and their format
+        if plot_gridlines:
             gridlines_format_keys = [k.lower() for k in gridlines_format.keys()]
             if 'color' not in gridlines_format_keys:
-                self.gridlines_format['color'] = 'k' 
+                gridlines_format['color'] = 'k' 
             if 'linestyle' not in gridlines_format_keys:
-                self.gridlines_format['linestyle'] = 'dashed' 
+                gridlines_format['linestyle'] = 'dashed' 
             if 'linewidth' not in gridlines_format_keys:
-                self.gridlines_format['linewidth'] = 2 
+                gridlines_format['linewidth'] = 2 
+
+            self.xaxis.plot_gridlines = True
+            self.xaxis.gridlines_format = gridlines_format
+
+            self.yaxis.plot_gridlines = True
+            self.yaxis.gridlines_format = gridlines_format
+
+            if zaxis != None:
+                self.zaxis.plot_gridlines = True
+                self.zaxis.gridlines_format = gridlines_format
 
         # Show legend
         self.show_legend = show_legend
@@ -726,76 +825,55 @@ class plot(object):
     
         if clrbar == None:
             clrbar = color_bar()
+        self.clrbar = clrbar
 
         # Color bar
-        if clrbar.colorlimits == None:
-            if plot_func in ['pcolor','pcolormesh']:
-                clrbar.colorlimits = (data.min(),data.max())
-            elif plot_func in ['matshow','imshow']:
-                clrbar.colorlimits = (data.min() - 0.5,data.max() + 0.5)
+        if self.clrbar.colorlimits == None:
+            self.clrbar.colorlimits = (data.min(),data.max())
  
+        # If you like to have ticklabels placed in the middle of ticks (e.g., in a discerete colormap for pcolor 
+        # and pcolormesh), use: vmin = data.min() - 0.5 and vmax = data.max() + 0.5. 
+        if self.clrbar.ticklabels_format['ticks_position'] == 'middle':
+            (vmin,vmax) = (self.clrbar.colorlimits[0] - 0.5, self.clrbar.colorlimits[1] + 0.5)
+        else:
+            (vmin,vmax) = (self.clrbar.colorlimits[0], self.clrbar.colorlimits[1])
+
         #------------ pcolor and pcolormesh ----------------
         if plot_func.lower() in ['pcolor','pcolormesh']:
             if plot_func.lower() == 'pcolor':
-                pc = self.ax.pcolor(x,y,data, cmap = clrbar.colormap, vmin = clrbar.colorlimits[0], vmax = clrbar.colorlimits[1])
+                pc = self.ax.pcolor(x,y,data, cmap = clrbar.colormap, vmin = vmin, vmax = vmax)
             elif plot_func.lower() == 'pcolormesh':
-                pc = self.ax.pcolormesh(x,y,data, cmap = clrbar.colormap, vmin = clrbar.colorlimits[0], vmax = clrbar.colorlimits[1]) 
+                pc = self.ax.pcolormesh(x,y,data, cmap = clrbar.colormap, vmin = vmin, vmax = vmax) 
     
-            #-- Format colorbar --
-            if clrbar.ticklabels != None:
+            #-- colorbar --
+            if clrbar.custom_ticklabels != None:
                 # Source: http://stackoverflow.com/questions/14777066/matplotlib-discrete-colorbar
-                cbar = self.fig.colorbar(pc,ticks = np.arange(np.min(data),np.max(data)+1))
-                cbar.ax.set_yticklabels(clrbar.ticklabels)
+                self.cbar = self.fig.colorbar(pc,ticks = np.arange(np.min(data),np.max(data)+1))
             else:
-                cbar = self.fig.colorbar(pc)
+                self.cbar = self.fig.colorbar(pc, ticks = self.clrbar.custom_ticks)
 
-            # Colorbar Tick labels format
-            for ticklabel in cbar.ax.yaxis.get_ticklabels():
-                ticklabel.set_fontsize(clrbar.ticklabels_format['fontsize'])
-                ticklabel.set_fontweight(clrbar.ticklabels_format['fontweight'])
-                ticklabel.set_rotation(clrbar.ticklabels_format['rotation'])
-
-            # Coloarbar labels format
-            if clrbar.label_format['distance_from_ticklabels'] != None: 
-                cbar.set_label(clrbar.label,size = clrbar.label_format['fontsize'], weight = clrbar.label_format['fontweight'], rotation = clrbar.label_format['rotation'], labelpad = clrbar.label_format['distance_from_ticklabels'])
-            else:
-                cbar.set_label(clrbar.label, size = clrbar.label_format['fontsize'], weight = clrbar.label_format['fontweight'], rotation = clrbar.label_format['rotation'])
-    
         #------------ imshow and matshow ----------------
         elif plot_func.lower() in ['matshow','imshow']:
     
             if plot_func.lower() == 'matshow':
                 if interpolate:
-                    ms = self.ax.matshow(data, cmap = clrbar.colormap, vmin = clrbar.colorlimits[0], vmax = clrbar.colorlimits[1], interpolation = 'bilinear')
+                    ms = self.ax.matshow(data, cmap = clrbar.colormap, vmin = vmin, vmax = vmax, interpolation = 'bilinear')
                 else: 
-                    ms = self.ax.matshow(data, cmap = clrbar.colormap, vmin = clrbar.colorlimits[0], vmax = clrbar.colorlimits[1])
+                    ms = self.ax.matshow(data, cmap = clrbar.colormap, vmin = vmin, vmax = vmax)
     
             elif plot_func.lower() == 'imshow':
                 if interpolate:
                     ms = self.ax.imshow(data, cmap = clrbar.colormap, vmin = clrbar.colorlimits[0], vmax = clrbar.colorlimits[1], interpolation = 'bilinear')
                 else:
                     ms = self.ax.imshow(data, cmap = clrbar.colormap, vmin = clrbar.colorlimits[0], vmax = clrbar.colorlimits[1])
-    
-            #-- Format colorbar --
-            if clrbar.ticklabels != None:
+
+            #-- colorbar --
+            if self.clrbar.custom_ticklabels != None:
                 # Source: http://stackoverflow.com/questions/14777066/matplotlib-discrete-colorbar
-                cbar = self.fig.colorbar(pc,ticks = np.arange(np.min(data),np.max(data)+1))
-                cbar.ax.set_yticklabels(clrbar.ticklabels)
+                self.cbar = self.fig.colorbar(ms,ticks = np.arange(np.min(data),np.max(data)+1))
             else:
-                cbar = self.fig.colorbar(pc)
+                self.cbar = self.fig.colorbar(ms, ticks = self.clrbar.custom_ticks)
 
-            # Colorbar Tick labels format
-            for ticklabel in cbar.ax.yaxis.get_ticklabels():
-                ticklabel.set_fontsize(clrbar.ticklabels_format['fontsize'])
-                ticklabel.set_fontweight(clrbar.ticklabels_format['fontweight'])
-                ticklabel.set_rotation(clrbar.ticklabels_format['rotation'])
-
-            # Coloarbar labels format
-            if clrbar.label_format['distance_from_ticklabels'] != None: 
-                cbar.set_label(clrbar.label,size = clrbar.label_format['fontsize'], weight = clrbar.label_format['fontweight'], rotation = clrbar.label_format['rotation'], labelpad = clrbar.label_format['distance_from_ticklabels'])
-            else:
-                cbar.set_label(clrbar.label, size = clrbar.label_format['fontsize'], weight = clrbar.label_format['fontweight'], rotation = clrbar.label_format['rotation'])
-    
             #--- Put the major ticks at the middle of each cell (don't do this for pcolor and pcolormesh) ---
             # Source: http://stackoverflow.com/questions/14391959/heatmap-in-matplotlib-with-pcolor
             self.ax.set_xticks(np.arange(data.shape[1]), minor = False)
@@ -881,6 +959,7 @@ class plot(object):
             if self.zaxis.ticklabels_format['verticalalignment'] != None:
                 for ticklabel in self.ax.get_zmajorticklabels():
                     ticklabel.set_verticalalignment(self.zaxis.ticklabels_format['verticalalignment'])     
+
         #-- Set major and minor ticks and tick labels --
         # Source: http://matplotlib.org/examples/pylab_examples/major_minor_demo1.html
         #- x ticks --
@@ -1053,26 +1132,33 @@ class plot(object):
             self.ax.set_zscale(self.zaxis.scale)
 
         #---- Grid lines ----
-        if self.plot_gridlines:
-            if self._plot_type.lower() != '3d':
-                # Gridlines format
-                # From: http://stackoverflow.com/questions/9127434/how-to-create-major-and-minor-gridlines-with-different-linestyles-in-python
-                # From: http://stackoverflow.com/questions/17925545/adjusting-gridlines-on-a-3d-matplotlib-figure
-               # gridlines_format = {'color':'k', 'linestyle':'dashed', 'linewidth':2}   
-               self.ax.grid(True, color = self.gridlines_format['color'], linestyle = self.gridlines_format['linestyle'], linewidth = self.gridlines_format['linewidth'])
+        if self._plot_type.lower() != '3d':
+            # Gridlines format
+            # From: http://stackoverflow.com/questions/9127434/how-to-create-major-and-minor-gridlines-with-different-linestyles-in-python
+            # From: http://stackoverflow.com/questions/17925545/adjusting-gridlines-on-a-3d-matplotlib-figure
+            # gridlines_format = {'color':'k', 'linestyle':'dashed', 'linewidth':2}   
+            if self.xaxis.plot_gridlines:
+                self.ax.xaxis.grid(True, color = self.xaxis.gridlines_format['color'], linestyle = self.xaxis.gridlines_format['linestyle'], linewidth = self.xaxis.gridlines_format['linewidth'])
+            if self.yaxis.plot_gridlines:
+                self.ax.yaxis.grid(True, color = self.yaxis.gridlines_format['color'], linestyle = self.yaxis.gridlines_format['linestyle'], linewidth = self.yaxis.gridlines_format['linewidth'])
 
-            else: 
-                # for 1 3d plot
-                # From: http://stackoverflow.com/questions/17925545/adjusting-gridlines-on-a-3d-matplotlib-figure
-                self.ax.w_xaxis.gridlines.set_lw(self.gridlines_format['linewidth'])
-                self.ax.w_yaxis.gridlines.set_lw(self.gridlines_format['linewidth'])
-                self.ax.w_zaxis.gridlines.set_lw(self.gridlines_format['linewidth'])
-                self.ax.w_xaxis.gridlines.set_linestyle(self.gridlines_format['linestyle'])
-                self.ax.w_yaxis.gridlines.set_linestyle(self.gridlines_format['linestyle'])
-                self.ax.w_zaxis.gridlines.set_linestyle(self.gridlines_format['linestyle'])
-                self.ax.w_xaxis._axinfo.update({'grid': {'color': self.gridlines_format['color']}})
-                self.ax.w_yaxis._axinfo.update({'grid': {'color': self.gridlines_format['color']}})
-                self.ax.w_zaxis._axinfo.update({'grid': {'color': self.gridlines_format['color']}})
+        else: 
+            # for 1 3d plot
+            # From: http://stackoverflow.com/questions/17925545/adjusting-gridlines-on-a-3d-matplotlib-figure
+            if self.xaxis.plot_gridlines:
+                self.ax.w_xaxis.gridlines.set_lw(self.xaxis.gridlines_format['linewidth'])
+                self.ax.w_xaxis.gridlines.set_linestyle(self.xaxis.gridlines_format['linestyle'])
+                self.ax.w_xaxis._axinfo.update({'grid': {'color': self.xaxis.gridlines_format['color']}})
+
+            if self.yaxis.plot_gridlines:
+                self.ax.w_yaxis.gridlines.set_linestyle(self.yaxis.gridlines_format['linestyle'])
+                self.ax.w_yaxis.gridlines.set_lw(self.yaxis.gridlines_format['linewidth'])
+                self.ax.w_yaxis._axinfo.update({'grid': {'color': self.yaxis.gridlines_format['color']}})
+
+            if self.zaxis.plot_gridlines:
+                self.ax.w_zaxis.gridlines.set_lw(self.zaxis.gridlines_format['linewidth'])
+                self.ax.w_zaxis.gridlines.set_linestyle(self.zaxis.gridlines_format['linestyle'])
+                self.ax.w_zaxis._axinfo.update({'grid': {'color': self.zaxis.gridlines_format['color']}})
 
         #--- Legend ---
         # Source: http://matplotlib.org/api/legend_api.html
@@ -1129,6 +1215,58 @@ class plot(object):
                 self.ax.spines['right'].set_linestyle(self.yaxis.spines_format['right']['linestyle'])
             if 'linecolor' in  self.yaxis.spines_format['right'].keys():
                 self.ax.spines['right'].set_color(self.yaxis.spines_format['right']['linecolor'])
+
+
+        #--- Customize colorbar ---
+        if hasattr(self,'cbar'): 
+            # Coloarbar label format
+            if self.clrbar.label_format['distance_from_ticklabels'] != None: 
+                self.cbar.set_label(self.clrbar.label,size = self.clrbar.label_format['fontsize'], weight = self.clrbar.label_format['fontweight'], rotation = self.clrbar.label_format['rotation'], labelpad = self.clrbar.label_format['distance_from_ticklabels'])
+            else:
+                self.cbar.set_label(self.clrbar.label, size = self.clrbar.label_format['fontsize'], weight = self.clrbar.label_format['fontweight'], rotation = self.clrbar.label_format['rotation'])
+
+            # Set the position of tick labels (top, bottom, left, right)
+            if self.clrbar.ticklabels_format['axis_position'] != None and self.clrbar.ticklabels_format['axis_position'].lower() == 'left':
+                self.cbar.ax.yaxis.tick_left()
+            elif self.clrbar.ticklabels_format['axis_position'] != None and self.clrbar.ticklabels_format['axis_position'].lower() == 'right':
+                self.cbar.ax.yaxis.tick_right()
+            elif self.clrbar.ticklabels_format['axis_position'] != None and self.clrbar.ticklabels_format['axis_position'].lower() not in ['left','right']:
+                raise userError('Invalid ticklabels position for the y axis: {}. Allowed choices are left and right'.format(self.clrbar.ticklabels_format['position']))
+
+            #- Set major and minor ticks and tick labels -
+            # ***The following disrupts the color limit for some reasons. Use custom ticks instead
+            # Source: http://matplotlib.org/examples/pylab_examples/major_minor_demo1.html
+            # Minor tick labels
+            if self.clrbar.set_minorticks:
+                if self.clrbar.minorticks_spacing != None:
+                    y_minorLocator = MultipleLocator(self.clrbar.minorticks_spacing)
+                    self.cbar.ax.yaxis.set_minor_locator(y_minorLocator)
+                    if self.clrbar.ticklabels_format['string_format'] != None: 
+                        y_minorFormatter = FormatStrFormatter(self.clrbar.ticklabels_format['string_format'])
+                        self.cbar.ax.yaxis.set_minor_formatter(y_minorFormatter)
+                for ticklabel in self.cbar.ax.get_yminorticklabels():
+                    ticklabel.set_fontsize(self.clrbar.ticklabels_format['fontsize']) 
+                    ticklabel.set_fontweight(self.clrbar.ticklabels_format['fontweight']) 
+                    ticklabel.set_rotation(self.clrbar.ticklabels_format['rotation']) 
+            # Major tick labels
+            if self.clrbar.majorticks_spacing != None:
+                y_majorLocator = MultipleLocator(self.clrbar.majorticks_spacing)
+                self.cbar.ax.yaxis.set_major_locator(y_majorLocator)
+                if self.clrbar.ticklabels_format['string_format'] != None: 
+                    y_majorFormatter = FormatStrFormatter(self.clrbar.ticklabels_format['string_format'])
+                    self.cbar.ax.yaxis.set_major_formatter(y_majorFormatter)
+            for ticklabel in self.cbar.ax.get_ymajorticklabels():
+                ticklabel.set_fontsize(self.clrbar.ticklabels_format['fontsize']) 
+                ticklabel.set_fontweight(self.clrbar.ticklabels_format['fontweight']) 
+                ticklabel.set_rotation(self.clrbar.ticklabels_format['rotation']) 
+
+            # Custom ticks --> ** This doesn't work for some reasons. Use ticks when defining the colorbar instead 
+            if self.clrbar.custom_ticks != None:
+                self.cbar.ax.set_yticks(self.clrbar.custom_ticks)
+
+            # Custom tick labels 
+            if self.clrbar.custom_ticklabels != None:
+                self.cbar.ax.set_yticklabels(self.clrbar.custom_ticklabels, fontsize = self.clrbar.ticklabels_format['fontsize'], weight = self.clrbar.ticklabels_format['fontweight'])
 
         #--- Save the figure ---
         if self.output_filename != '':

@@ -111,12 +111,15 @@ def remove_compartment(input_string,compartments_info = None):
     INPUTS:
     ------
          input_string: A string or a list of strings
-    compartments_info: A list of strings containing the names and ids of compartments.
+    compartments_info: A list of strings containing the names or ids of compartments that
+                       appear in the list of strings..
                        If not input is proivded a number of pre-set compartment ids
-                       (including _c, _e, _m, _x, _v, _n, [c], [e], [m], [x], [n]) are used.
+                       (including _c, _e, _m, _n, _p, _r, _v, _x, [c], [e], [m], [n], [r], [v], 
+                       [x]]) are used.
 
     OUTPUTS:
-    a string with all non-alaphabetical and non-numerical characters replaced with an underline
+    --------
+    A list of strings from which compartments have been removed 
     """
     converted_string = []
 
@@ -129,7 +132,7 @@ def remove_compartment(input_string,compartments_info = None):
 
     for s in input_string:
         # First some pre-set patterns 
-        pattern = '_[c,e,p,m,x,n,v,g]0$|_[c,e,p,m,x,n,v,g]$|\[[c,e,p,m,x,n,v,g]\]$|\[[c,e,p,m,x,n,v,g]0\]$'
+        pattern = '_[c,e,g,m,n,p,r,v,x]0$|_[c,e,g,m,n,p,r,v,x]$|\[[c,e,p,m,x,n,v,g]\]$|\[[c,e,g,m,n,p,r,v,x]0\]$|\[[c,e,p,m,x,n,v,g]\]$|\[[c,e,g,m,n,p,r,v,x]\]$'
         if compartments_info != None:
             for compt in compartments_info:
                 pattern += '|_' + compt + '$|\[' + compt + '\]$'          
@@ -199,7 +202,7 @@ def match_rxn_eqn(rxn):
         compart_map = {}
     
         # Compartments of compounds participating in this reaction
-        rxn_comparts = list(set([(ct.id.lower(),ct.name.lower()) for ct in rxn.compartment]))
+        rxn_comparts = list(set([(ct.id.lower(),ct.name.lower()) for ct in rxn.compartments]))
         if len(rxn_comparts) == 1:
             compart_map[rxn_comparts[0][0]] = 'c0' 
      
@@ -271,13 +274,17 @@ def get_cpds_ModelSEED_id(cpds_list, compart_list = None, warnings = True, stdou
 
     INPUTS:
     -------
-         cpds_list: An instance or a list of instances of type compound 
-     compart_list: A list of string containing the compartment ids for compounds 
-                   in cpds_list
-         warnings: Can be True or False showing whether warnings should be written  
-                   in the output
-      stdout_msgs: Can be True or False showing whether details of comparison should be
-                   written in the output
+    cpds_list: 
+    A list (tuple) of instances of type compound 
+
+    compart_list: 
+    A list of string containing the compartment ids for compounds  in cpds_list
+
+    warnings: 
+    Can be True or False showing whether warnings should be written in the output
+
+    stdout_msgs: 
+    Can be True or False showing whether details of comparison should be written in the output
 
     OUTPUTS:
     --------
@@ -287,9 +294,6 @@ def get_cpds_ModelSEED_id(cpds_list, compart_list = None, warnings = True, stdou
         raise TypeError('stdout_msgs must be True or False')
     if not isinstance(warnings,bool): 
         raise TypeError('warnings must be True or False')
-
-    if not isinstance(cpds_list,list):
-        cpds_list = [cpds_list]
 
     # List of all compartments in the input compounds
     if compart_list == None:
@@ -305,6 +309,7 @@ def get_cpds_ModelSEED_id(cpds_list, compart_list = None, warnings = True, stdou
 
     # The following parameter shows how the ModelSEED id was found for each compounds
     ModelSEED_id_found_by = {}
+
     for cpd in [c for c in cpds_list if len(c.ModelSEED_id) > 0]:
         ModelSEED_id_found_by[cpd.id] = 'already assigned' 
     for cpd in [c for c in cpds_list if len(c.ModelSEED_id) == 0]:
@@ -346,9 +351,9 @@ def get_cpds_ModelSEED_id(cpds_list, compart_list = None, warnings = True, stdou
             # Search by name where all non-alphanumeric characters are removed 
             if cpd.name != '':
                 clean_names = [remove_non_alphanumeric(remove_compartment(cpd.name,compartments_info = compart_list)).lower()] + [remove_non_alphanumeric(remove_compartment(n,compartments_info = compart_list)).lower() for n in cpd.name_aliases]
-                clean_names_intersect = list(set(clean_names).intersection(set(ModelSEED_cpd_clean_names)):
+                clean_names_intersect = list(set(clean_names).intersection(set(ModelSEED_cpd_clean_names)))
                 if len(clean_names_intersect) > 0:
-                    clean_name_counter += 1
+                    name_counter += 1
                     for cname in clean_names_intersect:
                         ModelSEED_id_byName = ModelSEED_cpds_by_clean_name[cname]
 
@@ -379,7 +384,7 @@ def get_cpds_ModelSEED_id(cpds_list, compart_list = None, warnings = True, stdou
             ModelSEED_id_found_by[cpd.id] = 'formula' 
         else:
             # Find the intersection of all searches
-            if len([lst for lst in [ModelSEED_id_byKEGG, ModelSEED_id_byBiGG, ModelSEED_id_byName, ModelSEED_id_byFormula] if len(lst) > 0]) > 0:
+            if len([set(lst) for lst in [ModelSEED_id_byKEGG,ModelSEED_id_byBiGG,ModelSEED_id_byName] if len(lst) > 0]) > 0:
                 ModelSEED_id_intersect = list(set.intersection(*[set(lst) for lst in [ModelSEED_id_byKEGG,ModelSEED_id_byBiGG,ModelSEED_id_byName] if len(lst) > 0])) 
                 if len(ModelSEED_id_intersect) == 0:
                     cpd.ModelSEED_id = ModelSEED_id_intersect
@@ -423,8 +428,14 @@ def get_cpds_ModelSEED_id(cpds_list, compart_list = None, warnings = True, stdou
     ModelSEED_id_cpd_map = dict([(mid,[]) for mid in all_ModelSEED_ids])
     for mid in all_ModelSEED_ids:
         mid_cpds = [c for c in cpds_list if mid in c.ModelSEED_id]
-        mid_cpds_names = [c.name for c in mid_cpds]
-        ModelSEED_id_cpd_map[mid] = [c.id for c in mid_cpds if mid_cpds_names.count(c.name) == 1]
+
+        # Remove compartment id from name (compartmentid appears in cpd names in ModelSEED
+        # kbase sbml model)
+        mid_cpds_names = [remove_compartment(c.name, compartments_info = compart_list) for c in mid_cpds]
+
+        # Consider only the ones whose name appears only nce in mid_rxns_names. This is to 
+        # avoid reporting the same compound that appears in more than one compartment.
+        ModelSEED_id_cpd_map[mid] = [c.id for c in mid_cpds if mid_cpds_names.count(remove_compartment(c.name, compartments_info = compart_list)) == 1]
     mid_non_unique_cpds = [(mid,ModelSEED_id_cpd_map[mid]) for mid in ModelSEED_id_cpd_map.keys() if len(ModelSEED_id_cpd_map[mid]) > 1]
 
     if warnings:
@@ -463,13 +474,17 @@ def get_rxns_ModelSEED_id(rxns_list, compart_list = None, warnings = True, stdou
 
     INPUTS:
     -------
-         rxns_list: An instance of type reaction or a list of reactions
-     compart_list: A list of string containing the compartment ids for reactions 
-                   in rxns_list
-         warnings: Can be True or False showing whether warnings should be written  
-                   in the output
-      stdout_msgs: Can be True or False showing whether details of comparison should be
-                   written in the output
+    rxns_list: 
+    A list (tuple) of type reaction or a list of reactions
+
+    compart_list: 
+    A list of string containing the compartment ids for reactions in rxns_list
+
+    warnings: 
+    Can be True or False showing whether warnings should be written  in the output
+
+    stdout_msgs: 
+    Can be True or False showing whether details of comparison should be  written in the output
 
     OUTPUTS:
     --------
@@ -480,12 +495,9 @@ def get_rxns_ModelSEED_id(rxns_list, compart_list = None, warnings = True, stdou
     if not isinstance(warnings,bool):
         raise TypeError('warnings must be True or False')
 
-    if not isinstance(rxns_list,list):
-        rxns_list = [rxns_list]
-
     # List of all compartments in the input compounds
     if compart_list == None:
-        compart_list = list(set([compart.id for r in rxns_list for compart in r.compartment if r.compartment != None]))
+        compart_list = list(set([compart.id for r in rxns_list for compart in r.compartments if r.compartments != None]))
 
     # counters showing how many of common reactions were found by comparing their
     # ModelSEED id, KEGG id, BiGG id, name, model id or by their equation
@@ -516,6 +528,7 @@ def get_rxns_ModelSEED_id(rxns_list, compart_list = None, warnings = True, stdou
         ModelSEED_id_byKEGG = []
         ModelSEED_id_byName = []
         ModelSEED_id_byECNumber = []
+        ModelSEED_id_byEqn = []
 
         # Search by id
         if clean_id in ModelSEED_rxn_ids:
@@ -555,7 +568,7 @@ def get_rxns_ModelSEED_id(rxns_list, compart_list = None, warnings = True, stdou
             # compounds participating in this reaction have a unique ModelSEED_id
             if len(rxn.ModelSEED_id) != 1 and len([c for c in rxn.compounds if len(c.ModelSEED_id) == 1]) == len(rxn.compounds):
                 ModelSEED_id_byEqn, eqn_found_by = match_rxn_eqn(rxn) 
-                if rxn_ModelSEED_id_foundByEqn != []:
+                if ModelSEED_id_byEqn != []:
                     eqn_counter += 1
 
         #--- Assign an accurate ModelSEED id according to searches above ---
@@ -661,8 +674,15 @@ def get_rxns_ModelSEED_id(rxns_list, compart_list = None, warnings = True, stdou
     ModelSEED_id_rxn_map = dict([(mid,[]) for mid in all_ModelSEED_ids])
     for mid in all_ModelSEED_ids:
         mid_rxns = [r for r in rxns_list if mid in r.ModelSEED_id]
-        mid_rxns_names = [r.name for r in mid_rxns]
-        ModelSEED_id_rxn_map[mid] = [r.id for r in mid_rxns if mid_rxns_names.count(r.name) == 1]
+
+        # Remove compartment ids from reaction names (compartment ids appear in reaciton 
+        # names in the sbml files of the ModelSEED and kbase model)
+        mid_rxns_names = [remove_compartment(r.name, compartments_info = compart_list) for r in mid_rxns]
+
+        # Consider only the ones whose name appears only nce in mid_rxns_names. This is to 
+        # avoid reporting the same compound that appears in more than one compartment.
+        ModelSEED_id_rxn_map[mid] = [r.id for r in mid_rxns if mid_rxns_names.count(remove_compartment(r.name, compartments_info = compart_list)) == 1]
+
     mid_non_unique_rxns = [(mid,ModelSEED_id_rxn_map[mid]) for mid in ModelSEED_id_rxn_map.keys() if len(ModelSEED_id_rxn_map[mid]) > 1]
 
     if warnings:
@@ -712,7 +732,7 @@ def get_ModelSEED_ids(model,stdout_msgs = True):
     reaction in the model
     """
     print '    Getting ModelSEED ids for compounds ...'
-    get_cpds_ModelSEED_id(model.compounds, compart_list = [c.id for c in model.compartments],stdout_msgs = stdout_msgs)
+    get_cpds_ModelSEED_id(cpds_list = model.compounds, compart_list = [c.id for c in model.compartments],stdout_msgs = stdout_msgs)
     print '    Getting ModelSEED ids for reactions ...'
-    get_rxns_ModelSEED_id(model.reactions, compart_list = [c.id for c in model.compartments],stdout_msgs = stdout_msgs)
+    get_rxns_ModelSEED_id(rxns_list = model.reactions, compart_list = [c.id for c in model.compartments],stdout_msgs = stdout_msgs)
  

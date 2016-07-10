@@ -63,6 +63,7 @@ ngam_atp = {
 }
 
 others = {
-#'Ec_biomass_iAF1260_WT_59p81M': [0,0]
+'ALAt2pp':[0,0],    # Creates a thermodynamically infeasible loop with ALAt2rpp 
+'GLYt2pp':[0,0]    # Creates a thermodynamically infeasible loop with GLYt2rpp
 }
 

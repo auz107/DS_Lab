@@ -13,7 +13,7 @@ from tools.io.read_pydict_model import read_pydict_model
 from tools.fba.set_specific_bounds import set_specific_bounds
 from coopr import pyomo
 
-def create_model(model_organism = {}, model_info = {'id':'', 'file_format':'sbml', 'model_filename':None, 'biomassrxn_id':None}, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, import_params = False, validate = True, perform_fba = True, stdout_msgs = True, warnings = True):
+def create_model(model_organism = {}, model_info = {'id':'', 'file_format':'sbml', 'model_filename':None, 'biomassrxn_id':''}, growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': {}}, import_params = False, validate = True, perform_fba = True, stdout_msgs = True, warnings = True):
     """
     Creates a metabolic model and assigns the flux bounds for a desired growth media and performs FBA.
 
@@ -69,16 +69,16 @@ def create_model(model_organism = {}, model_info = {'id':'', 'file_format':'sbml
     if model_info['biomassrxn_id'] != '':
         model.biomass_reaction = model.reactions_by_id[model_info['biomassrxn_id']]
 
-    # Assign the objective function coefficients
-    for rxn in model.reactions:
-        rxn.objective_coefficient = 0
-    model.biomass_reaction.objective_coefficient = 1
-
-    # Growth medium
-    set_specific_bounds(model = model, file_name = growthMedium_flux_bounds['flux_bounds_filename'], flux_bounds = growthMedium_flux_bounds['flux_bounds_dict'])
-
     # Perform FBA for the wild-type
     if perform_fba:
+        # Assign the objective function coefficients
+        for rxn in model.reactions:
+            rxn.objective_coefficient = 0
+        model.biomass_reaction.objective_coefficient = 1
+
+        # Growth medium
+        set_specific_bounds(model = model, file_name = growthMedium_flux_bounds['flux_bounds_filename'], flux_bounds = growthMedium_flux_bounds['flux_bounds_dict'])
+
         model.fba(assign_wildType_max_biomass = True, stdout_msgs = stdout_msgs)
 
     return model

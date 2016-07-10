@@ -11,13 +11,16 @@ class organism(object):
     Last updated: 10-22-2014
     """
 
-    def __init__(self, id, name = '', domain = '', genus = '', species = '', strain = '', ModelSEED_type = '', gDW_per_cell = None, gWW_per_cell = None, cells_per_ml = None, gDW_per_ml = None, mu = None, random_mortality_rate = None, notes = ''): 
+    def __init__(self, id, name = '', name_aliases = [], domain = '', genus = '', species = '', strain = '', model_id = None, ModelSEED_type = '', gDW_per_cell = None, gWW_per_cell = None, cells_per_ml = None, gDW_per_ml = None, mu = None, random_mortality_rate = None, notes = ''): 
     
         # Organism id 
         self.id = id
 
         # organism complete name (case insensitive string)
         self.name = name
+
+        # Name aliases
+        self.name_aliases = name_aliases
 
         # Domain (case insensitive string).Example of choices are:  
         # bacteria, archaea,Eukaryotes 
@@ -31,6 +34,9 @@ class organism(object):
 
         # Strain ((case insensitive string)). Example: MG1655
         self.strain = strain
+
+        # model id
+        self.model_id = model_id
 
         # ModelSEED type (bacteria_GramPositive, bacteria_GramNegative, Human and Plant)
         self.ModelSEED_type = ModelSEED_type
@@ -77,6 +83,10 @@ class organism(object):
         # Name
         if attr_name == 'name' and (attr_value is not None and not isinstance(attr_value,str)):
             raise TypeError("Invalid 'name' for organism " + self.id + "! 'name' must be a string. A " + str(type(attr_value)) + " type object was entered instead")
+
+        # Name aliases
+        if attr_name == 'name_aliases' and not isinstance(attr_value,list):
+            raise TypeError("Invalid 'name_aliases' for organism " + str(attr_value) + "! 'name_aliases' must be a string. A " + str(type(attr_value)) + " type object was entered instead")
 
         # Name aliases
         if attr_name == 'name_aliases' and not isinstance(attr_value,list):

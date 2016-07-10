@@ -39,16 +39,6 @@ class NashEqFinder(object):
         # Metabolic model
         self.game = game
 
-        # Keys of the game.payoff_matrix are in the form of a list of tuples, where each
-        # tuple is compased of inner tuple of length two, e.g., 
-        # [(('p1','s1'),('p2','s2')),(('p1','s2'),('p2','s1')),...]
-        # They keys should serve as the elements of the set I in the optimization model,
-        # however, pyomo does not accept list of tuples with nested tuples. Therefore, we 
-        # need to convert this to a list of tuples with no inner tuples, i.e.,
-        # [('p1','s1','p2','s2'),('p1','s2','p2','s1'),...]
-        gameStates = self.game.payoff_matrix.keys()
-        self._gameStatesForI = [tuple([k3 for k2 in k1 for k3 in k2]) for k1 in gameStates]
-
         # Type of the Nash equilibrium to find
         if NashEq_type.lower() not in ['pure','mixed']:
             raise ValueError("Invalid NashEq_type (allowed choices are 'pure' or 'mixed')")
@@ -91,16 +81,15 @@ class NashEqFinder(object):
         else:
             self.payoffLB = payoffMin - 2 
 
-    def gameStateFromI(self,IValue):
+    def convert_to_payoffMatrix_key(self,i):
         """
         This function converts the elements of the set I in the pyomo model
         (or elements of gameStatesForI) to the format of keys of the payoff matrix
-        of the game, i.e., ('p1','s1','p2','s2') (('p1','s1'),('p2','s2'))
-        is converted to (('p1','s1'),('p2','s2')) 
+        of the game, i.e., ('p1','s1','p2','s2') is converted to (('p1','s1'),('p2','s2')) 
         """
         gameState = []
         done = 0
-        k1 = list(IValue)
+        k1 = list(i)
         while done == 0:
             gameState.append(tuple(k1[0:2]))
             del k1[0:2]
@@ -112,49 +101,53 @@ class NashEqFinder(object):
     def createPyomoModel(self):
         """
         This creates a pyomo model 
+
+        Instead of several indicies for binary variables (y), we just define a single set I containing all
+        possible combinations of the payoff matrix labels. 
         """   
-        #--- Create a pyomo model NashEqFinder ---
-        NashEqFinder = ConcreteModel()
+        #--- Create a pyomo model optModel ---
+        optModel = ConcreteModel()
         
         #--- Define sets ---
         # Set of players
-        NashEqFinder.P = Set(initialize = self.game.players_names)   
+        optModel.P = Set(initialize = self.game.players_names)   
 
-        # Set of players' strdimen=4,ategy combinations 
-        NashEqFinder.I = Set(initialize = self._gameStatesForI)   
+        # Set of players' strategy combinations 
+        # Keys of the game.payoff_matrix are in the form of a list of tuples, where each
+        # tuple is compased of inner tuple of length two, e.g., 
+        # [(('p1','s1'),('p2','s2')),(('p1','s2'),('p2','s1')),...]
+        # These keys should serve as the elements of the set I in the optimization model,
+        # however, pyomo does not accept list of tuples with nested tuples. Therefore, we 
+        # need to convert this to a list of tuples with no inner tuples, i.e.,
+        # [('p1','s1','p2','s2'),('p1','s2','p2','s1'),...]
+        optModel.I = Set(initialize = [tuple([k3 for k2 in k1 for k3 in k2]) for k1 in self.game.payoff_matrix.keys()])   
 
         #--- Define the variables --- 
-        NashEqFinder.y = Var(NashEqFinder.I, domain=Boolean)
+        optModel.y = Var(optModel.I, domain=Boolean)
         
         #--- Define the objective function and constraints ----
         # Objective function
-        def defineObjectiveFunc(NashEqFinder):
-            return sum(NashEqFinder.y[i] for i in NashEqFinder.I)
-        
-        NashEqFinder.objective_rule = Objective(rule=defineObjectiveFunc, sense = maximize)
+        optModel.objective_rule = Objective(rule = lambda optModel: sum(optModel.y[i] for i in optModel.I), sense = maximize)
 
         # Constraint checking the best strategy of player p given the strategy of 
         # all other players 
-        #def NashCond_rule(NashEqFinder,i1,i2,p):
-        def NashCond_rule(NashEqFinder,p,*ii):
+        def NashCond_rule(optModel,p,*i):
 
             # Convert the game state to the format of keys of the payoff matrix
-            i = self.gameStateFromI(ii)
+            i = self.convert_to_payoffMatrix_key(i)
 
-            # All game strateiges in which the strategies of other players is
-            # fixed at the strategy they took in i, but can take all possible strateiges.
-            # This is essentially all possible responses of P to the action all other players
+            # All possible responses of P to the action all other players
             # have taken in i
             responseP = [k for k in self.game.payoff_matrix.keys() if False not in [dict(k)[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p]] 
 
             # Find the payoff of the best response of player P 
             bestResP = max([self.game.payoff_matrix[k][p] for k in responseP])
 
-            return self.game.payoff_matrix[i][p] >= bestResP*NashEqFinder.y[i] + self.payoffLB*(1 - NashEqFinder.y[i])
+            return self.game.payoff_matrix[i][p] >= bestResP*optModel.y[i] + self.payoffLB*(1 - optModel.y[i])
         
-        NashEqFinder.NashCond = Constraint(NashEqFinder.P,NashEqFinder.I, rule=NashCond_rule)
+        optModel.NashCond = Constraint(optModel.P,optModel.I, rule=NashCond_rule)
 
-        self.NashEqFinder = NashEqFinder 
+        self.optModel = optModel 
     
     
     def findPure(self):
@@ -186,11 +179,11 @@ class NashEqFinder(object):
         start_run_pt = time.clock()
         start_run_wt = time.time()
 
-        #---- Creating and instantiating the NashEqFinder ----
+        #---- Creating and instantiating the optModel ----
         start_pyomo_pt = time.clock()
         start_pyomo_wt = time.time()
 
-        # Create the NashEqFinder model        
+        # Create the optModel model        
         self.createPyomoModel()
 
         #---- Solve the model ----
@@ -201,15 +194,15 @@ class NashEqFinder(object):
         elapsed_pyomo_wt = (time.time() - start_pyomo_wt)
 
         #-- Some initializations --
-        # Instantiate the NashEqFinder with new fixed variables
-        self.NashEqFinder.preprocess()
+        # Instantiate the optModel with new fixed variables
+        self.optModel.preprocess()
 
-        #- Solve the NashEqFinder (tee=True shows the solver output) -
+        #- Solve the optModel (tee=True shows the solver output) -
         try:
             start_solver_pt = time.clock()
             start_solver_wt = time.time()
 
-            OptSoln = solverType.solve(self.NashEqFinder,tee=False)
+            OptSoln = solverType.solve(self.optModel,tee=False)
             solverFlag = 'normal'
     
         # In the case of an error switch the solver
@@ -228,7 +221,7 @@ class NashEqFinder(object):
                 start_solver_pt = time.clock()
                 start_solver_wt = time.time()
 
-                OptSoln = solverType.solve(self.NashEqFinder,tee=False)
+                OptSoln = solverType.solve(self.optModel,tee=False)
                 solverFlag = 'normal'
             except:
                 solverFlag = 'solverError'
@@ -240,7 +233,7 @@ class NashEqFinder(object):
     
         #----- Print the results in the output (screen, file and/or variable) ------
         # Load the results
-        self.NashEqFinder.load(OptSoln)
+        self.optModel.load(OptSoln)
             
         # Set of the Nash equilibria
         self.Nash_equilibria = []
@@ -250,7 +243,7 @@ class NashEqFinder(object):
             optimExitflag = 'globallyOptimal'
     
             # Value of the objective function
-            objValue = self.NashEqFinder.objective_rule()
+            objValue = self.optModel.objective_rule()
     
             # Print the results on the screen 
             if self.stdout_msgs:
@@ -259,9 +252,9 @@ class NashEqFinder(object):
 
             if objValue >= 1:
                 self.exit_flag = 'objGreaterThanZero'
-                for i in self.NashEqFinder.I.value: 
-                    if self.NashEqFinder.y[i].value == 1:
-                        self.Nash_equilibria.append(list(self.gameStateFromI(i)))
+                for i in self.optModel.I.value: 
+                    if self.optModel.y[i].value == 1:
+                        self.Nash_equilibria.append(list(self.convert_to_payoffMatrix_key(i)))
             elif objValue == 0:
                 done = 1
                 self.exit_flag = 'objIsZero'
@@ -299,7 +292,7 @@ class NashEqFinder(object):
         elapsed_run_wt = (time.time() - start_run_wt)
     
         if self.stdout_msgs:
-           print 'NashEqFinder Elapsed (processing/wall) time (sec): pyomo = {:.3f}/{:.3f}  ,  pyomo = {:.3f}/{:.3f}  ,  run = {:.3f}/{:.3f}\n'.format(elapsed_pyomo_pt,elapsed_pyomo_wt,elapsed_solver_pt,elapsed_solver_wt,elapsed_run_pt,elapsed_run_wt) 
+           print 'optModel Elapsed (processing/wall) time (sec): pyomo = {:.3f}/{:.3f}  ,  pyomo = {:.3f}/{:.3f}  ,  run = {:.3f}/{:.3f}\n'.format(elapsed_pyomo_pt,elapsed_pyomo_wt,elapsed_solver_pt,elapsed_solver_wt,elapsed_run_pt,elapsed_run_wt) 
     
     def run(self):
         """

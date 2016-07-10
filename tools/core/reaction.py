@@ -2,7 +2,7 @@ from __future__ import division
 import sys
 sys.path.append('../../')
 from tools.userError import *
-from tools.custom_objects import customList, customDict
+from tools.custom_objects import customDict
 import compound 
 import gene 
 from compartment import compartment
@@ -24,9 +24,9 @@ class reaction(object):
     kinetic_rate_calc: Computes the kinetic rate of the reaction
 
     Ali R. Zomorrodi - Segre Lab @ BU
-    Last updated: 03-11-2016
+    Last updated: 06-07-2016
     """
-    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = '', pathways = [], compartment = [], genes = [], gene_reaction_rule = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level = None, notes = '', warnings = True): 
+    def __init__(self, id, stoichiometry = {}, reversibility = '', name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], EC_numbers = [], subsystem = '', pathways = [], genes = [], gene_reaction_rule = '', is_transport = False, is_exchange = False, model_id = '', objective_coefficient = None, flux = None, store_flux = True, flux_bounds = [], deltaG = None, deltaG_uncertainty = None, deltaG_range = [], kinetics = None, kinetic_compounds = None, confidence_level = None, notes = '', warnings = True): 
 
         # Warnings and messages in the standard output
         self.warnings = warnings
@@ -41,7 +41,7 @@ class reaction(object):
 
         # A string indicating the type of reaction. Allowable reaction types 
         # include (case insensitive): irreversible, reversible, reversible_forward,
-        # reversible_backward, exchange, exchange_forward, exchange_backward 
+        # and reversible_backward
         self.reversibility = reversibility
 
         # A string containing the name of the reaction (complete or expanded)
@@ -64,6 +64,15 @@ class reaction(object):
         self.BiGG_id = BiGG_id
         if isinstance(self.BiGG_id,str):
             self.BiGG_id = [self.BiGG_id]
+
+        # Whether this is an exchange or transport reaction
+        self.is_transport = is_transport
+        self.is_exchange = is_exchange
+        if self.is_exchange == False and self.reversibility.lower() == 'exchange':
+            self.is_exchange = True
+
+        # model id
+        self.model_id = model_id 
 
         # EC number of the enzyme coding for the reaction
         self.EC_numbers = EC_numbers
@@ -114,11 +123,6 @@ class reaction(object):
         # List of compounds appearing in the kinetic expression
         self.kinetic_compounds = kinetic_compounds
 
-        # This is particularly hepful when a reaction occurs in more than one compartment
-        # Here, we have a list instead of a single element because different compounds
-        # in the reaction may participate in different compartment
-        self.compartment = compartment
-
         # Confidence level for including this reaction in a model
         self.confidence_level = confidence_level
 
@@ -133,39 +137,34 @@ class reaction(object):
         Assigns the properties of a reaction 
         """
         # List of compound objects containing all compounds participating in this reaction
-        self.compounds = sorted(list(set(self.stoichiometry.keys())),key=lambda x:x.id) 
+        self.compounds = sorted(tuple(set(self.stoichiometry.keys())),key=lambda x:x.id) 
 
         # List of compound objects containing all reactants of this reaction
-        self.reactants = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] < 0])),key=lambda x:x.id)
+        self.reactants = sorted(tuple(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] < 0])),key=lambda x:x.id)
 
         # List of compound objects containing all products of this reaction
-        self.products = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] > 0])),key=lambda x:x.id)
+        self.products = sorted(tuple(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] > 0])),key=lambda x:x.id)
 
         # This is particularly hepful when a reaction occurs in more than one compartment
         # Here, we have a list instead of a single element because different compounds
         # in the reaction may participate in different compartment
-        if self.compartment == []:
-            self.compartment = list(set([c.compartment for c in self.compounds]))
+        self.compartments = list(set([c.compartment for c in self.compounds]))
+
+        # Determine whether this reaction is a transport reaction
+        if not self.is_transport:
+            if len(self.compartments) > 1 or 'transport' in self.name or len([n for n in self.name_aliases if 'transport' in n]) > 0:
+                self.is_transport = True
 
         # A list of the form [dGmin,dGmax] containing the min and max values of deltaG
         # (Gibbs free energy change) for this reaction
         if self.deltaG_range == [] and self.deltaG != None and self.deltaG_uncertainty != None:
             self.deltaG_range = [min(self.deltaG - self.deltaG_uncertainty,self.deltaG + self.deltaG_uncertainty),max(self.deltaG - self.deltaG_uncertainty,self.deltaG + self.deltaG_uncertainty)]
 
-        # model
-        models = list(set([c.model for c in self.compounds if hasattr(c,'model') and c.model != None]))
-        if len(models) == 1:
-           self.model = models[0]
-        elif len(models) > 1:
-            raise userError('More than one model assigned to "compounds" of reaction ' + self.id + ': ' + str([m.id for m in models]))
-        if len(models) == 0:
-           self.model = None 
-
     def reset_props(self):
         """
         Resets the propertes of a reaction RELATED to the model they belong to
         """
-        self.model = None
+        self.model_id = ''
 
     def __setattr__(self,attr_name,attr_value):
         """
@@ -186,8 +185,8 @@ class reaction(object):
         # Reversibility 
         if attr_name == 'reversibility' and not isinstance(attr_value,str):
             raise TypeError("Invalid 'reversibility' for reaaction " + self.id +"! reaction type must be a string. A " + str(attr_value) + " type object was entered instead")
-        elif attr_name == 'reversibility' and attr_value.lower() not in ['irreversible','reversible','exchange','reversible_forward','reversible_backward','irreversible_forward','irreversible_backward','exchange_forward','exchange_backward']: 
-            raise ValueError("Invalid 'reversibility' for reaaction " + self.id + ": " + attr_value +  "! Eligible choices are 'irreversible','reversible','exchange','reversible_forward','reversible_backward','exchange_forward','exchange_backward'") 
+        elif attr_name == 'reversibility' and attr_value.lower() not in ['irreversible','reversible','exchange','reversible_forward','reversible_backward','irreversible_forward','irreversible_backward']: 
+            raise ValueError("Invalid 'reversibility' for reaaction " + self.id + ": " + attr_value +  "! Eligible choices are 'irreversible','reversible','exchange','reversible_forward','reversible_backward'") 
 
         # Name
         if attr_name == 'name' and not isinstance(attr_value,str):
@@ -250,8 +249,8 @@ class reaction(object):
             raise ValueError("Lower bound is greater than upper bound for reaction " + self.id + "! flux_bounds = " + str(attr_value))
         
         # store_flux 
-        if attr_name == 'store_flux' and not isinstance(attr_value,bool):
-            raise TypeError("Invlaud 'store_flux' for reaction " + self.id + "! 'store_flux' must be True or False. A " + str(attr_value) + " type object was entered instead")
+        if attr_name in ['is_transport', 'is_exchange', 'store_flux'] and not isinstance(attr_value,bool):
+            raise TypeError("Invlaud '" + attr_name + "' for reaction " + self.id + "! '" + attr_name + "' must be True or False. A " + str(attr_value) + " type object was entered instead")
 
         # deltaG
         if attr_name == 'deltaG' and (attr_value is not None and not isinstance(attr_value,int) and not isinstance(attr_value,float)):
@@ -270,6 +269,10 @@ class reaction(object):
             raise TypeError("Invlaud 'confidence_level' for reaction " + self.id + "! 'confidence_level'  must be either a float or an integer. A " + str(attr_value) + " type object was entered instead")
         if attr_name == 'confidence_level' and attr_value is not None and  (attr_value < 0 or attr_value > 1):
             raise TypeError("Invlaud 'confidence_level' for reaction " + self.id + "! 'confidence_level' must be either a float or an integer between zero and one")
+
+        # Model id
+        if attr_name == 'model_id' and not isinstance(attr_value,str):
+            raise TypeError("Invalid 'model_id' for reaction " + self.id + "! 'model_id' must be a string. A " + str(attr_value) + " type object was entered instead")
 
         if attr_name == 'compounds':
             self.set_compounds(compounds = attr_value)
@@ -294,51 +297,51 @@ class reaction(object):
             flux_LB = None
             flux_UB = None
 
-        if self.reversibility.lower() in ['irreversible','irreversible_forward']:
+        if (not self.is_exchange) and self.reversibility.lower() in ['irreversible','irreversible_forward']:
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
         # An irreversible reaction written in the backward direction, e.g., B <-- A
-        elif self.reversibility.lower() == 'irreversible_backward':
+        elif (not self.is_exchange) and self.reversibility.lower() == 'irreversible_backward':
             if assignLB:
                 flux_LB = -1000
             if assignUB:
                 flux_UB = 0
-        elif self.reversibility.lower() == 'reversible':
+        elif (not self.is_exchange) and self.reversibility.lower() == 'reversible':
             if assignLB:
                 flux_LB = -1000
             if assignUB:
                 flux_UB = 1000
-        elif self.reversibility.lower() == 'reversible_forward':
+        elif (not self.is_exchange) and self.reversibility.lower() == 'reversible_forward':
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
         # Reverse part of a reversible reaciton wirttein the forward direction. For example, if A <==> B, 
         # A --> B is reversible_forward and B --> A is reversible_backward
-        elif self.reversibility.lower() == 'reversible_backward':
+        elif (not self.is_exchange) and self.reversibility.lower() == 'reversible_backward':
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
-        elif self.reversibility.lower() == 'exchange':
+        elif self.is_exchange and (self.reversibility.lower() == 'reversible' or self.reversibility.lower() == 'exchange'):
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
-        elif self.reversibility.lower() == 'exchange_forward':
+        elif self.is_exchange and self.reversibility.lower() == 'rversible_forward':
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 1000
-        elif self.reversibility.lower() == 'exchange_backward':
+        elif self.is_exchange and self.reversibility.lower() == 'rversible_backward':
             if assignLB:
                 flux_LB = 0
             if assignUB:
                 flux_UB = 0
         else:
-            raise userError('Unknown reaction reversibility')
+            raise userError('Unknown reaction reversibility: {} for reaction {} with is_exchange = {}'.format(self.reversibility, self.id, self.is_exchange))
 
         self.flux_bounds = [flux_LB,flux_UB]
 
@@ -346,8 +349,8 @@ class reaction(object):
         """
         Makes modificaitons to attribute compounds
         """
-        if not isinstance(compounds,list):
-            raise TypeError("Invalid 'compounds' format for reaction {}! Compounds must be a list but a {} object was provided instead".format(self.id, type(compounds))) 
+        if not isinstance(compounds, list)  and not isinstance(compounds,list):
+            raise TypeError("Invalid 'compounds' format for reaction {}! Compounds must be a tuple or a list but a {} object was provided instead".format(self.id, type(compounds))) 
         if len([n for n in compounds if not isinstance(n,compound.compound)]) > 0:
             raise TypeError("Invalid 'compounds' format for reaction {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in compounds if not isinstance(n,compound.compound)]))))
 
@@ -355,14 +358,17 @@ class reaction(object):
         if len(problem_cpds) > 0:
             raise userError('The following {} compounds appear in compounds of reaction {} but they do not appear in the reaction stoichiometry: {}'.format(len(problem_cpds), self.id, problem_cpds))
 
-        self.__dict__['compounds'] = customList(compounds)
+        if isinstance(compounds,tuple):
+            self.__dict__['compounds'] = compounds
+        elif isinstance(compounds,list):
+            self.__dict__['compounds'] = tuple(compounds)
 
     def set_reactants(self, reactants):
         """
         Makes modificaitons to attribute reactants
         """
-        if not isinstance(reactants,list):
-            raise TypeError("Invalid 'reactants' format for reaction {}! Compounds must be a list of reactants but a {} object was provided instead".format(self.id, type(reactants))) 
+        if not isinstance(reactants,tuple) and not isinstance(reactants,list):
+            raise TypeError("Invalid 'reactants' format for reaction {}! Compounds must be a tuple or a list of reactants but a {} object was provided instead".format(self.id, type(reactants))) 
         if len([n for n in reactants if not isinstance(n,compound.compound)]) > 0:
             raise TypeError("Invalid 'reactants' format for reaction {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in reactants if not isinstance(n,compound.compound)]))))
 
@@ -370,13 +376,16 @@ class reaction(object):
         if len(problem_cpds) > 0:
             raise userError('The following {} compounds appear in reactants of reaction {} but they do not appear in the reaction stoichiometry: {}'.format(len(problem_cpds), self.id, problem_cpds))
 
-        self.__dict__['reactants'] = customList(reactants)
+        if isinstance(reactants, tuple):
+            self.__dict__['reactants'] = reactants
+        elif isinstance(reactants, list):
+            self.__dict__['reactants'] = tuple(reactants)
 
     def set_products(self, products):
         """
         Makes modificaitons to attribute reactants
         """
-        if not isinstance(products,list):
+        if not isinstance(products,list)  and not isinstance(products,list):
             raise TypeError("Invalid 'products' format for reaction {}! Compounds must be a list of products but a {} object was provided instead".format(self.id, type(products))) 
         if len([n for n in products if not isinstance(n,compound.compound)]) > 0:
             raise TypeError("Invalid 'products' format for reaction {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in products if not isinstance(n,compound.compound)]))))
@@ -385,22 +394,34 @@ class reaction(object):
         if len(problem_cpds) > 0:
             raise userError('The following {} compounds appear in reactants of reaction {} but they do not appear in the reaction stoichiometry: {}'.format(len(problem_cpds), self.id, problem_cpds))
 
-        self.__dict__['products'] = customList(products)
+        if isinstance(products,tuple):
+            self.__dict__['products'] = products
+        elif isinstance(products,list):
+            self.__dict__['products'] = list(products)
 
-    def set_stoichiometry(self, stoichiometry, replace = True):
+    def set_stoichiometry(self, stoichiometry, replace = True, model = None):
         """
         Makes modificaitons to existing stoichiometric coefficients. It does not allow removing a compound or 
         adding a compound from/to the reaction stoichiometry. 
 
         INPUTS:
         ------
-        stoichiometry: A dictionary containing the existing compounds in the reaction stoichiometry 
-                       whose stoichiomeric coefficient has changed. This must be used with replace = False.
-                       It can also be a dictionary containing a whole new reaction stoichiometry, which must be
-                       used with replace = True 
-              replace: If True, the existing reaction stoichiometry is totally replaced with the provided input.
-                       If False, it changes the stoichiometric coefficients of the existing compounds in the reaction
-                       stoichiometry. In thie case, adding a new compound or removing a new compound is not allowed 
+        stoichiometry: 
+        A dictionary containing the existing compounds in the reaction stoichiometry 
+        whose stoichiomeric coefficient has changed. This must be used with replace = False.
+        It can also be a dictionary containing a whole new reaction stoichiometry, which must be
+        used with replace = True 
+
+        replace: 
+        If True, the existing reaction stoichiometry is totally replaced with the provided input.
+        If False, it changes the stoichiometric coefficients of the existing compounds in the 
+        reaction stoichiometry. In thie case, adding a new compound or removing a new compound 
+        is not allowed 
+
+        model: 
+        The metabolic model where this reaction is part of. It's a good practice to always 
+        provide this input to make sure that the model gets updated after adding 
+        these new compounds
         """
         if not isinstance(stoichiometry,dict):
             raise TypeError("Invalid 'stoichiometry' for reaaction " + self.id + "! 'stoichiometry' must be a dictionary. A " + str(stoichiometry) + " type object was entered instead")
@@ -423,10 +444,27 @@ class reaction(object):
 
         self.__dict__['stoichiometry'] = customDict(stoichiometry)
 
-        # Update compounds, reactants and products
-        self.compounds = sorted(list(set(self.stoichiometry.keys())),key=lambda x:x.id) 
-        self.reactants = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] < 0])),key=lambda x:x.id)
-        self.products = sorted(list(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] > 0])),key=lambda x:x.id)
+        # Update compounds, reactants and products and comaprtment
+        self.compounds = sorted(tuple(set(self.stoichiometry.keys())),key=lambda x:x.id) 
+        self.reactants = sorted(tuple(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] < 0])),key=lambda x:x.id)
+        self.products = sorted(tuple(set([m for m in self.stoichiometry.keys() if self.stoichiometry[m] > 0])),key=lambda x:x.id)
+        self.compartments = list(set([c.compartment for c in self.compounds]))
+
+        if model != None:
+            # Compounds not in the model
+            cpds_notInModel = [c for c in self.compounds if c not in model.compounds]
+            if len(cpds_notInModel) > 0:
+                model.add_compounds(cpds_notInModel)
+
+            # Update attributes reactions, reactant_reactions and product reactions for each compounds in the model
+            model.set_cpds_genes_rxns(do_cpds = True, do_gens = False)
+
+            # Compounds participating in this reaction only should be removed from the model after being removed
+            # from this reaction
+            cpds_toRemove_fromModel = [c for c in model.compounds if len(c.reactions) == 0]
+            if len(cpds_toRemove_fromModel) > 0:
+                model.del_compounds(cpds_toRemove_fromModel)
+
 
     def get_compounds(self,ref_type = 'id'):
         """
@@ -588,7 +626,7 @@ class reaction(object):
 
         return  reactants_eqn + ' ' + arrow_type + ' ' + products_eqn
 
-    def add_compounds(self,new_compounds):
+    def add_compounds(self,new_compounds, model = None):
         """
         Adds new compounds to the reaction
       
@@ -597,82 +635,68 @@ class reaction(object):
         new_compounds: A dictionary whose keys are compounds objects and values are their
                        stoichiometric coefficinet in the reaction. The compound objects should
                        have already been defined and added to the model
+                model: The metabolic model where this reaction is part of. It's a good practice to always 
+                       provide this input to make sure that the model gets updated after adding 
+                       these new compounds
         """
         if not isinstance(new_compounds,dict):
             raise TypeError('new_compounds must be a dictionary')
+        if self.model_id != None and model == None:
+            print '**WARNING! Reaction {} is associated with a model but no model object was provided for the add_compounds method'.format(self.id, self.model_id)
 
         # Values of the dictionary that are not integer or float
         non_int_float_values = [v for v in new_compounds.values() if not isinstance(v,int) and not isinstance(v,float)]
         if len(non_int_float_values) > 0:
             raise TypeError('The values of dictionary new_compounds must be an integer or float. The following non-integer and non-float values were observed: {}'.format(non_int_float_values))
        
-        for cmp in new_compounds.keys():
-            if new_compounds[cmp] == 0 and self.warnings:
-                print 'WARNING (reaction.py)! Compound {} has a stoichiometric coefficinet of zero and was not added to reaction {}'.format(cmp.id,self.id)
-            else:
-                if cmp in self.compounds:
-                    print 'WARNING (reaction.py)! Compound {} already participates in reaction {}. Its sstoichiometric coefficient in the reaction was updated.'.format(cmp.id,self.id)
-                else:
-                    self.compounds.append(cmp)
-                self.stoichiometry[cmp] = new_compounds[cmp]
-                if self not in cmp.reactions:
-                    cmp.reactions.append(self)
+        # Compounds already in the reaction
+        cpds_in_rxn = [c for c in new_compounds if c in self.compounds]
+        if len(cpds_in_rxn) > 0:
+            print '**WARNING! The following already participate in reaciton {} and were not added to this reaction, however, their stoichiometricc coefficients were updated to the values provided here: {}'.format(self.id, [c.id for c in cpds_in_rxn])
 
-                if new_compounds[cmp] < 0:
-                    if cmp not in self.reactants:
-                        self.reactants.append(cmp)
-                    if self not in cmp.reactant_reactions:                    
-                        cmp.reactant_reactions.append(self)
+        # Add the compound to reaction by updating its stoichiometry
+        r_stoic = dict([(c,v) for (c,v) in self.stoichiometry.items() if c not in new_compounds.keys()] + new_compounds.items())
+        self.set_stoichiometry(stoichiometry = r_stoic, replace = True)
 
-                if new_compounds[cmp] > 0:
-                    if cmp not in self.products:
-                        self.products.append(cmp)
-                    if self not in cmp.product_reactions:
-                        cmp.product_reactions.append(self)
-
-        self.compounds = sorted(list(set([c for c in self.stoichiometry.keys() if self.stoichiometry[c] < 0])),key=lambda x:x.id) + sorted([c for c in self.stoichiometry.keys() if self.stoichiometry[c] > 0 ],key=lambda x:x.id) 
-        self.reactants = sorted(list(set(self.reactants)),key=lambda x:x.id) 
-        self.products = sorted(list(set(self.products)),key=lambda x:x.id) 
-
-        # Update the model if the reaction is associated with a model
-        if self.model != None:
+        if model != None:
             # Compounds not in the model
-            cmps_notInModel = [c for c in new_compounds.keys() if c not in self.model.compounds]
-            if len(cmps_notInModel) > 0:
-                self.model.add_compounds(cmps_notInModel)
+            cpds_notInModel = [c for c in new_compounds.keys() if c not in model.compounds]
+            if len(cpds_notInModel) > 0:
+                model.add_compounds(cpds_notInModel)
 
-        self.assign_props()
+            # Update attributes reactions, reactant_reactions and product reactions for each compounds in the model
+            model.set_cpds_genes_rxns(do_cpds = True, do_gens = False)
 
-    def del_compounds(self,compounds_list):
+    def del_compounds(self,compounds_list, model = None):
         """
         Removes compounds from the reaction
       
         INPUTS:
         -------
         compounds_list: A list of compound objects that must be removed from the reaction 
+                model: The metabolic model where this reaction is part of. It's good to always provide this input 
+                       to make sure that the model gets updated after adding these new compounds
         """
-        for cmp in compounds_list:
-            if cmp not in set([c for c in self.compounds or c in self.reactants or c in self.products or c in self.stoichiometry.keys()]) and self.warnings:
-                print 'WARNING! Compound {} not in the reaction {} compounds and cannot be removed from this reaction reaction'.format(cmp.id,self.id)
-       
-            if cmp in self.compounds:
-                del self.compounds[self.compounds.index(cmp)]
-                del cmp.reactions[cmp.reactions.index(self)]
-            if cmp in self.reactants:
-                del self.reactants[self.reactants.index(cmp)]
-                del cmp.reactant_reactions[cmp.reactant_reactions.index(self)]
-            if cmp in self.products:
-                del self.products[self.products.index(cmp)]
-                del cmp.product_reactions[cmp.product_reactions.index(self)]
-            if cmp in self.stoichiometry.keys():
-                del self.stoichiometry[cmp]
+        if self.model_id != None and model == None:
+            print '**WARNING! Reaction {} is associated with a model but no model object was provided for the add_compounds method'.format(self.id, self.model_id)
 
-            if len(cmp.reactions) == 0 and self.model != None:
-                self.model.del_compounds([cmp])
+        # Compounds not in the reaction
+        cpds_not_in_rxn = [c for c in compounds_list if c not in self.compounds]
+        if len(cpds_not_in_rxn) > 0:
+            print '**WARNING! The following compounds cannot be removed from reaction {} because they do not participate in this reaction: {}'.format(self.id, [c.id for c in cpds_not_in_rxn])
+        # New reaction stoichiometry without the deleted compounds
+        r_stoic = dict([(c,s) for (c,s) in self.stoichiometry.items() if c not in compounds_list])
+        self.set_stoichiometry(stoichiometry = r_stoic, replace = True)
 
-        self.compounds = sorted([c for c in self.stoichiometry.keys() if self.stoichiometry[c] < 0 ],key=lambda x:x.id) + sorted([c for c in self.stoichiometry.keys() if self.stoichiometry[c] > 0 ],key=lambda x:x.id) 
-        self.reactants = sorted(self.reactants,key=lambda x:x.id) 
-        self.products = sorted(self.products,key=lambda x:x.id) 
+        if model != None:
+            # Update attributes reactions, reactant_reactions and product reactions for each compounds in the model
+            model.set_cpds_genes_rxns(do_cpds = True, do_gens = False)
+
+            # Compounds participating in this reaction only should be removed from the model after being removed
+            # from this reaction
+            cpds_toRemove_fromModel = [c for c in compounds_list if len(c.reactions) == 1]
+            if len(cpds_toRemove_fromModel) > 0:
+                model.del_compounds(cpds_toRemove_fromModel)
 
     def kinetic_rate_calc(self,assignLB = False, assignUB= False, assignFlux = False, conc_key = None):
         """

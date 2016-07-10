@@ -1,3 +1,8 @@
+import sys
+from copy import copy, deepcopy
+# Increse the recursion limit, otherwise deepcopy will complain
+sys.setrecursionlimit(10000)
+
 class customList(list):
     """
     This subclasses the python's built-in list. It does not allow the direct modification of
@@ -16,6 +21,25 @@ class customList(list):
     def append(self,value):
         raise Exception('Direct modification of the entries of this list is not allowed. Use set_[property_name] method instead')
 
+    def __deepcopy__(self, memo):
+        """
+        Redfines the deeopcopy (original deepcopy does not work for this customized list class
+        Source: http://stackoverflow.com/questions/37015123/deep-copying-a-user-defined-python-dictionary
+        """
+        def _deepcopy_dict(x, memo):
+            y = {}
+            memo[id(x)] = y
+            for key, value in x.iteritems():
+                y[deepcopy(key, memo)] = deepcopy(value, memo)
+            return y
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__init__(_deepcopy_dict(self, memo))
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
+
 class customDict(dict):
     """
     This is a subclass python's built-in dictionary. It does not allow the direct modification of
@@ -30,6 +54,25 @@ class customDict(dict):
 
     def __delitem__(self,key):
         raise Exception('Direct modification of the entries of this dictionary is not allowed. Use set_[property_name] method instead')
+
+    def __deepcopy__(self, memo):
+        """
+        Redfines the deeopcopy (original deepcopy does not work for this customized dict class
+        Source: http://stackoverflow.com/questions/37015123/deep-copying-a-user-defined-python-dictionary
+        """
+        def _deepcopy_dict(x, memo):
+            y = {}
+            memo[id(x)] = y
+            for key, value in x.iteritems():
+                y[deepcopy(key, memo)] = deepcopy(value, memo)
+            return y
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__init__(_deepcopy_dict(self, memo))
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
 
 #-------------------
 class foo(object):
@@ -52,7 +95,7 @@ class foo(object):
        self.__dict__['y'] = customDict(y)
         
 if __name__ == '__main__':
-    f = foo(x = [1,2,3], y = {'a':1,'b':2,'c':3})
+    f = foo(x = [1,2,3], y = {'a':1,'b':2,'c':[3,4]})
     print 'f.x = {} ,  f.y = {}'.format(f.x, f.y)
     print "f.x[1] = {} , f.y['a'] = {}".format(f.x[1],f.y['a'])
     #del f.x[1]
@@ -68,4 +111,9 @@ if __name__ == '__main__':
     #del f.x['a']
     #f.y = {'a':2, 'b':3}
     #print f.y
+
+    z = deepcopy(f.y)
+    z['c'].append(5) 
+    print 'f.y = ',f.y
+    print 'f.z',f.z
 

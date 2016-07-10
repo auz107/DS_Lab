@@ -1,6 +1,7 @@
 import sys
 sys.path.append('../../../')
-from tools.io.read_sbml_model import read_sbml_model
+from tools.globalVariables import *
+from tools.io.create_model import create_model
 from tools.fba.set_specific_bounds import set_specific_bounds
 from tools.fba.fba import fba
 from tools.core.model import model
@@ -48,53 +49,7 @@ def make_manual_fixes(kbase_model):
     #kbase_model.get_reactions({'rxn01507_c0':'id'}) = [0,1000]
     kbase_model.get_reactions({'rxn00711_c0':'id'}).flux_bounds = [-1000,0]
 
-def fva(model,file_name,stdout_msgs = True, warnings = True):
-    """
-    Performs flux variability analysis
-    INPUTS:
-    -------
-        model: Metabolic model
-    file_name: file name to store the results
-    """
-    with open(file_name,'w') as f:
-        f.write('fva_flux_bounds = {\n')
-
-    # Original objective funciton coefficients of the reactions
-    orig_obj_coeff = {}
-    for rxn in model.reactions:
-        orig_obj_coeff[rxn] = rxn.objective_coefficient
-
-    # First find out which reacitons can reach their wide lower and upper bound
-    for rxn in [r for r in model.reactions if r.type.lower() != 'exchange']:
-        for r in model.reactions:
-            r.objective_coefficient = 0
-        rxn.objective_coefficient = 1
-
-        model.fba(build_new_optModel = False, stdout_msgs = stdout_msgs,warnings = warnings)
-        if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
-            UB = model.fba_model.solution['objective_value']
-        else:
-            UB = None
-
-        rxn.objective_coefficient = -1
-        model.fba(build_new_optModel = False, stdout_msgs = stdout_msgs,warnings = warnings)
-        if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
-            LB = -model.fba_model.solution['objective_value']
-        else:
-            LB = None
-
-        with open(file_name,'a') as f:
-            f.write("'" + rxn.id + "':" + str([LB,UB]) + ',\n')
-
-    with open(file_name,'a') as f:
-        f.write('}')
-
-    # Assign and objective function coefficients
-    for rxn in model.reactions:
-        rxn.objective_coefficient = orig_obj_coeff[rxn]
-
-if __name__ == "__main__":
- 
+def test_model(): 
     # Path to the model
     model_path = '/usr2/postdoc/alizom/work/models/Pseudomonas_fluorescens/kbase/'
 
@@ -186,6 +141,53 @@ if __name__ == "__main__":
         print '\n--- Growth on {}  ---'.format(carbon_src)
         set_specific_bounds(model = Pf_kbase,flux_bounds = {carbon_sources[carbon_src]:[-10,1000],'EX_cpd00007_e0':[-20,1000]},file_name = model_path + 'minimal_medium.py')
         Pf_kbase.fba(optimization_solver = optimization_solver)
+
+
+
+def fva(model,file_name,stdout_msgs = True, warnings = True):
+    """
+    Performs flux variability analysis
+    INPUTS:
+    -------
+        model: Metabolic model
+    file_name: file name to store the results
+    """
+    with open(file_name,'w') as f:
+        f.write('fva_flux_bounds = {\n')
+
+    # Original objective funciton coefficients of the reactions
+    orig_obj_coeff = {}
+    for rxn in model.reactions:
+        orig_obj_coeff[rxn] = rxn.objective_coefficient
+
+    # First find out which reacitons can reach their wide lower and upper bound
+    for rxn in [r for r in model.reactions if r.type.lower() != 'exchange']:
+        for r in model.reactions:
+            r.objective_coefficient = 0
+        rxn.objective_coefficient = 1
+
+        model.fba(build_new_optModel = False, stdout_msgs = stdout_msgs,warnings = warnings)
+        if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
+            UB = model.fba_model.solution['objective_value']
+        else:
+            UB = None
+
+        rxn.objective_coefficient = -1
+        model.fba(build_new_optModel = False, stdout_msgs = stdout_msgs,warnings = warnings)
+        if model.fba_model.solution['exit_flag'] == 'globallyOptimal':
+            LB = -model.fba_model.solution['objective_value']
+        else:
+            LB = None
+
+        with open(file_name,'a') as f:
+            f.write("'" + rxn.id + "':" + str([LB,UB]) + ',\n')
+
+    with open(file_name,'a') as f:
+        f.write('}')
+
+    # Assign and objective function coefficients
+    for rxn in model.reactions:
+        rxn.objective_coefficient = orig_obj_coeff[rxn]
 
 
 def break_pf_cycles():
@@ -298,4 +300,54 @@ def break_pf_cycles():
             for rxn in soln['zero_yUBopt_rxns']:
                 print '{} ({}): {}\t{}'.format(rxn.id,rxn.name,rxn.get_equation(ref_type = 'name'),rxn.flux_bounds)
 
+def gapfill_model():
+    """
+    Performs gap filling of the model on different carbon sources
+    """
+    from tools.gap_filling.create_superModel import create_superModel_from_ModelSEED
+    from tools.gap_filling.gapfill import gapfill
+    from tools.utilities.get_ModelSEED_ids import get_ModelSEED_ids
+    # Path to the model
+    model_path = home_dir + 'work/models/Pseudomonas_fluorescens/kbase/'
+
+    model_organism = organism(id = 'Pfluorescens', name = 'Pseudomonas fluorescens',domain = 'Bacteria', genus = 'Pseudomonas', species = 'fluorescens', strain = 'SBW25', ModelSEED_type = 'bacteria_GramNegative')
+
+    carbon_sources = {
+    'glucose':'EX_cpd00027_e0',
+    'L-Asparagine':'EX_cpd00132_e0',
+    'L-serine':'EX_cpd00054_e0',
+    'Galacturonic Acid':'EX_cpd00280_e0'
+    }
+
+    # Import the first-draft kbase model
+    model_v0 = create_model(model_organism = model_organism, model_info = {'id':'Pf_kbase_v0', 'file_format':'sbml', 'model_filename':model_path + 'Pf_fromGenome_kbase_v0.xml', 'biomassrxn_id':'biomass0'}, growthMedium_flux_bounds = {'flux_bounds_filename':model_path + 'minimal_medium.py', 'flux_bounds_dict': {carbon_sources['glucose']:[-10,1000],'EX_cpd00007_e0':[-20,1000]}}, perform_fba = True, stdout_msgs = True, warnings = True)
+
+    # Import the biomass reaction model for iJN746 model of P. putida
+    Pputida_iJN746_biomassrxn_model = create_model(model_organism ={'id':'Pputida_iJN746_biomassrxn'}, model_info = {'id':'Pputida_iJN746_biomassrxn_model', 'file_format':'pydict', 'model_filename':home_dir + 'work/models/Pseudomonas_putida/iJN746/iJN746_biomass_rxn_model.py', 'biomassrxn_id':''}, perform_fba = False, stdout_msgs = True, warnings = True)
+
+    # Remove the original biomass reaction from Pf kbase model
+    print 'Deleting ModelSEED biomass reaction from the model ...'
+    model_v0.del_reactions([model_v0.reactions_by_id['biomass0']])
+
+    # Add the biomass reactio of Pputida iJN746 model to it
+    print 'Adding Pputida iJN746 biomass reaction ...'
+    model_v0.add_reactions([Pputida_iJN746_biomassrxn_model.reactions_by_id['Pseudomonas_putida_iJN746_biomass_rxn']])
+
+    model_v0.validate()
+ 
+    # Obtain ModelSEED ids
+    get_ModelSEED_ids(model = model_v0, stdout_msgs = False)
+
+    # Create super_model
+    super_model = create_superModel_from_ModelSEED(original_model = model_v0, standard_to_model_compartID_map = {'c':'c0', 'e':'e0'}, add_c_cpds_to_otherComparts = False, validate = True,  warnings = True, stdout_msgs = True)
+
+    # Perform gap filling
+    gapfill_inst = gapfill(model = model_v0, super_model = super_model, viability_thr = 0.01, max_soln_num = 5,
+                 growthMedium_flux_bounds = {'flux_bounds_filename':None, 'flux_bounds_dict': dict([(exchrxn.id,[-1000,1000]) for exchrxn in model_v0.reactions if exchrxn.is_exchange])}, standard_to_model_compartID_map = {'c':'c0','e':'e0'},
+                 fixed_external_rxns = {}, validate_results = True, results_filename = 'gapfilling_rxns_complete.py',
+                 stdout_msgs = True, stdout_msgs_details = True)
+    gapfill_inst.run()
+
+if __name__ == "__main__":
+    pass
 

@@ -7,15 +7,15 @@ from tools.userError import userError
 from tools.globalVariables import *
 from tools.io.read_sbml_model import read_sbml_model
 from tools.io.read_pydict_model import read_pydict_model
-from tools.io.create_superModel import create_superModel
+from tools.gap_filling.create_superModel import create_superModel_from_ModelSEED
 from tools.core.compound import compound
 from tools.core.reaction import reaction
 from tools.core.organism import organism
 from tools.core.model import model
 from tools.fba.fba import fba
 from tools.fba.set_specific_bounds import set_specific_bounds
-from tools.fba.create_model import create_model
-from tools.ancillary.get_ModelSEED_ids import *
+from tools.io.create_model import create_model
+from tools.utilities.get_ModelSEED_ids import *
 from imp import load_source
 from multiprocessing import Process, Manager, Value, Array
 # Increse the recursion limit, otherwise deepcopy will complain
@@ -69,7 +69,7 @@ def test_create_superModel(warnings = True, stdout_msgs = True):
     print '\n----- Creating super_model ----'
     sys.stdout.flush()
 
-    super_model = create_superModel(original_model = model, standard_to_model_compartID_map = {'c':'c','e':'e','p':'p'}, validate = True)
+    super_model = create_superModel_from_ModelSEED(original_model = model, standard_to_model_compartID_map = {'c':'c','e':'e','p':'p'}, validate = True)
     print 'super_model statistics: # of compounds (total/original/external) = {}/{}/{} ,  # of reactions (total/original/external) = {}/{}/{}'.format(len(super_model.compounds), len([c for c in super_model.compounds if not c.external]), len([c for c in super_model.compounds if c.external]), len(super_model.reactions), len([r for r in super_model.reactions if not r.external]), len([r for r in super_model.reactions if r.external]))    
 
     print '\n----- fba with super_model ----'

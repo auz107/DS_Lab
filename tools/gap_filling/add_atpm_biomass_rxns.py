@@ -21,7 +21,7 @@ def add_ATPM_rxn(model, ATPM_cpds_ids = {'h2o_c':'', 'atp_c':'', 'adp_c':'', 'h_
     INPUTS:
     -------
             model: The input metabolic model
-    ATPM_cpds_ids: The id of compounds participating in the ATPM reaction int he model
+    ATPM_cpds_ids: The id of compounds participating in the ATPM reaction in the model
     """
     #- Add ATP maintenance reaction to the model ATPM   [c] : atp + h2o --> adp + h + pi - 
     # atp: cpd00002   h2o: cpd00001   adp: cpd00008   h: cpd00067    pi: cpd00012
@@ -78,9 +78,9 @@ def add_biomass_rxn(model, biomass_filename, standard_to_biomassModel_cpt_ids_ma
     biomass_model.del_reactions([r for r in biomass_model.reactions if r != biomass_rxn])
     biomass_model.del_compounds([c for c in biomass_model.compounds if c not in biomass_rxn.compounds])
 
-    biomass_rxn.reset_props
+    biomass_rxn.reset_props()
     for cpd in biomass_model.compounds:
-        cpd.reset_props
+        cpd.reset_props()
 
     # Get ModelSEED ids for compounds and reactions in biomass_model
     get_ModelSEED_ids(biomass_model)
@@ -88,7 +88,8 @@ def add_biomass_rxn(model, biomass_filename, standard_to_biomassModel_cpt_ids_ma
     # Compare biomass model with original model to find common compounds 
     cpdBiomass_to_cpdModel_map, cpdModel_to_cpdBiomass_map = compare_compounds(cpds_list1i = biomass_model1.compounds, cpds_list2 = model.compounds, standard_to_model1_cpt_ids_map = standard_to_biomassModel_cpt_ids_map, standard_to_model2_cpt_ids_map = standard_to_model_cpt_ids_map, cpds_list1_id = biomass_model.id, cpds_list2_id = model.id, warnings = warnings, stdout_msgs = stdout_msgs)[0:2] 
 
-    cpdBiomass_to_cpdModel_map, cpdModel_to_cpdBiomass_map, rxnBiomass_to_rxnModel_map, rxnModel_to_rxnBiomass_map = compare_models(model1 = biomass_model, model2 = model, standard_to_model1_cpt_ids_map = standard_to_biomassModel_cpt_ids_map, standard_to_model2_cpt_ids_map = standard_to_model_cpt_ids_map, obtain_ModelSEED_ids = obtain_ModelSEED_ids, warnings = False, stdout_msgs = False):
+    # Do the following just for testing compare_models
+    cpdBiomass_to_cpdModel_map, cpdModel_to_cpdBiomass_map, rxnBiomass_to_rxnModel_map, rxnModel_to_rxnBiomass_map = compare_models(model1 = biomass_model, model2 = model, standard_to_model1_cpt_ids_map = standard_to_biomassModel_cpt_ids_map, standard_to_model2_cpt_ids_map = standard_to_model_cpt_ids_map, obtain_ModelSEED_ids = obtain_ModelSEED_ids, warnings = False, stdout_msgs = False)
 
     # Now add the biomass reaction and all participating compounds to the model
     

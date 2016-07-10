@@ -5,13 +5,12 @@ from collections import Counter
 sys.path.append('../../')
 from tools.globalVariables import *
 from tools.userError import userError
-from tools.custom_objects import customList, customDict
 from organism import organism
 from compound import compound
 from compartment import compartment
 from gene import gene
 from reaction import reaction
-from tools.ancillary.remove_non_alphanumeric import remove_non_alphanumeric
+from tools.utilities.remove_non_alphanumeric import remove_non_alphanumeric
 from coopr.pyomo import *
 
 class model(object):
@@ -43,7 +42,7 @@ class model(object):
     Ali R. Zomorrodi, Segre Lab @ BU
     Last updated: 04-25-2016
     """
-    def __init__(self, id, type, organism = None, reactions = [], compounds = [], genes = [], compartments = [], name = None, biomass_reaction = None, atpm_reaction = None, notes = None, validate = True, stdout_msgs = True, warnings = True):
+    def __init__(self, id, type = 'metabolic', organism = None, compounds = (), reactions = (), genes = (), compartments = (), name = None, biomass_reaction = None, atpm_reaction = None, notes = None, validate = True, stdout_msgs = True, warnings = True):
 
         # Warnings and messages in the standard output
         self.stdout_msgs = stdout_msgs
@@ -88,6 +87,10 @@ class model(object):
 
         # Notes and comments
         self.notes = notes
+
+        # stdout_msgs and warnings
+        self.warnings = warnings
+        self.stdout_msgs = stdout_msgs
 
         # Assign model properties using existing inputs
         self.assign_props()
@@ -148,6 +151,9 @@ class model(object):
         if attr_name == 'atpm_reactions' and (attr_value is not None and not isinstance(attr_value,reaction)): 
             raise TypeError("Invalid 'atpm_reactions' for model " + self.id + "! 'atpm_reaction' must be of type reaction. A " + str(attr_value) + " type object was entered instead")
 
+        # stdout_msgs and warnings
+        if attr_name in ['warnings','stdout_msgs'] and not isinstance(attr_value,bool):
+            raise TypeError('{} must be either True or False'.format(attr_name))
 
         if attr_name == 'compounds':
             self.set_compounds(compounds = attr_value)
@@ -167,83 +173,119 @@ class model(object):
             self.name = self.id
 
         #-- organism --
-        self.organism.model = self
+        self.organism.model_id = self.id
 
         #-- Compartments --
-        if self.compartments == []:
+        if self.compartments == [] or self.compartments == None:
             self.compartments = sorted(list(set([c.compartment for c in self.compounds if c.compartment != None])), key = lambda x: x.id)
         for cpt in self.compartments:
-            cpt.model = self
+            cpt.model_id = self.id
         self.compartments_by_id = dict([(cpt.id,cpt) for cpt in self.compartments])    
 
         #-- Compounds --
         if self.compounds == []:
-            self.compounds = sorted(list(set([c for r in self.reactions for c in r.stoichiometry.keys()], key = lambda x: x.id)))
-        # A dictionary whose keys are compound ids and values are compound objects
-        self.compounds_by_id = dict([(cpd.id,cpd) for cpd in self.compounds])    
-        self.compounds_by_clean_id = dict([(remove_non_alphanumeric(cpd.id).lower(),cpd) for cpd in self.compounds])    
+            self.set_compounds(compounds = list(set([c for r in self.reactions for c in r.stoichiometry.keys()])), update_compartments = True)
 
         #-- Reactions --
         if self.reactions == []:
-            self.reactions = sorted(list(set([r for c in self.compounds for r in c.reactions])), key = lambda x: x.id)
-        # A dictionary whose keys are reaciotn ids and values are reaction objects
-        self.reactions_by_id = dict([(rxn.id,rxn) for rxn in self.reactions])    
-        self.reactions_by_clean_id = dict([(remove_non_alphanumeric(rxn.id).lower(),rxn) for rxn in self.reactions])    
+            self.set_reactions(reactions = list(set([r for c in self.compounds for r in c.reactions])))
 
         #-- Genes --
         if self.genes == []:
             self.genes = [g for r in self.reactions for g in r.genes] 
 
-    def set_compounds(self, compounds): 
+    def set_compounds(self, compounds, update_compartments = False): 
         """
         Set attribute compounds
+
+        update_compartments:
+        If Ture, compartments in the model are updated after setting the compounds. This is 
+        helpful when adding or removing compounds or reactions to/from the model
         """
-        if not isinstance(compounds,list):
-            raise TypeError("Invalid 'compounds' format for model {}! Compounds must be a list but a {} object was provided instead".format(self.id, type(compounds)))
+        if not isinstance(compounds,tuple) and not isinstance(compounds,list):
+            raise TypeError("Invalid 'compounds' format for model {}! Compounds must be a tuple or a list but a {} object was provided instead".format(self.id, type(compounds)))
         if len([n for n in compounds if not isinstance(n,compound)]) > 0:
             raise TypeError("Invalid 'compounds' format for model {}! Compounds must be a list of 'compound' object but objects of {} were observed in the list instead. ".format(self.id, list(set([type(n) for n in compounds if not isinstance(n,compound.compound)]))))
 
-        compounds = sorted(list(set(compounds)), key = lambda x: x.id)
+        if not isinstance(update_compartments,bool):
+            raise TypeError('update_compartments must be either True or False')
 
-        self.__dict__['compounds'] = customList(compounds)
+        compounds = sorted(tuple(set(compounds)), key = lambda x: x.id)
 
-        for m in self.compounds:
-            m.model = self
+        if isinstance(compounds,tuple):
+            self.__dict__['compounds'] = compounds
+        elif isinstance(compounds,list):
+            self.__dict__['compounds'] = tuple(compounds)
+
+        for cpd in self.compounds:
+            cpd.model_id = self.id
 
         # A dictionary whose keys are compound ids and values are compound objects
         self.compounds_by_id = dict([(cpd.id,cpd) for cpd in self.compounds])    
         self.compounds_by_clean_id = dict([(remove_non_alphanumeric(cpd.id).lower(),cpd) for cpd in self.compounds])    
 
-        cpds_reactions = dict((cpd,[]) for cpd in self.compounds)
-        cpds_reactant_reactions = dict((cpd,[]) for cpd in self.compounds)
-        cpds_product_reactions = dict((cpd,[]) for cpd in self.compounds)
-        for rxn in self.reactions:
-            for cpd in rxn.compounds: 
-                cpds_reactions[cpd].append(rxn) 
-            for cpd in rxn.reactants: 
-                cpds_reactant_reactions[cpd].append(rxn) 
-            for cpd in rxn.products: 
-                cpds_product_reactions[cpd].append(rxn)
-        for cpd in self.compounds:
-            cpd.set_reactions(reactions = cpds_reactions[cpd])
-            cpd.set_reactant_reactions(reactant_reactions = cpds_reactant_reactions[cpd])
-            cpd.set_product_reactions(product_reactions = cpds_product_reactions[cpd])
+        # Set reactions, reactant_reactions and product_reactions for compounds
+        self.set_cpds_genes_rxns(do_cpds = True, do_gens = False)
+
+        # Model compartments
+        if update_compartments:
+            if hasattr(self,'compartments'):
+                self.compartments = sorted(list(set(self.compartments + [c.compartment for c in self.compounds if c.compartment != None])), key = lambda x: x.id)
+            else:
+                self.compartments = sorted(list(set([c.compartment for c in self.compounds if c.compartment != None])), key = lambda x: x.id)
+            self.compartments_by_id = dict([(cpt.id,cpt) for cpt in self.compartments])    
+
+    def set_cpds_genes_rxns(self, do_cpds = True, do_gens = True):
+        """
+        Sets reactions, reactant_reactions and product_reactions for each compound in the model
+        and reactions for each gene in the model.
+
+        This funciton is called each time a reactions is added/removed to/from the model
+
+        INPUTS:
+        -------
+        do_cpds: If True, it assignes attributes mentioned above for compounds
+        do_gens: If True, it assigns attributes mentioned above for reacitons
+        """
+        if hasattr(self,'reactions') and do_cpds:
+            cpds_reactions = dict((cpd,[]) for cpd in self.compounds)
+            cpds_reactant_reactions = dict((cpd,[]) for cpd in self.compounds)
+            cpds_product_reactions = dict((cpd,[]) for cpd in self.compounds)
+            for rxn in self.reactions:
+                for cpd in rxn.compounds: 
+                    cpds_reactions[cpd].append(rxn) 
+                for cpd in rxn.reactants: 
+                    cpds_reactant_reactions[cpd].append(rxn) 
+                for cpd in rxn.products: 
+                    cpds_product_reactions[cpd].append(rxn)
+            for cpd in self.compounds:
+                cpd.set_reactions(reactions = cpds_reactions[cpd])
+                cpd.set_reactant_reactions(reactant_reactions = cpds_reactant_reactions[cpd])
+                cpd.set_product_reactions(product_reactions = cpds_product_reactions[cpd])
+
+        if hasattr(self,'reactions') and do_gens:
+            # Set attribute reactions for genes in the model
+            for gen in [g for g in self.genes if g.reactions == []]:
+                gen.reactions = [r for r in self.reactions if gen in r.genes]
 
     def set_reactions(self, reactions): 
         """
         Set attribute reactions
         """
-        if reactions is not None and not isinstance(reactions,list):
-            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
+        if reactions is not None and not isinstance(reactions,tuple) and not isinstance(reactions,list):
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a tuple or a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
         if len([r for r in reactions if not isinstance(r,reaction)]) > 0:
             raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type 'reaction'.  Objects that are not of type reaction found in the list:" + str([n for n in reactions if not isinstance(n,reaction.reaction)]))
 
-        reactions = sorted(list(set(reactions)), key = lambda x: x.id)
+        reactions = sorted(tuple(set(reactions)), key = lambda x: x.id)
 
-        self.__dict__['reactions'] = customList(reactions)
+        if not isinstance(reactions,tuple):
+            self.__dict__['reactions'] = reactions
+        elif not isinstance(reactions,list):
+            self.__dict__['reactions'] = list(reactions)
 
         for r in self.reactions:
-            r.model = self
+            r.model_id = self.id
 
         # A dictionary whose keys are reaction ids and values are reaction objects
         self.reactions_by_id = dict([(rxn.id,rxn) for rxn in self.reactions])    
@@ -253,24 +295,26 @@ class model(object):
         """
         Set attribute genes
         """
-        if  not isinstance(genes,list):
+        if not isinstance(genes, tuple) and  not isinstance(genes,list):
             raise TypeError("Invalid 'genes' for model " + self.id + "! 'genes' for a model must be a list of objects of type gene. A " + str(genes) + " type object was entered instead")
         if len([g for g in genes if not isinstance(g,gene)]) > 0:
             raise TypeError("Invalid 'compounds' for model " + self.id + "! 'genes' for a model must be a list of objects of type gene. Objects that are not of type gene found in the list: " + str([r for r in genes if not isinstance(r,gene)]))
 
-        genes = sorted(list(set(genes)), key = lambda x: x.id )
+        genes = sorted(tuple(set(genes)), key = lambda x: x.id)
 
-        self.__dict__['genes'] = customList(genes)
+        if not isinstance(genes, tuple):
+            self.__dict__['genes'] = genes
+        elif not isinstance(genes, list):
+            self.__dict__['genes'] = tuple(genes)
 
         for gn in self.genes:
-            gn.model = self
+            gn.model_id = self.id
 
         # A dictionary whose keys are gene ids and values are gene objects
         self.genes_by_id = dict([(g.id,g) for g in self.genes])    
 
-        if hasattr(self,'reactions'):
-            for gen in [g for g in self.genes if g.reactions == []]:
-                gen.reactions = [r for r in self.reactions if gen in r.genes]
+        # Assign 'reactions' attribute for each gene
+        self.set_cpds_genes_rxns(do_cpds = False, do_gens = True)
 
     def get_reactions(self,reactions_ref,search_by_clean_ref = False):
         """
@@ -540,19 +584,27 @@ class model(object):
         There is no actual output. The model is updated with the addition of
         new compounds 
         """
-        self.compounds += new_compounds
+        # First check if the id of any new compounds is the same as that an existing compound
+        # in the model
+        if len(set(self.compounds_by_id.keys()).intersection(set([c.id for c in new_compounds]))) > 0:
+            raise userError('The following compound ids already exist in the model: {}'.format(set(self.compounds_by_id.keys()).intersection(set([c.id for c in new_compounds]))))
 
-        # Sort according to id
-        self.compounds = sorted(list(set(self.compounds)),key=lambda x:x.id)
+        # Check if the id of any of compounds in new_compounds is already in the model
+        # (don't add them)
+        cpds_already_inModel = [cpd for cpd in new_compounds if cpd.id in self.compounds_by_id.keys()]
+        if len(cpds_already_inModel) > 0 and self.warnings:
+            print '**WARNING! The id of the following compounds is already in the model and as a result were not added to the model: {}'.format([c.id for c in cpds_already_inModel])
 
-        # Update compounds by id
-        for new_cmp in  new_compounds:   
-            self.compounds_by_id[new_cmp.id] = new_cmp
-            self.compounds_by_clean_id[remove_non_alphanumeric(new_cmp.id).lower()] = new_cmp
+        model_cpds = list(self.compounds)
+        for cpd in [c for c in new_compounds if cpd not in cpds_already_inModel]:
+            # If the compartment id is already present in the model, change it to the
+            # present compartment in the model
+            if cpd.compartment.id in self.compartments_by_id.keys():
+                cpd.compartment = self.compartments_by_id[cpd.compartment.id]
+            model_cpds.append(cpd)
+        self.set_compounds(compounds = model_cpds, update_compartments = True)        
 
-        # Assign model 
-        for new_cmp in  new_compounds:   
-            new_cmp.model = self
+        # NOTE: compartments are updated using set_compounds
 
     def add_reactions(self,new_reactions):
         """
@@ -568,38 +620,43 @@ class model(object):
         There is no actual output. The model is updated with the addition of
         new reactions 
         """
-        self.reactions += new_reactions
+        # First check if the id of any new reactions is the same as that an existing reaction
+        # in the model
+        if len(set(self.reactions_by_id.keys()).intersection(set([r.id for r in new_reactions]))) > 0:
+            raise userError('The following reaction ids already exist in the model: {}'.format(set(self.reactions_by_id.keys()).intersection(set([r.id for r in new_reactions]))))
 
-        # Sort according to id
-        self.reactions = sorted(list(set(self.reactions)),key=lambda x:x.id)
+        # Check if the id of any of reactions in new_reactions is already in the model
+        # (don't add them)
+        rxns_already_inModel = [rxn for rxn in new_reactions if rxn.id in self.reactions_by_id.keys()]
+        if len(rxns_already_inModel) > 0:
+            print '**WARNING! The id of the following reactions is already in the model and as a result were not added to the model: {}'.format([c.id for c in rxns_already_inModel])
 
-        # Update reactions_by_id
-        for new_rxn in new_reactions:
-            self.reactions_by_id[new_rxn.id] = new_rxn 
-            self.reactions_by_clean_id[remove_non_alphanumeric(new_rxn.id).lower()] = new_rxn 
+        # If any of the compounds participating in these reactions has an id, which is already
+        # in the model, replace that compound in that reactions with corresponding compound
+        # in the model
+        for rxn in [r for r in new_reactions if r not in rxns_already_inModel]:
+            cpds_inModel_byID = [c for c in rxn.stoichiometry.keys() if c not in self.compounds and c.id in self.compounds_by_id.keys()]
+            if len(cpds_inModel_byID) > 0:
+                rxn_stoic = dict([(cpd,rxn.stoichiometry[cpd]) if cpd not in cpds_inModel_byID else (self.compounds_by_id[cpd.id], rxn.stoichiometry[cpd])  for cpd in rxn.stoichiometry.keys()])
+                rxn.set_stoichiometry(stoichiometry = rxn_stoic, replace = True) 
 
-        # Assign model 
-        for new_rxn in new_reactions:
-            new_rxn.model = self
+        # Before adding the reactions to the model add any compounds participating in these
+        # reactions that is not already in the model
+        cpds_not_inModel = list(set([c for rxn in new_reactions if rxn not in rxns_already_inModel for c in rxn.stoichiometry.keys() if c not in self.compounds]))
+        if len(cpds_not_inModel) > 0:
+            self.add_compounds(new_compounds = cpds_not_inModel)
 
-        # Add any compounds in the reaction not in the model
-        cmps_notInModel = [c for r in new_reactions for c in r.compounds if c not in self.compounds]
-        if len(cmps_notInModel) > 0:
-            self.add_compounds(cmps_notInModel) 
+        model_rxns = list(self.reactions) + [r for r in new_reactions if r not in rxns_already_inModel]
+        self.set_reactions(model_rxns)
 
-        # Update compound objects participating in these new reactions
-        for rxn in new_reactions:
-            for cmp in rxn.compounds:
-                if rxn not in cmp.reactions:
-                    cmp.reactions.append(rxn)
-                if rxn.stoichiometry[cmp] < 0 and rxn not in cmp.reactant_reactions:
-                    cmp.reactant_reactions.append(rxn) 
-                if rxn.stoichiometry[cmp] > 0 and rxn not in cmp.product_reactions:
-                    cmp.product_reactions.append(rxn) 
+        # Set reactions, reactant_reactions and product_reactions for compounds and 
+        # reactions for genes
+        self.set_cpds_genes_rxns(do_cpds = True, do_gens = True)
 
     def del_compounds(self,compounds_list):
         """
         Remove selected compounds from the model
+        NOTE: Only compounds that do not participate in any reactions can be removed
         
         INPUTS:
         ------
@@ -608,46 +665,19 @@ class model(object):
         if type(compounds_list) is not list:
             userError("**Error! the input to 'remove_compounds' should be a list of compound objects")
 
-        # First remove this compound from all relevant reaction objects
-        for cmp in compounds_list:
-            for rxn in cmp.reactions:
-                if rxn.stoichiometry[cmp] < 0:
-                    if rxn.reactants != []:
-                        del rxn.reactants[rxn.reactants.index(cmp)]
-                elif rxn.stoichiometry[cmp] > 0:
-                    if rxn.products != []:
-                        del rxn.products[rxn.products.index(cmp)]
+        # Compounds in the list that participate in at least one reaction
+        cpds_in_rxns = [cpd for cpd in compounds_list if cpd in list(set([c for r in self.reactions for c in r.stoichiometry.keys()]))]
+        if len(cpds_in_rxns) > 0:
+            if self.warnings:
+                print '**WARNING! The following compounds participate in at least one reaction and cannot be removed: {}'.format([cpd.id for cpd in cpds_in_rxns])
 
-                del rxn.stoichiometry[cmp]
+        model_cpds = list(self.compounds)
+        for cpd in [c for c in compounds_list if cpd not in cpds_in_rxns]:
+            del model_cpds[model_cpds.index(cpd)]
 
-            # Check its presence in all other reactions
-            cmp_rxns = list(set([r for r in self.reactions if cmp in r.compounds + r.reactants + r.products + r.stoichiometry.keys()])) 
-            if len(cmp_rxns) > 0:
-                for r in cmp_rxns:
-                    try:
-                        del r.compounds[r.compounds.index(cmp)]
-                    except:
-                        continue
-                    try:
-                        del r.reactants[r.reactant.index(cmp)]
-                    except:
-                        continue
-                    try:
-                        del r.products[r.products.index(cmp)]
-                    except:
-                        continue
-                    try:
-                        del r.stoichiometry.keys()[r.stoichiometry.keys().index(cmp)]
-                    except:
-                        continue
+        self.set_compounds(compounds = model_cpds, update_compartments = True)
 
-            # Remove it from the list of compounds
-            del self.compounds[self.compounds.index(cmp)] 
-            self.compounds = sorted(set(list(self.compounds)),key=lambda x:x.id)
-
-            # Remove it from compounds_by_id
-            del self.compounds_by_id[cmp.id]
-            del self.compounds_by_clean_id[remove_non_alphanumeric(cmp.id).lower()]
+        # NOTE: Comaprtments are updated using set_compounds
 
     def del_reactions(self,reactions_list):
         """
@@ -659,42 +689,27 @@ class model(object):
         """
         if type(reactions_list) is not list:
             userError("**Error! the input to 'remove_reactions' should be a list of reaction objects")
+        
+        # List of compounds that participate only in reactions of reactions_list
+        cpds_only_in_rxnsList = list(set([cpd for rxn in reactions_list for cpd in rxn.stoichiometry.keys() if len(cpd.reactions) == 1]))
 
-        # First remove this reaction from all relevant reaction objects
+        model_rxns = list(self.reactions)
         for rxn in reactions_list:
-            for cmp in rxn.compounds:
-                del cmp.reactions[cmp.reactions.index(rxn)]
-                if rxn.stoichiometry[cmp] < 0 and cmp.reactant_reactions != []:
-                    del cmp.reactant_reactions[cmp.reactant_reactions.index(rxn)]
-                elif rxn.stoichiometry[cmp] > 0 and cmp.product_reactions != []:
-                    del cmp.product_reactions[cmp.product_reactions.index(rxn)]
-
-            # Check the presence in all other compounds
-            rxn_cmps = list(set([m for m in self.compounds if rxn in m.reactions + m.reactant_reactions + m.product_reactions])) 
-            if len(rxn_cmps) > 0:
-                for m in rxn_cmps:
-                    try: 
-                        del m.reactions[m.reactions.index(rxn)]
-                    except:
-                        continue            
-                    try: 
-                        del m.reactant_reactions[m.reactant_reactions.index(rxn)]
-                    except:
-                        continue            
-                    try: 
-                        del m.product_reactions[m.product_reactions.index(rxn)]
-                    except:
-                        continue            
-
             # Remove it from the list of reactions
-            del self.reactions[self.reactions.index(rxn)] 
-            self.reactions = sorted(set(list(self.reactions)),key=lambda x:x.id)
+            del model_rxns[self.reactions.index(rxn)] 
+        self.set_reactions(reactions = model_rxns)
 
-            # Remove it from reactions_by_id
-            del self.reactions_by_id[rxn.id]
-            del self.reactions_by_clean_id[remove_non_alphanumeric(rxn.id).lower()]
+        # Updated model compounds, compartments and other properties
+        if len(cpds_only_in_rxnsList) > 0:
+            self.del_compounds(compounds_list = cpds_only_in_rxnsList)
 
-    def validate(self, reassign_props = True):
+        # NOTE: Comaprtments are updated using set_compounds called in del_compounds
+
+        # Set reactions, reactant_reactions and product_reactions for compounds and 
+        # reactions for genes
+        self.set_cpds_genes_rxns(do_cpds = True, do_gens = True)
+
+    def validate(self, reassign_props = True, stdout_msgs = True):
         """
         Checks the possible errors in the model and fixes them 
         It returns a warning in the output for issues that cannot be fixed.
@@ -738,7 +753,7 @@ class model(object):
           - Any replicates in reaction ids
  
         """
-        if self.stdout_msgs:
+        if stdout_msgs:
             print 'Validating the model ...'
 
         if not isinstance(reassign_props,bool):
@@ -753,7 +768,7 @@ class model(object):
         # Check for duplicates in the list of compound objects and fix them
         if len(set(self.compounds)) < len(self.compounds):
             errors_in_model = True
-            self.compounds = sorted(list(set(self.compounds)),key=lambda x:x.id)
+            self.compounds = sorted(tuple(set(self.compounds)),key=lambda x:x.id)
             if self.stdout_msgs:
                 print 'Duplicates in the list of compounds were fixed'
 
@@ -789,7 +804,7 @@ class model(object):
                 cpd.product_reactions = [r for r in cpd.reactions if r.stoichiometry[cpd] > 0]
 
             no_rxns_cpds_afterFix = [c for c in rxns_cpds_dict[0] if len(c.reactions) == 0]
-            if len(rxns_cpds_dict[0]) > len(no_rxns_cpds_afterFix) and self.stadout_msgs:
+            if len(rxns_cpds_dict[0]) > len(no_rxns_cpds_afterFix) and self.stdout_msgs:
                 print '\t{} compounds not participated in any reactions in the model were fixed'.format(len(rxns_cpds_dict[0]) - len(no_rxns_cpds_afterFix))
             if len(no_rxns_cpds_afterFix) > 0:
                 if len(no_rxns_cpds_afterFix) > 100:
@@ -803,7 +818,7 @@ class model(object):
         if len(missing_cpds) > 0:
             errors_in_model = True
             self.compounds += missing_cpds
-            self.compounds = sorted(list(set(self.compounds)),key=lambda x:x.id)
+            self.compounds = sorted(tuple(set(self.compounds)),key=lambda x:x.id)
             self.compounds_by_id = dict([(cpd.id,cpd) for cpd in self.compounds])    
             if self.stdout_msgs:
                 print len(missing_cpds),' compounds were added to the list of compounds'
@@ -851,7 +866,7 @@ class model(object):
                 print '\t{} compounds appearing in reactions with zero stoichiometry were fixed ...'.format(cpd_counter)
 
         #--- Check problems with reactions ----
-        self.reactions = sorted(list(set(self.reactions)),key=lambda x:x.id)
+        self.reactions = sorted(tuple(set(self.reactions)),key=lambda x:x.id)
         for rxn in self.reactions:
             rxn.compounds = list(set(rxn.compounds))
             rxn.reactants = list(set(rxn.reactants))
@@ -904,7 +919,7 @@ class model(object):
 
         for rxn in self.reactions:
             if set(rxns_cpds[rxn]) != set(rxn.compounds):
-                raise userError('The set of compounds in the model in which rxn ' + rxn.id + ' appears in their "reactions" field does not match the set of compounds in the stoichiometry of this reaction')
+                raise userError('The set of compounds in the model in which rxn ' + rxn.id + ' appears in their "reactions" field does not match the set of compounds in the stoichiometry of this reaction. \nCompounds participating in this reaction but not in rxn.compounds = {}\nCompounds in rxn.compounds but not in the set of compounds participating in this reaciton s = {}'.format([c.id for c in set(rxns_cpds[rxn]) if c not in set(rxn.compounds)], [c.id for c in set(rxn.compounds) if c not in set(rxns_cpds[rxn])]))
 
             if set(rxns_reactants[rxn]) != set(rxn.reactants):
                 raise userError('The set of compounds in the model in which rxn ' + rxn.id + ' appears in their "reactant_reactions" field does not match the set of reactants of this reaction based on its stoichiometry')
@@ -917,8 +932,8 @@ class model(object):
             if self.stdout_msgs:
                 print '\t{} reactions with with issues in their "compounds", "reactant" or "products" were fixed ...'.format(rxn_counter)
 
-        if errors_in_model == False and self.stdout_msgs:
-            print '\tChecked the model. All are OK'
+        if errors_in_model == False and stdout_msgs:
+            print '\tThe model successfully passed all validation tests'
  
     def print_reactions(self,ref_type = 'id', print_equation = True, cmp_ref = 'id'):
         """
@@ -949,7 +964,7 @@ class model(object):
                     rxn = reaction.name
 
             if print_equation == True:
-                rxn = rxn + ':   ' + reaction.get_equation(ref_type = cmp_ref)
+                rxn = rxn + ':   ' + reaction.get_equation(show_cpds_by = cmp_ref)
 
             print rxn
         return ''
@@ -1018,7 +1033,7 @@ class model(object):
             cobra_rxn.name = rxn.name
             cobra_rxn.lower_bound = rxn.flux_bounds[0]
             # Cobra does not allow to set the reaction reversibility
-            if rxn.reversibility.lower() == 'exchange': 
+            if rxn.reversibility.lower() == 'exchange' or rxn.is_exchange: 
                 cobra_rxn.lower_bound = -1000
             else:
                 cobra_rxn.subsyste = rxn.subsystem
@@ -1039,18 +1054,21 @@ class model(object):
 
         return cobra_model
 
-    def export(self,output_format = 'sbml', output_filename = ''):
+    def export(self, output_format = 'sbml', output_filename = ''):
         """
-        Export the model to various output formats
+        Exports the model to various output formats.
 
         INPUTS:
         ------
-          output_format: Format of the output file. Eligible choices are:
-                           'sbml': SBML
-                         'pydict': Python dictionaries in .py files --> To be added
-                           'json': Python's json format --> To be added
-                         'pickle': Python's pickle format (.pk) --> To be added 
-        output_filename: Name of the output file
+        output_format: 
+        Format of the output file. Eligible choices are:
+          'sbml': SBML
+        'pydict': Python dictionaries in .py files --> To be added
+          'json': Python's json format --> To be added
+        'pickle': Python's pickle format (.pk) --> To be added 
+
+        output_filename: 
+        Name of the output file
         """
         if not isinstance(output_format,str):
             raise TypeError('output_format must be a string.')
@@ -1062,7 +1080,7 @@ class model(object):
 
         #------- COBRA ------
         if output_format.lower() == 'sbml':
-            cobra_model = convert_to_cobra(self)
+            cobra_model = self.convert_to_cobra(self)
             cobra.io.write_sbml_model(cobra_model,output_filename + '.xml',use_fbc_package=False)       
             if stdout_msgs:
                 print 'The model was exported to {}'.format(output_filename + '.xml')
@@ -1073,181 +1091,190 @@ class model(object):
 
             model = {}
             
-            # organism
+            #-- organism --
             model['organism'] = {}
             model['organism_global_attrs'] = {}
 
-            # Attributes that are class methods
-            method_attrs = [a for a in dir(self.organism) if inspect.ismethod(self.organism.__getattribute__(a))]
-
-            # known attributes that are an instance of another class
-            known_classType_attrs = ['model']
-
-            # Attributes that are an instance of an unknown  class
-            unknown_classType_attrs = [a for a in dir(self.organism) if '__' not in a and ('class' in str(type(self.organism.__getattribute__(a))) or 'object at' in repr(self.organism.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
-            if len(unknown_classType_attrs) > 0 and self.warnings:
-                print '**WARNING (model.export_model)! The following unknonw attributes for "organism" were not exported: {}'.format(unknown_classType_attrs)
-
-            # Global class attributes that are not an instance of a class
-            global_attrs = [a for a in dir(self.organism) if '__' not in a  and a not in self.organism.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
-
-            # Instance variables (attributes) that are not an instance of a class
-            instance_attrs = [a for a in dir(self.organism) if a in self.organism.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+            if self.organism != None:
+                # Attributes that are class methods
+                method_attrs = [a for a in dir(self.organism) if inspect.ismethod(self.organism.__getattribute__(a))]
     
-            for attr in global_attrs:
-                model['organism_global_attrs'][attr] = self.organism.__getattribute__(attr) 
-            for attr in instance_attrs:
-                model['organism'][attr] = self.organism.__getattribute__(attr) 
-            model['organism']['model'] = self.organism.model.id  # just save the id
+                # known attributes that are an instance of another class
+                known_classType_attrs = ['model']
+    
+                # Attributes that are an instance of an unknown  class
+                unknown_classType_attrs = [a for a in dir(self.organism) if '__' not in a and ('class' in str(type(self.organism.__getattribute__(a))) or 'object at' in repr(self.organism.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                if len(unknown_classType_attrs) > 0 and self.warnings:
+                    print '**WARNING (model.export_model)! The following unknonw attributes for "organism" were not exported: {}'.format(unknown_classType_attrs)
+    
+                # Global class attributes that are not an instance of a class
+                global_attrs = [a for a in dir(self.organism) if '__' not in a  and a not in self.organism.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+    
+                # Instance variables (attributes) that are not an instance of a class
+                instance_attrs = [a for a in dir(self.organism) if a in self.organism.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                for attr in global_attrs:
+                    model['organism_global_attrs'][attr] = self.organism.__getattribute__(attr) 
+                for attr in instance_attrs:
+                    model['organism'][attr] = self.organism.__getattribute__(attr) 
+                model['organism']['model_id'] = self.organism.model_id  # just save the id
 
             #-- Compartments --
             model['compartments'] = {}
             model['compartments_global_attrs'] = {}
-            for cpt in self.compartments:
-                attr_dict = {}
 
-                # Attributes that are class methods
-                method_attrs = [a for a in dir(cpt) if inspect.ismethod(cpt.__getattribute__(a))]
-
-                # known attributes that are an instance of another class
-                known_classType_attrs = ['model']
+            if self.compartments != ():
+                for cpt in self.compartments:
+                    attr_dict = {}
     
-                # Attributes that are an instance of an unknown class
-                unknown_classType_attrs = [a for a in dir(cpt) if '__' not in a and ('class' in str(type(cpt.__getattribute__(a))) or 'object at' in repr(cpt.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
-                if len(unknown_classType_attrs) > 0 and self.warnings:
-                    print '**WARNING (model.export_model)! The following unknonw attributes for "compartment" were not exported: {}'.format(unknown_classType_attrs)
+                    # Attributes that are class methods
+                    method_attrs = [a for a in dir(cpt) if inspect.ismethod(cpt.__getattribute__(a))]
     
-                # Global class attributes that are not an instance of a class
-                global_attrs = [a for a in dir(cpt) if '__' not in a  and a not in cpt.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+                    # known attributes that are an instance of another class
+                    known_classType_attrs = ['model']
+        
+                    # Attributes that are an instance of an unknown class
+                    unknown_classType_attrs = [a for a in dir(cpt) if '__' not in a and ('class' in str(type(cpt.__getattribute__(a))) or 'object at' in repr(cpt.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                    if len(unknown_classType_attrs) > 0 and self.warnings:
+                        print '**WARNING (model.export_model)! The following unknonw attributes for "compartment" were not exported: {}'.format(unknown_classType_attrs)
+        
+                    # Global class attributes that are not an instance of a class
+                    global_attrs = [a for a in dir(cpt) if '__' not in a  and a not in cpt.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                    # Instance variables (attributes) that are not an instance of a class
+                    instance_attrs = [a for a in dir(cpt) if a in cpt.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+                    for attr in instance_attrs:
+                        attr_dict[attr] = cpt.__getattribute__(attr) 
+                    attr_dict['model_id'] = cpt.model_id
+                    if cpt.id in model['compartments'].keys():
+                       raise userError('duplicated compartment id: {}'.format(cpt.id))
+                    else:
+                        model['compartments'][cpt.id] = attr_dict
+                # Global attributes are the same for all compartments, so use the one from the last cpt
+                model['compartments']['global_attrs'] = {}
+                for attr in global_attrs:
+                    model['compartments_global_attrs'][attr] = cpt.__getattribute__(attr) 
     
-                # Instance variables (attributes) that are not an instance of a class
-                instance_attrs = [a for a in dir(cpt) if a in cpt.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
-                for attr in instance_attrs:
-                    attr_dict[attr] = cpt.__getattribute__(attr) 
-                attr_dict['model'] = cpt.model.id
-                if cpt.id in model['compartments'].keys():
-                   raise userError('duplicated compartment id: {}'.format(cpt.id))
-                else:
-                    model['compartments'][cpt.id] = attr_dict
-            # Global attributes are the same for all compartments, so use the one from the last cpt
-            model['compartments']['global_attrs'] = {}
-            for attr in global_attrs:
-                model['compartments_global_attrs'][attr] = cpt.__getattribute__(attr) 
-
             #-- Compounds --
             model['compounds'] = {} 
             model['compounds_global_attrs'] = {} 
-            for cpd in self.compounds:
-                attr_dict = {}
 
-                # Attributes that are class methods
-                method_attrs = [a for a in dir(cpd) if inspect.ismethod(cpd.__getattribute__(a))]
-
-                # known attributes that are an instance of another class
-                known_classType_attrs = ['model','compartment','reactions','reactant_reactions','product_reactions']
+            if self.compounds != ():
+                for cpd in self.compounds:
+                    attr_dict = {}
     
-                # Attributes that are an instance of an unknown class
-                unknown_classType_attrs = [a for a in dir(cpd) if '__' not in a and ('class' in str(type(cpd.__getattribute__(a))) or 'object at' in repr(cpd.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
-                if len(unknown_classType_attrs) > 0 and self.warnings:
-                    print '**WARNING (model.export_model)! The following unknonw attributes for "compound" were not exported: {}'.format(unknown_classType_attrs)
+                    # Attributes that are class methods
+                    method_attrs = [a for a in dir(cpd) if inspect.ismethod(cpd.__getattribute__(a))]
     
-                # Global class attributes that are not an instance of a class
-                global_attrs = [a for a in dir(cpd) if '__' not in a  and a not in cpd.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
-    
-                # Instance variables (attributes) that are not an instance of a class
-                instance_attrs = [a for a in dir(cpd) if a in cpd.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+                    # known attributes that are an instance of another class
+                    known_classType_attrs = ['model','compartment','reactions','reactant_reactions','product_reactions']
         
-                for attr in instance_attrs:
-                    attr_dict[attr] = cpd.__getattribute__(attr) 
-                attr_dict['model'] = cpd.model.id
-                attr_dict['compartment'] = cpd.compartment.id
-                attr_dict['reactions'] = [r.id for r in cpd.reactions]
-                attr_dict['reactant_reactions'] = [r.id for r in cpd.reactant_reactions]
-                attr_dict['product_reactions'] = [r.id for r in cpd.product_reactions]
-                if cpd.id in model['compounds'].keys():
-                    raise userError('Duplicated compound id: {}'.format(cpd.id))
-                else:
-                    model['compounds'][cpd.id] = attr_dict
-            model['compounds']['global_attrs'] = {}
-            for attr in global_attrs:
-                model['compounds_global_attrs'][attr] = cpd.__getattribute__(attr) 
-               
+                    # Attributes that are an instance of an unknown class
+                    unknown_classType_attrs = [a for a in dir(cpd) if '__' not in a and ('class' in str(type(cpd.__getattribute__(a))) or 'object at' in repr(cpd.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                    if len(unknown_classType_attrs) > 0 and self.warnings:
+                        print '**WARNING (model.export_model)! The following unknonw attributes for "compound" were not exported: {}'.format(unknown_classType_attrs)
+        
+                    # Global class attributes that are not an instance of a class
+                    global_attrs = [a for a in dir(cpd) if '__' not in a  and a not in cpd.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                    # Instance variables (attributes) that are not an instance of a class
+                    instance_attrs = [a for a in dir(cpd) if a in cpd.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+            
+                    for attr in instance_attrs:
+                        attr_dict[attr] = cpd.__getattribute__(attr) 
+                    attr_dict['model_id'] = cpd.model_id
+                    attr_dict['compartment'] = cpd.compartment.id
+                    attr_dict['reactions'] = [r.id for r in cpd.reactions]
+                    attr_dict['reactant_reactions'] = [r.id for r in cpd.reactant_reactions]
+                    attr_dict['product_reactions'] = [r.id for r in cpd.product_reactions]
+                    if cpd.id in model['compounds'].keys():
+                        raise userError('Duplicated compound id: {}'.format(cpd.id))
+                    else:
+                        model['compounds'][cpd.id] = attr_dict
+                model['compounds']['global_attrs'] = {}
+                for attr in global_attrs:
+                    model['compounds_global_attrs'][attr] = cpd.__getattribute__(attr) 
+                   
             #-- Reactions --
             model['reactions'] = {} 
             model['reactions_global_attrs'] = {} 
-            for rxn in self.reactions:
-                attr_dict = {}
 
-                # Attributes that are class methods
-                method_attrs = [a for a in dir(rxn) if inspect.ismethod(rxn.__getattribute__(a))]
-
-                # known attributes that are an instance of another class
-                known_classType_attrs = ['model','compounds','reactants','products','stoichiometry','compartment','genes']
+            if self.reactions != ():            
+                for rxn in self.reactions:
+                    attr_dict = {}
     
-                # Attributes that are an instance of an unknown class
-                unknown_classType_attrs = [a for a in dir(rxn) if '__' not in a and ('class' in str(type(rxn.__getattribute__(a)) or 'object at' in repr(rxn.__getattribute__(a)))) and a not in known_classType_attrs]
-                if len(unknown_classType_attrs) > 0 and self.warnings:
-                    print '**WARNING (model.export_model)! The following unknonw attributes for "reaction" were not exported: {}'.format(unknown_classType_attrs)
+                    # Attributes that are class methods
+                    method_attrs = [a for a in dir(rxn) if inspect.ismethod(rxn.__getattribute__(a))]
     
-                # Global class attributes that are not an instance of a class
-                global_attrs = [a for a in dir(rxn) if '__' not in a  and a not in rxn.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
-    
-                # Instance variables (attributes) that are not an instance of a class
-                instance_attrs = [a for a in dir(rxn) if a in rxn.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+                    # known attributes that are an instance of another class
+                    known_classType_attrs = ['model','compounds','reactants','products','stoichiometry','compartment','genes']
         
-                for attr in instance_attrs:
-                    attr_dict[attr] = rxn.__getattribute__(attr) 
-                attr_dict['model'] = rxn.model.id
-                attr_dict['compartment'] = [c.id for c in rxn.compartment]
-                attr_dict['compounds'] = [c.id for c in rxn.compounds]
-                attr_dict['reactants'] = [c.id for c in rxn.reactants]
-                attr_dict['products'] = [c.id for c in rxn.products]
-                attr_dict['genes'] = [g.id for g in rxn.genes]
-                attr_dict['stoichiometry'] = dict([(c.id,rxn.stoichiometry[c]) for c in rxn.compounds])
-                if rxn.id in model['reactions'].keys():
-                    raise userError('Duplicated reaction id: {}'.format(rxn.id))
-                else:
-                    model['reactions'][rxn.id] = attr_dict
-            model['reactions']['global_attrs'] = {}
-            for attr in global_attrs:
-                model['reactions_global_attrs'][attr] = rxn.__getattribute__(attr) 
-
+                    # Attributes that are an instance of an unknown class
+                    unknown_classType_attrs = [a for a in dir(rxn) if '__' not in a and ('class' in str(type(rxn.__getattribute__(a)) or 'object at' in repr(rxn.__getattribute__(a)))) and a not in known_classType_attrs]
+                    if len(unknown_classType_attrs) > 0 and self.warnings:
+                        print '**WARNING (model.export_model)! The following unknonw attributes for "reaction" were not exported: {}'.format(unknown_classType_attrs)
+        
+                    # Global class attributes that are not an instance of a class
+                    global_attrs = [a for a in dir(rxn) if '__' not in a  and a not in rxn.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                    # Instance variables (attributes) that are not an instance of a class
+                    instance_attrs = [a for a in dir(rxn) if a in rxn.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+            
+                    for attr in instance_attrs:
+                        attr_dict[attr] = rxn.__getattribute__(attr) 
+                    attr_dict['model_id'] = rxn.model_id
+                    attr_dict['compartments'] = [c.id for c in rxn.compartments]
+                    attr_dict['compounds'] = [c.id for c in rxn.compounds]
+                    attr_dict['reactants'] = [c.id for c in rxn.reactants]
+                    attr_dict['products'] = [c.id for c in rxn.products]
+                    attr_dict['genes'] = [g.id for g in rxn.genes]
+                    attr_dict['stoichiometry'] = dict([(c.id,rxn.stoichiometry[c]) for c in rxn.compounds])
+                    if rxn.id in model['reactions'].keys():
+                        raise userError('Duplicated reaction id: {}'.format(rxn.id))
+                    else:
+                        model['reactions'][rxn.id] = attr_dict
+                model['reactions']['global_attrs'] = {}
+                for attr in global_attrs:
+                    model['reactions_global_attrs'][attr] = rxn.__getattribute__(attr) 
+    
             #-- Genes --
             model['genes'] = {} 
             model['genes_global_attrs'] = {} 
-            for gen in self.genes:
-                attr_dict = {}
 
-                # Attributes that are class methods
-                method_attrs = [a for a in dir(gen) if inspect.ismethod(gen.__getattribute__(a))]
-
-                # known attributes that are an instance of another class
-                known_classType_attrs = ['model','compartment','reactions']
+            if self.genes != ():
+                for gen in self.genes:
+                    attr_dict = {}
     
-                # Attributes that are an instance of an unknown class
-                unknown_classType_attrs = [a for a in dir(gen) if '__' not in a and ('class' in str(type(gen.__getattribute__(a))) or 'object at' in repr(gen.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
-                if len(unknown_classType_attrs) > 0 and self.warnings:
-                    print '**WARNING (model.export_model)! The following unknonw attributes for "gene" were not exported: {}'.format(unknown_classType_attrs)
+                    # Attributes that are class methods
+                    method_attrs = [a for a in dir(gen) if inspect.ismethod(gen.__getattribute__(a))]
     
-                # Global class attributes that are not an instance of a class
-                global_attrs = [a for a in dir(gen) if '__' not in a  and a not in gen.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
-    
-                # Instance variables (attributes) that are not an instance of a class
-                instance_attrs = [a for a in dir(gen) if a in gen.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+                    # known attributes that are an instance of another class
+                    known_classType_attrs = ['model','compartment','reactions']
         
-                for attr in instance_attrs:
-                    attr_dict[attr] = gen.__getattribute__(attr) 
-                attr_dict['model'] = gen.model.id
-                attr_dict['compartment'] = [c.id for c in gen.compartment]
-                attr_dict['reactions'] = [r.id for r in gen.reactions]
-                if gen.id in model['genes'].keys():
-                    raise userError('Duplicated gene id: {}'.formaT(gen.id))
-                else:
-                    model['genes'][gen.id] = attr_dict
-            model['genes']['global_attrs'] = {}
-            for attr in global_attrs:
-                model['genes_global_attrs'][attr] = gen.__getattribute__(attr) 
-
+                    # Attributes that are an instance of an unknown class
+                    unknown_classType_attrs = [a for a in dir(gen) if '__' not in a and ('class' in str(type(gen.__getattribute__(a))) or 'object at' in repr(gen.__getattribute__(a))) and a not in known_classType_attrs + method_attrs]
+                    if len(unknown_classType_attrs) > 0 and self.warnings:
+                        print '**WARNING (model.export_model)! The following unknonw attributes for "gene" were not exported: {}'.format(unknown_classType_attrs)
+        
+                    # Global class attributes that are not an instance of a class
+                    global_attrs = [a for a in dir(gen) if '__' not in a  and a not in gen.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+        
+                    # Instance variables (attributes) that are not an instance of a class
+                    instance_attrs = [a for a in dir(gen) if a in gen.__dict__.keys() and a not in known_classType_attrs + unknown_classType_attrs + method_attrs]
+            
+                    for attr in instance_attrs:
+                        attr_dict[attr] = gen.__getattribute__(attr) 
+                    attr_dict['model_id'] = gen.model_id
+                    attr_dict['compartment'] = [c.id for c in gen.compartment]
+                    attr_dict['reactions'] = [r.id for r in gen.reactions]
+                    if gen.id in model['genes'].keys():
+                        raise userError('Duplicated gene id: {}'.formaT(gen.id))
+                    else:
+                        model['genes'][gen.id] = attr_dict
+                model['genes']['global_attrs'] = {}
+                for attr in global_attrs:
+                    model['genes_global_attrs'][attr] = gen.__getattribute__(attr) 
+    
             #-- Other model properties --
             model['model_global_attrs'] = {}
             model['model_instance_attrs'] = {}
@@ -1338,7 +1365,7 @@ class model(object):
         elif output_format.lower() == 'pickle':
             import cPickle as pk
             pk.dump(self) 
-   
+
     def fba(self,optimization_solver = default_optim_solver, build_new_optModel = True, maximize = True, reset_fluxes = True, store_opt_fluxes = True, store_all_rxn_fluxes = False, flux_key = None, run = True, assign_wildType_max_biomass = False, simulation_conditions = '', stdout_msgs = True, warnings = True):
         """
         Creates a fba model for this model and runs fba 
@@ -1376,7 +1403,7 @@ class model(object):
             for rxn in [r for r in self.reactions if not r.store_flux]:
                 r.flux = None
 
-        if build_new_optModel == True:
+        if build_new_optModel:
             self.fba_model = fba(model = self,optimization_solver = optimization_solver, build_new_optModel = build_new_optModel, flux_key = flux_key, store_opt_fluxes = store_opt_fluxes, simulation_conditions = simulation_conditions, maximize = maximize, warnings = warnings, stdout_msgs = stdout_msgs)
         else:
             self.fba_model.build_new_optModel = build_new_optModel
@@ -1387,14 +1414,18 @@ class model(object):
             self.fba_model.simulation_conditions = simulation_conditions
             self.fba_model.warnings = warnings 
             self.fba_model.stdout_msgs = stdout_msgs 
+
+            # Update the objective function
+            #self.fba_model.optModel.del_component('objectiveFunc')
+            #if maximize:
+            #    self.fba_model.optModel.objectiveFunc = Objective(rule=self.fba_model.objectiveFunc_rule, sense = maximize)
+            #else:
+            #    self.fba_model.optModel.objectiveFunc = Objective(rule=self.fba_model.objectiveFunc_rule, sense = minimize)
+
             # Update the flux bounds
             for j in self.reactions:
                 self.fba_model.optModel.v[j.id].setlb(j.flux_bounds[0])
                 self.fba_model.optModel.v[j.id].setub(j.flux_bounds[1])
-
-            # Update the objective function
-            self.fba_model.optModel.del_component('objectiveFunc')
-            self.fba_model.optModel.objectiveFunc = Objective(rule=self.fba_model.objectiveFunc_rule, sense = maximize)
 
         if run == True:
             self.fba_model.run()

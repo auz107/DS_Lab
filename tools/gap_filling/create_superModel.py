@@ -9,42 +9,55 @@ from tools.core.gene import gene
 from tools.core.compound import compound
 from tools.core.reaction import reaction
 from tools.core.model import model
-from tools.ancillary.get_ModelSEED_ids import remove_compartment
+from tools.utilities.get_ModelSEED_ids import remove_compartment, get_ModelSEED_ids
 from models.ModelSEED.ModelSEED_cpds_master import cpds_master as ModelSEED_cpds
 from models.ModelSEED.ModelSEED_rxns_master import rxns_master as ModelSEED_rxns
 import itertools
 
-def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpds_to_otherComparts = False, validate = True,  warnings = True, stdout_msgs = True): 
+def create_superModel_from_ModelSEED(original_model, standard_to_model_compartID_map, add_c_cpds_to_otherComparts = False, obtain_ModelSEED_ids = True, validate = True,  warnings = True, stdout_msgs = True): 
     """
     INPUTS: 
     ------
-    original_model: An instance of object model. The input model should have ModelSEED ids assigned to any 
-                    compound or reaction if possible 
-    standard_to_model_compartID_map: A dictionary where keys are one of the letters below (standard compartment
-                    ids and values are the corresponding compartment ids in the model
-                    id in the original model. 
-                    c: Cytosol (cytoplasm),   e: Extracellular,   g: Golgi,     m: Mitochondria
-                    n: Nucleus,   p: Periplasm,    r: Endoplasmic reticulum,    x: Peroxisome
-                    For example, if a model has two compartments c and e, one can provide 
-                    {'c':'c id in the model', 'e':'e id in the model'}. One can also provide
-                    {'c':'', 'e': ''} in which the code searches for these two compartments 
-                    in the model
-    original_model: The original metabolic model
-          validate: If True, the constructed model undergoes the validation process (this can be very
-                    time-consuming take 2-3 h)
-    add_c_cpds_to_otherComparts: If True, add a copy of any compound that is in cytosol but not in  model
-                    compartments other than [p] and [e] along with their transport reactions. Note that a 
-                    copy of any compound in cytosol that is not present in [p] or [e] compartments or vice
-                    versa will be always added to the super_model no matter if this parameter is True or False
+    original_model: 
+    An instance of object model. The input model should have ModelSEED ids assigned to any 
+    compound or reaction if possible 
+
+    standard_to_model_compartID_map: 
+    A dictionary where keys are one of the letters below (standard compartment
+    ids and values are the corresponding compartment ids in the model
+    id in the original model. 
+    c: Cytosol (cytoplasm),   e: Extracellular,   g: Golgi,     m: Mitochondria
+    n: Nucleus,   p: Periplasm,    r: Endoplasmic reticulum,    x: Peroxisome
+    For example, if a model has two compartments c and e, one can provide 
+    {'c':'c id in the model', 'e':'e id in the model'}. One can also provide
+    {'c':'', 'e': ''} in which the code searches for these two compartments 
+    in the model
+
+    original_model: 
+    The original metabolic model
+
+    obtain_ModelSEED_ids: 
+    If True ModelSEED ids of reactions and compounds are obtained
+
+    validate: 
+    If True, the constructed model undergoes the validation process (this can be very
+    time-consuming take 2-3 h)
+
+    add_c_cpds_to_otherComparts: 
+    If True, adds a copy of any compound that is in cytosol but not in  model
+    compartments other than [p] and [e] along with their transport reactions. Note that a 
+    copy of any compound in cytosol that is not present in [p] or [e] compartments or vice
+    versa will be always added to the super_model no matter if this parameter is True or False
                     
  
     OUTPUT:
     -------
-      super_model: The integrated model containing both the original model and the compounds and reactions 
-                   in the ModelSEED
+    super_model: 
+    The integrated model containing both the original model and the compounds and reactions 
+    in the ModelSEED
 
     Ali R. Zomorrodi - Segre Lab @ BU
-    Last updated: 04-08-2016
+    Last updated: 06-20-2016
     """
     start_pt = time.clock()
     start_wt = time.time()
@@ -60,6 +73,9 @@ def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpd
         raise ValueError('Invalid key for standard_to_model_compartID_map. Eligible keys are: c, e, g, m, n, p, r, x')
     elif len([v for v in standard_to_model_compartID_map.values() if not isinstance(v,str)]) > 0:
         raise TypeError('A string expected for the values of dictionary compart_id but objects of type {} were provided instead'.format(list(set([type(v) for v in standard_to_model_compartID_map.values() if not isinstance(v,str)]))))
+
+    if not isinstance(obtain_ModelSEED_ids, bool):
+        raise TypeError('obtain_ModelSEED_ids must be either True or False')
 
     # Reactions for specific types of organisms
     if original_model.organism.ModelSEED_type == '':
@@ -89,6 +105,10 @@ def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpd
         cpt.model = None
     original_model.organism.model = None
 
+    # Get ModelSEED ids
+    if obtain_ModelSEED_ids:
+        get_ModelSEED_ids(model = original_model, stdout_msgs = False)
+
     # ModelSEED if of compounds and reactions in the model with a unique ModelSEED id
     orig_model_cpds_ModelSEED_ids = []
     orig_model_rxns_ModelSEED_ids = [mid for r in original_model.reactions if len(r.ModelSEED_id) > 1 for mid in r.ModelSEED_id]
@@ -98,8 +118,12 @@ def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpd
     ModelSEED_id_cpd_map = dict([(mid,[]) for mid in all_orig_model_cpds_ModelSEED_ids])
     for mid in all_orig_model_cpds_ModelSEED_ids:
         mid_cpds = [c for c in original_model.compounds if mid in c.ModelSEED_id]
-        mid_cpds_names = [c.name for c in mid_cpds]
-        ModelSEED_id_cpd_map[mid] = [c.id for c in mid_cpds if mid_cpds_names.count(c.name) == 1]
+        # Compartment id appears in the names of compounds and reactions for models constructed
+        # on ModelSEED or KBase, so we remove them from the names to find out whether the 
+        # compound appears in more than one compartment based on their name 
+        mid_cpds_names = [remove_compartment(input_string = c.name, compartments_info = [c.compartment.id]) for c in mid_cpds]
+        mid_cpds_ids_co_cpt = [remove_compartment(input_string = c.id, compartments_info = [c.compartment.id]) for c in mid_cpds]
+        ModelSEED_id_cpd_map[mid] = [c.id for c in mid_cpds if mid_cpds_ids_co_cpt.count(remove_compartment(input_string = c.id, compartments_info = [c.compartment.id])) == 1  or mid_cpds_names.count(remove_compartment(input_string = c.name, compartments_info = [c.compartment.id])) == 1]
     ModelSEED_ids_non_unique_cpds = [mid for mid in ModelSEED_id_cpd_map.keys() if len(ModelSEED_id_cpd_map[mid]) > 1]
 
     # List of compounds and reactions in the super model
@@ -129,21 +153,21 @@ def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpd
 
     for rxn in original_model.reactions:
         rxn.base_cost = 0
-        if len(rxn.ModelSEED_id) > 1 and rxn.reversibility != 'exchange' and rxn.ModelSEED_id[0] in organismType_specific_ModelSEED_rxns.keys():
+        if len(rxn.ModelSEED_id) > 1 and not rxn.is_exchange and rxn.ModelSEED_id[0] in organismType_specific_ModelSEED_rxns.keys():
             rxn.forward_cost = organismType_specific_ModelSEED_rxns[rxn.ModelSEED_id[0]]['forward_cost']
             rxn.backward_cost = organismType_specific_ModelSEED_rxns[rxn.ModelSEED_id[0]]['backward_cost']
             rxn.probability_dG_lessThanZero = ModelSEED_rxns[rxn.ModelSEED_id[0]]['probability_dG_lessThanZero']
             rxns_superModel_by_id[rxn.ModelSEED_id[0]] = rxn
         else:
             # Reaction is reversible in the original model
-            if rxn.reversibility == 'reversible':
+            if rxn.reversibility == 'reversible' and not rxn.is_exchange:
                 rxn.forward_cost = 0 
                 rxn.backward_cost = 0
             # Reaction is irreversible (forward) in the original model
-            if rxn.reversibility == 'irreversible':
+            if rxn.reversibility == 'irreversible' and not rxn.is_exchange:
                 rxn.forward_cost = 0 
                 rxn.backward_cost = 5 
-            else: # Exchange reactions
+            if rxn.is_exchange: # Exchange reactions
                 rxn.forward_cost = 0 
                 rxn.backward_cost = 0 
             rxn.probability_dG_lessThanZero = None
@@ -155,7 +179,7 @@ def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpd
     ModelSEED_transport_rxns = [r for r in ModelSEED_rxns if ModelSEED_rxns[r]['is_transport']]
 
     #--- Add exchange reactions to the model for compounds in the [e] compartment with no exchange reaction ---
-    for cpd_e in [c for c in original_model.compounds if c.compartment == original_model.compartments_by_id[standard_to_model_compartID_map['e']] and len([r for r in c.reactions if 'exchange' in r.name or 'E_' in r.name]) == 0]:
+    for cpd_e in [c for c in original_model.compounds if c.compartment == original_model.compartments_by_id[standard_to_model_compartID_map['e']] and len([r for r in original_model.reactions if (r.is_exchange or 'exchange' in r.name or 'EX_' in r.name) and c in r.reactants]) == 0]:
         exch_rxn = create_exchrxn(cpd_e) 
         rxns_superModel.append(exch_rxn)
         rxns_superModel_by_id[exch_rxn.id] = exch_rxn
@@ -627,7 +651,7 @@ def create_superModel(original_model, standard_to_model_compartID_map, add_c_cpd
                 r_id = rid + '_' + '_'.join([c_id for c_id in [c.id for c in r_stoic.keys()] if c_id in duplated_cpd_ids]) 
 
             # Reaction 
-            ModelSEED_rxn = reaction(id = r_id, stoichiometry = r_stoic, reversibility = r_rev, name = ModelSEED_rxns[rid]['name'], name_aliases = [], KEGG_id = ModelSEED_rxns[rid]['KEGG_id'], ModelSEED_id = rid, BiGG_id = ModelSEED_rxns[rid]['BiGG_id'], EC_numbers = [], subsystem = '', pathways = [], compartment = r_compart, genes = [], gene_reaction_rule = '', deltaG = ModelSEED_rxns[rid]['deltaG_ModelSEED'], deltaG_uncertainty = ModelSEED_rxns[rid]['deltaG_uncertainty_ModelSEED'], deltaG_range = [ModelSEED_rxns[rid]['deltaG_min_ModelSEED'],ModelSEED_rxns[rid]['deltaG_max_ModelSEED']])
+            ModelSEED_rxn = reaction(id = r_id, stoichiometry = r_stoic, reversibility = r_rev, name = ModelSEED_rxns[rid]['name'], name_aliases = [], KEGG_id = ModelSEED_rxns[rid]['KEGG_id'], ModelSEED_id = rid, BiGG_id = ModelSEED_rxns[rid]['BiGG_id'], EC_numbers = [], subsystem = '', pathways = [], genes = [], gene_reaction_rule = '', deltaG = ModelSEED_rxns[rid]['deltaG_ModelSEED'], deltaG_uncertainty = ModelSEED_rxns[rid]['deltaG_uncertainty_ModelSEED'], deltaG_range = [ModelSEED_rxns[rid]['deltaG_min_ModelSEED'],ModelSEED_rxns[rid]['deltaG_max_ModelSEED']])
 
             ModelSEED_rxn.external = True
             ModelSEED_rxn.external_type = external_type
@@ -667,7 +691,7 @@ def create_transport_rxn(cpd_cpt1, cpd_cpt2):
     # Id with compartment name removed
     no_cpt_id = remove_compartment(input_string = cpd_cpt1.id, compartments_info = [cpd_cpt1.compartment.id])
 
-    transport_rxn = reaction(id = no_cpt_id + '_' + '_'.join(sorted([cpd_cpt1.compartment.id, cpd_cpt2.compartment.id])) + '_transport', stoichiometry = {cpd_cpt1:-1, cpd_cpt2:1}, reversibility = 'reversible', name = cpd_cpt1.name + ' transport', compartment = [cpd_cpt1.compartment, cpd_cpt2.compartment])
+    transport_rxn = reaction(id = no_cpt_id + '_' + '_'.join(sorted([cpd_cpt1.compartment.id, cpd_cpt2.compartment.id])) + '_transport', stoichiometry = {cpd_cpt1:-1, cpd_cpt2:1}, reversibility = 'reversible', name = cpd_cpt1.name + ' transport')
     transport_rxn.base_cost = 0 
     transport_rxn.forward_cost = 0 
     transport_rxn.backward_cost = 0 
@@ -689,7 +713,7 @@ def create_exchrxn(cpd_e):
     # Id with compartment name removed
     no_cpt_id = remove_compartment(input_string = cpd_e.id, compartments_info = [cpd_e.compartment.id])
 
-    exch_rxn = reaction(id = 'EX_' + no_cpt_id + '_e0', stoichiometry = {cpd_e:-1}, reversibility = 'exchange', name = cpd_e.name + ' exchange', ModelSEED_id = ['EX_' + mid + '_e0' for mid in cpd_e.ModelSEED_id], KEGG_id = ['EX_' + mid + '_e0' for mid in cpd_e.KEGG_id], BiGG_id = ['EX_' + mid + '_e0' for mid in cpd_e.BiGG_id])
+    exch_rxn = reaction(id = 'EX_' + no_cpt_id + '_e0', stoichiometry = {cpd_e:-1}, reversibility = 'reversible', is_exchange = True, name = cpd_e.name + ' exchange', ModelSEED_id = ['EX_' + mid + '_e0' for mid in cpd_e.ModelSEED_id], KEGG_id = ['EX_' + mid + '_e0' for mid in cpd_e.KEGG_id], BiGG_id = ['EX_' + mid + '_e0' for mid in cpd_e.BiGG_id])
     exch_rxn.base_cost = 0
     exch_rxn.forward_cost = 0 
     exch_rxn.backward_cost = 0 

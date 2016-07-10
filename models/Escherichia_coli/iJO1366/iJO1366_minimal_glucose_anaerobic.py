@@ -22,6 +22,7 @@ excess_nutrients = {
 'EX_so4(e)':[-1000,1000],
 'EX_tungs(e)':[-1000,1000],
 'EX_zn2(e)':[-1000,1000],
+}
 
 regulation = {
 '14GLUCANabcpp':[0,0],
@@ -135,6 +136,7 @@ ngam_atp = {
 }
 
 others = {
-#'Ec_biomass_iAF1260_WT_59p81M': [0,0]
+'ALAt2pp':[0,0],   # Creates a thermodynamically infeasible loop with ALAt2rpp 
+'GLYt2pp':[0,0]    # Creates a thermodynamically infeasible loop with GLYt2rpp
 }
 

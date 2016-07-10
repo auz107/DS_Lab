@@ -4,7 +4,6 @@ sys.path.append('../../')
 import reaction 
 from compartment import compartment
 from tools.userError import *
-from tools.custom_objects import customList, customDict
 from copy import deepcopy
 
 class compound(object):
@@ -31,7 +30,7 @@ class compound(object):
     Ali R. Zomorrodi - Segre Lab @ BU
     Last updated: 04-25-2016
     """
-    def __init__(self, id, compartment = None, name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], formula = '', molecular_weight = None, charge = None, reactions = [], reactant_reactions = [], product_reactions = [], concentration = None, deltaG = None, deltaG_uncertainty = None, deltaG_range = [], notes = None, warnings = True): 
+    def __init__(self, id, compartment = None, name = '', name_aliases = [], KEGG_id = [], ModelSEED_id = [], BiGG_id = [], formula = '', molecular_weight = None, charge = None, model_id = '', reactions = (), reactant_reactions = (), product_reactions = (), concentration = None, deltaG = None, deltaG_uncertainty = None, deltaG_range = [], notes = None, warnings = True): 
 
         # Warnings 
         self.warnings = warnings
@@ -71,6 +70,9 @@ class compound(object):
 
         # Charge of the compound
         self.charge = charge
+
+        # Id of the model this compounds is part of
+        self.model_id = model_id
 
         # List of reaction objects in which this metabolite participates as a
         # reactant or product. 
@@ -132,7 +134,7 @@ class compound(object):
         """
         Resets the properties of a compound to default related to the model they belong to
         """
-        self.model = None
+        self.model_id = ''
         self.reactions = []
         self.reactant_reactions = []
         self.product_reactions = []
@@ -204,6 +206,10 @@ class compound(object):
         if attr_name == 'concentration' and (attr_value is not None and not isinstance(attr_value,int) and not isinstance(attr_value,float) and not isinstance(attr_value,dict)):
             raise TypeError("Invalid 'concentration' for compound " + str(id) + "! 'concentration' must be either a float or an integer or a dictionary. A " + str(type(attr_value)) + " type object was entered instead")
 
+        # Model id
+        if attr_name == 'model_id' and (attr_value is not None and not isinstance(attr_value,str)):
+            raise TypeError("Invalid 'model_id' for compound " + self.id + "! 'model_id' must be a string. A " + str(type(attr_value)) + " type object was entered instead")
+
         if attr_name in 'reactions':
             self.set_reactions(reactions = attr_value)
         elif attr_name in 'reactant_reactions':
@@ -217,8 +223,8 @@ class compound(object):
         """
         Makes changes to attribute reactions
         """
-        if reactions is not None and not isinstance(reactions,list):
-            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
+        if reactions is not None and not isinstance(reactions,tuple) and not isinstance(reactions,list):
+            raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a tuple or a list of objects of type reaction. A " + str(type(reactions)) + " type object was entered instead")
         if len([n for n in reactions if not isinstance(n,reaction.reaction)]) > 0:
             raise TypeError("Invalid 'reactions' for compound " + str(self.id) + "! 'reactions'  must be a list of objects of type 'reaction'.  Objects that are not of type reaction found in the list:" + str([n for n in reactions if not isinstance(n,reaction.reaction)]))
 
@@ -229,14 +235,17 @@ class compound(object):
 
         reactions = sorted(reactions,key=lambda x:x.id)
 
-        self.__dict__['reactions'] = customList(reactions)
+        if isinstance(reactions,tuple):
+            self.__dict__['reactions'] = reactions
+        elif isinstance(reactions,list):
+            self.__dict__['reactions'] = tuple(reactions)
 
     def set_reactant_reactions(self, reactant_reactions):
         """
         Makes changes to attribute reactant_reactions
         """
-        if (reactant_reactions is not None and not isinstance(reactant_reactions,list)):
-            raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. A " + str(type(reactant_reactions)) + " type object was entered instead")
+        if reactant_reactions is not None and not isinstance(reactant_reactions,tuple) and not isinstance(reactant_reactions,list):
+            raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a tuple or a list of objects of type reaction. A " + str(type(reactant_reactions)) + " type object was entered instead")
         if len([n for n in reactant_reactions if not isinstance(n,reaction.reaction)]) > 0:
             raise TypeError("Invalid 'reactant_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. Objects that are not of type reaction found in the list: " + str([n for n in reactant_reactions if not isinstance(n,reaction.reaction)]))
 
@@ -246,14 +255,17 @@ class compound(object):
 
         reactant_reactions = sorted(reactant_reactions,key=lambda x:x.id)
 
-        self.__dict__['reactant_reactions'] = customList(reactant_reactions)
+        if isinstance(reactant_reactions,tuple):
+            self.__dict__['reactant_reactions'] = reactant_reactions
+        elif isinstance(reactant_reactions,list):
+            self.__dict__['reactant_reactions'] = tuple(reactant_reactions)
 
     def set_product_reactions(self, product_reactions):
         """
         Makes changes to attribute product_reactions
         """
-        if product_reactions is not None and not isinstance(product_reactions,list):
-            raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a list of objects of type reaction. A " + str(type(product_reactions)) + " type object was entered instead")
+        if product_reactions is not None and not isinstance(product_reactions,tuple) and not isinstance(product_reactions,list):
+            raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'reactant_reactions'  must be a tuple or list of objects of type reaction. A " + str(type(product_reactions)) + " type object was entered instead")
         if len([n for n in product_reactions if not isinstance(n,reaction.reaction)]) > 0:
             raise TypeError("Invalid 'product_reactions' for compound " + str(self.id) + "! 'product_reactions'  must be a list of objects of type reaction. Objects that are not of type reaction found in the list: " + str([n for n in product_reactions if not isinstance(n,reaction.reaction)]))
 
@@ -263,7 +275,10 @@ class compound(object):
 
         product_reactions = sorted(product_reactions,key=lambda x:x.id)
 
-        self.__dict__['product_reactions'] = customList(product_reactions)
+        if isinstance(product_reactions,tuple):
+            self.__dict__['product_reactions'] = product_reactions
+        elif isinstance(product_reactions,list):
+            self.__dict__['product_reactions'] = tuple(product_reactions)
 
     def print_reactions_by(self,ref_type, metab_ref = None):
         """
@@ -369,8 +384,7 @@ class compound(object):
 
             print rxn
 
-
-    def biomass_yield_calc(self, warnings = None, stdout_msgs = False):
+    def biomass_yield_calc(self, model, warnings = None, stdout_msgs = False):
         """
         Calculates the biomass yield of this metabolite (if applicable).
         For the yield to be computed this metabolite should particiapte in
@@ -378,6 +392,7 @@ class compound(object):
 
         INPUTS:
         -------
+            model: The model object in which this compound is part of
         fba_model: An instance of the class fba containing the fba model for the 
                    wild-type organism under the desired growth condition. If this is 
                    not provided, then the current fba_model of model is used 
@@ -396,7 +411,7 @@ class compound(object):
             raise TypeError('warnings must be either True or False')
 
         # Find the exchange reaction this metabolite participates in
-        exch_rxn = [r for r in self.reactant_reactions if r.reversibility.lower() == 'exchange']
+        exch_rxn = [r for r in self.reactant_reactions if r.is_exchange or r.reversibility.lower() == 'exchange']
         if len(exch_rxn) == 0:
             raise userError('Unable to compute the biomass yield for metabolite ' + self.id +'. The metabolite must have an excange reaction in reactant_reactions ...')
         elif len(exch_rxn) > 1:
@@ -405,18 +420,18 @@ class compound(object):
             exch_rxn = exch_rxn[0]
 
         # Find reactions participating in the objective function
-        obj_rxns = [r for r in self.model.reactions if r.objective_coefficient != 0]
+        obj_rxns = [r for r in model.reactions if r.objective_coefficient != 0]
 
         # Save the objective coefficients for these reactions in a dictionary
         obj_coeff = dict([(r,r.objective_coefficient) for r in obj_rxns])
 
         # Set the objective coefficient for all reactions to zero
-        for r in self.model.reactions:
+        for r in model.reactions:
             r.objective_coefficient = 0
-        if self.model.biomass_reaction == None:
+        if model.biomass_reaction == None:
             raise AttributeError("'biomass_reaction' is not defined for the model")
         else:
-            self.model.biomass_reaction.objective_coefficient = 1
+            model.biomass_reaction.objective_coefficient = 1
 
         # Assign a large LB (allow for unlimitted uptake) 
         # Original LB on reaction flux 
@@ -425,16 +440,16 @@ class compound(object):
         # Perform FBA for 10 mole uptake of this metabolite 
         exch_rxn.flux_bounds[0] = -10      
 
-        if hasattr(self.model,'fba_model'):
-            biomass_yield_fba_model = copy.deepcopy(self.model.fba_model)
+        if hasattr(model,'fba_model'):
+            biomass_yield_fba_model = copy.deepcopy(model.fba_model)
             biomass_yield_fba_model.optModel.del_component('objectiveFunc')
-            biomass_yield_fba_model.optModel.objectiveFunc = pyomo.Objective(rule=self.model.fba_model.objectiveFunc_rule, sense = pyomo.maximize)
+            biomass_yield_fba_model.optModel.objectiveFunc = pyomo.Objective(rule=model.fba_model.objectiveFunc_rule, sense = pyomo.maximize)
             biomass_yield_fba_model.build_new_optModel = False
             biomass_yield_fba_model.store_opt_fluxes = False
-            biomass_yield_fba_model.stdout_msgs = False
+            biomass_yield_fba_model.stdout_msgs = stdout_msgs
             biomass_yield_fba_model.optModel.v[exch_rxn.id].setlb(exch_rxn.flux_bounds[0])
         else: 
-            biomass_yield_fba_model = fba(build_new_optModel = True, reset_fluxes = False, store_opt_fluxes = False, stdout_msgs = False)
+            biomass_yield_fba_model = fba(build_new_optModel = True, reset_fluxes = False, store_opt_fluxes = False, stdout_msgs = stdout_msgs)
 
         # Solve the fba model
         fba_solution = biomass_yield_fba_model.run() 
@@ -462,7 +477,7 @@ class compound(object):
         # Set the lower bound on exchange reaction back to what it was before
         exch_rxn.flux_bounds[0] = exch_rxn_LB
 
-    def ms_calc(self, warnings = None, stdout_msgs = True):
+    def ms_calc(self, model, warnings = None, stdout_msgs = False):
         """
         Calculates the minimum required uptake rate of this metabolite to satisfy the 
         non-growth associated ATP maintenance. This can be computed by perfomring
@@ -476,9 +491,7 @@ class compound(object):
 
         INPUTS:
         -------
-        fba_model: An instance of the class fba containing the fba model for the 
-                   ms simulations. If not fba_model is provided, then model.fba_model  
-                   is used to construct the required model. 
+            model: The model where this compound is part of
 
         OUTPUS:
         -------
@@ -494,7 +507,7 @@ class compound(object):
             raise TypeError('warnings must be either True or False')
 
         # Find the exchange reaction this metabolite participates in
-        exch_rxn = [r for r in self.reactant_reactions if r.reversibility.lower() == 'exchange']
+        exch_rxn = [r for r in self.reactant_reactions if r.is_exchange or r.reversibility.lower() == 'exchange']
         if len(exch_rxn) == 0:
             raise userError('Unable to compute the biomass yield for metabolite ' + self.id +'. The metabolite must have an excange reaction in reactant_reactions ...')
         elif len(exch_rxn) > 1:
@@ -503,13 +516,13 @@ class compound(object):
             exch_rxn = exch_rxn[0]
 
         # Find reactions participating in the objective function
-        obj_rxns = [r for r in self.model.reactions if r.objective_coefficient != 0]
+        obj_rxns = [r for r in model.reactions if r.objective_coefficient != 0]
 
         # Save the objective coefficients for these reactions in a dictionary
         obj_coeff = dict([(r,r.objective_coefficient) for r in obj_rxns])
 
         # Set the objective coefficient for all reactions to zero
-        for r in self.model.reactions:
+        for r in model.reactions:
             r.objective_coefficient = 0
                     
         # Set the coefficient for the exchange reaction of this compound to one
@@ -519,16 +532,21 @@ class compound(object):
         exch_rxn_LB = exch_rxn.flux_bounds[0]
         exch_rxn.flux_bounds[0] = -1000 
 
-        if not hasattr(self.model,'fba_model'):
-            ms_fba_model = copy.deepcopy(self.model.fba_model)
+        # Using the previous fba model when changing the objective function does not currently work
+        # properly. So, the following is commented out for the time being
+        """
+        if hasattr(model,'fba_model'):
+            ms_fba_model = copy.deepcopy(model.fba_model)
             ms_fba_model.optModel.del_component('objectiveFunc')
-            ms_fba_model.optModel.objectiveFunc = pyomo.Objective(rule=self.model.fba_model.objectiveFunc_rule, sense = pyomo.maximize)
+            ms_fba_model.optModel.objectiveFunc = pyomo.Objective(rule=model.fba_model.objectiveFunc_rule, sense = pyomo.maximize)
             ms_fba_model.build_new_optModel = False
             ms_fba_model.store_opt_fluxes = False
-            ms_fba_model.stdout_msgs = False
-            ms_fba_model.optModel.v[rxch_rxn.id].setlb(exch_rxn.flux_bounds[0])
+            ms_fba_model.stdout_msgs = stdout_msgs
+            ms_fba_model.optModel.v[exch_rxn.id].setlb(exch_rxn.flux_bounds[0])
         else: 
-            ms_fba_model = fba(model = self.model, build_new_optModel = True, store_opt_fluxes = False, stdout_msgs = False)
+            ms_fba_model = fba(model = model, build_new_optModel = True, store_opt_fluxes = False, stdout_msgs = stdout_msgs)
+        """
+        ms_fba_model = fba(model = model, build_new_optModel = True, store_opt_fluxes = False, stdout_msgs = stdout_msgs)
 
         # Solve the fba model
         fba_solution = ms_fba_model.run()

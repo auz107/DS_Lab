@@ -191,10 +191,10 @@ class fbaTools(object):
         
         #--- Define sets ---
         # Set of compounds 
-        optModel.I = Set(initialize = self.model.compounds_by_id.keys())   
+        optModel.I = Set(initialize = [c.id for c in self.model.compounds])   
 
         # Set of rxns  
-        optModel.J = Set(initialize = self.model.reactions_by_id.keys())     
+        optModel.J = Set(initialize = [r.id for r in self.model.reactions])     
 
         #--- Define the optModel variables --- 
         optModel.v = Var(optModel.J, domain=Reals, bounds = lambda optModel, j: self.model.reactions_by_id[j].flux_bounds)
@@ -226,6 +226,8 @@ class fbaTools(object):
         objects. The value of the flux will be None if the problem is not solved to 
         optimality. 
         """
+        # Create a solver and set the options
+        self.optSolver = pyomoSolverCreator(self.optimization_solver)
 
         # Total processing and wall time required to create the pyomo model, solve it and store the results
         start_total_pt = time.clock()
@@ -271,9 +273,9 @@ class fbaTools(object):
         elapsed_preproc_pyomo_wt = str(timedelta(seconds = time.time() - start_preproc_pyomo_wt))
 
         #- Solve the optModel (tee=True shows the solver output) -
+        start_solver_pt = time.clock()
+        start_solver_wt = time.time()
         try:
-            start_solver_pt = time.clock()
-            start_solver_wt = time.time()
 
             if self.optimization_solver not in ['gurobi_ampl','cplexamp']:
                 optSoln = self.optSolver.solve(self.optModel,tee = self.show_solver_output, warmstart = self.warmstart)
@@ -281,14 +283,14 @@ class fbaTools(object):
                 optSoln = self.optSolver.solve(self.optModel,tee = self.show_solver_output)
             solver_flag = 'normal'
 
-            elapsed_solver_pt = str(timedelta(seconds = time.clock() - start_solver_pt))
-            elapsed_solver_wt = str(timedelta(seconds = time.time() - start_solver_wt))
-
         except  Exception, e:
             if self.warnings:
                 print '**WARNING (fba.py)! {} failed with the following error: \n{}'.format(self.optimization_solver,e)
                 solver_flag = 'solverError'
       
+        elapsed_solver_pt = str(timedelta(seconds = time.clock() - start_solver_pt))
+        elapsed_solver_wt = str(timedelta(seconds = time.time() - start_solver_wt))
+
         #----- Print the results in the output ------
         if solver_flag == 'normal' and str(optSoln.solver.termination_condition).lower() == 'optimal':
         
@@ -348,8 +350,11 @@ class fbaTools(object):
 
         # Print the results on the screen 
         if self.stdout_msgs:
-            print '\nObjective value = {}, Optimality status = {}, Solution status = {}, Solver run status = {}'.format(opt_objValue, optSoln.solver.termination_condition, optSoln.Solution.status, solver_flag)
-            print 'Took (hh:mm:ss) {}/{} of processing/walltime in total, {}/{} to create a pyomo model, {}/{} to  preprcoess the model and {}/{} to solve the model\n'.format(elapsed_total_pt, elapsed_total_wt, elapsed_create_optModel_pt, elapsed_create_optModel_wt, elapsed_preproc_pyomo_pt, elapsed_preproc_pyomo_wt, elapsed_solver_pt, elapsed_solver_wt)
+            if exit_flag == 'solverError':
+                print '\nObjective value = None, Optimality status = None, Solution status = None, Solver run status = solverError'
+            else:
+                print '\nObjective value = {}, Optimality status = {}, Solution status = {}, Solver run status = {}'.format(opt_objValue, optSoln.solver.termination_condition, optSoln.Solution.status, solver_flag)
+            print 'Took (hh:mm:ss) {}/{} of processing/walltime in total and {}/{} to solve the model\n'.format(elapsed_total_pt, elapsed_total_wt, elapsed_solver_pt, elapsed_solver_wt)
 
         return self.solution
 
